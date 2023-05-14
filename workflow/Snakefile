@@ -7,6 +7,9 @@ SAMPLE= samples["sample"].values
 ASSEMBLER = config["assembler"]
 
 def get_CheckV_threshold(threshold):
+    """
+    Gets the threshold for checkv wuality control.
+    """
     if threshold.lower() == "complete":
         return '$8~/(Complete)/'
     elif threshold.lower() == "high":
@@ -21,6 +24,9 @@ def get_CheckV_threshold(threshold):
         return '$8~/(Medium-quality|High-quality|Complete)/'
     
 def vibrant_virome(is_virome):
+    """
+    Gathers if the input is virome.
+    """
     if is_virome.lower == "yes":
         return "-virome"
     else:
@@ -45,8 +51,10 @@ rule all:
         "finished_virus_identification",
         "finished_taxonomy"
 
-# This rule will run fastqc on the specified input file.
 rule fastqc_raw:
+    """
+    Quality controls each sample with FastQc
+    """
     input: 
         expand(config["Workflow_dirs"]["Samples_dir"]+"{{sample}}_{fractions}.fastq.gz", sample=SAMPLE, fractions=end_reads)
     output: 
@@ -70,6 +78,9 @@ rule fastqc_raw:
     '''
 
 rule fastp_pe:
+    """
+    Performes quality control/pre-processing of the raw reads
+    """
     input:
         R1=expand(config["Workflow_dirs"]["Samples_dir"]+"{{sample}}_R1.fastq.gz", sample=SAMPLE),
         R2=expand(config["Workflow_dirs"]["Samples_dir"]+"{{sample}}_R2.fastq.gz", sample=SAMPLE)
@@ -93,6 +104,9 @@ rule fastp_pe:
     '''
 
 rule fastqc_qc:
+    """
+    Performes quality control of processed QC reads
+    """
     input: 
         expand("results/trimmed/{{sample}}_{fractions}.fastq", sample=SAMPLE, fractions=end_reads)
     output: 
@@ -114,9 +128,11 @@ rule fastqc_qc:
     fastqc -o results/fastqc/QC/ {input}\
     &> {log}
     '''
-#have to include --use-conda to make it use correct python version
-#Python needs to be 3.6.
+
 rule metaSpades:
+    """
+    Assembles all sequences with metaSpades
+    """
     input:
         r1 = expand("results/trimmed/{{sample}}_R1.fastq", sample=SAMPLE),
         r2 = expand("results/trimmed/{{sample}}_R2.fastq", sample=SAMPLE)
@@ -141,6 +157,10 @@ rule metaSpades:
     '''
 
 rule metaQUAST:
+    """
+    Performes quality control on all assembled contigs
+    with the reference database RefSeq Viral
+    """
     params:
         out_dir="results/metaQUAST/",
         reference_genome=config["Database_dir"]["RefSeq"]
@@ -166,6 +186,9 @@ rule metaQUAST:
     '''
 
 rule virsorter2_pass1:
+    """
+    Performes the first pass of viral identification with VirSorter2
+    """
     params:
         out_dir = "results/virsorter2/",
         cutoff_length = config["Virsorter2_settings"]["pass1"]["min_lenght"],
@@ -196,6 +219,9 @@ rule virsorter2_pass1:
         &> {log}
     '''
 rule vibrant_pass1:
+    """
+    Performes the first pass of viral identification with VIBRANT
+    """
     input:
         contigs="results/metaSpades_assembly/{sample}/contigs.fasta"
     output:
@@ -228,6 +254,9 @@ rule vibrant_pass1:
     '''
 
 rule checkv_virsorter2:
+    """
+    Performes Quality control on identified viral sequences
+    """
     params:
         out_dir="results/checkv/virsorter2/",
         dir_db = config['Database_dir']['CheckV']
@@ -256,6 +285,9 @@ rule checkv_virsorter2:
     '''
 
 rule checkv_vibrant:
+    """
+    Performes Quality control on identified viral sequences
+    """
     params:
         out_dir="results/checkv/vibrant/",
         dir_db = config['Database_dir']['CheckV']
@@ -284,6 +316,9 @@ rule checkv_vibrant:
     '''
 
 rule filter_contigs_virsorter2:
+    """
+    Gathers only relevant sequences with above threshold score
+    """
     params:
         criteria= get_CheckV_threshold(config["CheckV_threshold"])
     input:
@@ -308,6 +343,9 @@ rule filter_contigs_virsorter2:
     '''
 
 rule filter_contigs_vibrant:
+    """
+    Gathers only relevant sequences with above threshold score
+    """
     params:
         criteria= get_CheckV_threshold(config["CheckV_threshold"])
     input:
@@ -332,6 +370,9 @@ rule filter_contigs_vibrant:
     '''
 
 rule combine_results_virsorter2:
+    """
+    Combine all results from virus identifiaction of all samples with VirSorter2
+    """
     input:
        expand("results/checkv/virsorter2/{sample}/filtered/filtered_combined.fna", sample= SAMPLE)
     output:
@@ -349,6 +390,9 @@ rule combine_results_virsorter2:
         cat {input} > {output}
     '''
 rule combine_results_vibrant:
+    """
+    Combine all results from virus identifiaction of all samples with VIBRANT
+    """
     input:
        expand("results/checkv/vibrant/{sample}/filtered/filtered_combined.fna", sample= SAMPLE)
     output:
@@ -366,6 +410,9 @@ rule combine_results_vibrant:
         cat {input} > {output}
     '''
 rule combine_all_results:
+    """
+    Combine all results from both virus identifiaction tools
+    """
     input:
         vibrant= "results/cdhit/prep/combined_vibrant.fasta",
         virsorter2 = "results/cdhit/prep/combined_virsorter2.fasta"
@@ -384,6 +431,9 @@ rule combine_all_results:
         cat {input.vibrant} {input.virsorter2} > {output}
     '''
 rule dereplication:
+    """
+    Performs dereplication with clustering on the viral sequences
+    """
     input:
         "results/cdhit/prep/combined_all.fasta"
     output:
@@ -414,6 +464,9 @@ rule dereplication:
 
     '''
 rule transform_vOTUs:
+    """
+    Renames viral sequences to unique vOTU_# names
+    """
     input:
         "results/cdhit/derep95_combined.fasta"
     output:
@@ -430,6 +483,9 @@ rule transform_vOTUs:
     '''
 
 rule vibrant_pass2:
+    """
+    Runs VIBRANT on the vOTUs
+    """
     input:
         contigs="results/cdhit/vOTU_derep95_combined.fasta"
     output:
@@ -461,6 +517,9 @@ rule vibrant_pass2:
         &> {log}
     '''
 rule virsorter2_pass2:
+    """
+    Runs VirSorter2 on the vOTUs
+    """
     params:
         out_dir = "results/virsorter2/",
         cutoff_length = config["Virsorter2_settings"]["pass2"]["min_lenght"],
@@ -497,6 +556,9 @@ rule virsorter2_pass2:
     '''
 
 rule checkv_vOTU_virsorter2:
+    """
+    Runs Quality control on the vOTUs after VirSorter2
+    """
     params:
         out_dir="results/checkv/vOTU/virsorter2/",
         dir_db = config['Database_dir']['CheckV']
@@ -523,6 +585,9 @@ rule checkv_vOTU_virsorter2:
         &>> {log}
     '''
 rule checkv_vOTU_vibrant:
+    """
+    Runs Quality control on the vOTUs after VIBRANT
+    """
     params:
         out_dir="results/checkv/vOTU/vibrant/",
         dir_db = config['Database_dir']['CheckV']
@@ -549,6 +614,9 @@ rule checkv_vOTU_vibrant:
         &>> {log}
     '''
 rule build_index:
+    """
+    Builds an index to prepare for mapping
+    """
     params:
         output_dir="results/mapping/index",
     input:
@@ -570,6 +638,9 @@ rule build_index:
     '''
 
 rule read_mapping:
+    """
+    Performes read mapping between original sample and vOTUs
+    """
     params:
         output_name="results/mapping/index"
     input:
@@ -592,6 +663,9 @@ rule read_mapping:
     '''
 
 rule contig_stats:
+    """
+    Creates simple coverage statisitcs for each read mapping
+    """
     input:
         genomes = "results/cdhit/vOTU_derep95_combined.fasta",
         sam = "results/mapping/{sample}/{sample}.map.sam"
@@ -624,6 +698,9 @@ rule contig_stats:
 localrules: get_trimmed_coverage
 
 rule get_trimmed_coverage:
+    """
+    Gets the trimmed mean of the coverage
+    """
     input:
         basecov = "results/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
         coverage_stats="results/contig_stats/{sample}/postfilter_coverage_stats.txt"
@@ -637,6 +714,10 @@ rule get_trimmed_coverage:
 localrules: combine_coverage
 
 rule combine_coverage:
+    """
+    Combines all the coverages into one file,
+    prepeares for making the relative abundance
+    """
     input:
         covstats=expand("results/contig_stats/{sample}/postfilter_coverage_stats.txt", sample = SAMPLE)
     output:
@@ -649,6 +730,9 @@ rule combine_coverage:
         "scripts/combine_coverage.R"
 
 rule prodigal:
+    """
+    Performes gene prediction on vOTUs
+    """
     params:
         out_dir="results/prodigal/"
     input:
@@ -672,6 +756,9 @@ rule prodigal:
     '''
 
 rule gene2genome:
+    """
+    Performes gene2genome setup for VCONTACT2
+    """
     input:
         proteins="results/prodigal/orfs.genes"
     output:
@@ -688,6 +775,9 @@ rule gene2genome:
     &> {log}
     '''
 rule inphared_setup:
+    """
+    Adds relevant entires from INPHARED into setup files before VCONTACT2
+    """
     params:
         inphared_g2g= config['Database_dir']['Inphared']+"/1Dec2022_vConTACT2_gene_to_genome.csv",
         inphared_proteins= config['Database_dir']['Inphared']+"/1Dec2022_vConTACT2_proteins.faa",
@@ -716,6 +806,9 @@ rule inphared_setup:
 
 
 rule vcontact2:
+    """
+    Performs Taxonomic annotation with VCONTACT2
+    """
     input:
         proteins="results/vcontact2/genes_2_genomes/combined_proteins.faa",
         g2g="results/vcontact2/genes_2_genomes/viral_genomes_combined.csv"
@@ -750,6 +843,9 @@ rule vcontact2:
                 &> {log}
     '''
 rule dramv_annotate:
+    """
+    Performs Functional annotation with DRAMv
+    """
     input:
         affi_contigs="results/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
         viruses="results/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa"
@@ -781,6 +877,9 @@ rule dramv_annotate:
         &> {log}
     '''
 rule dramv_distill:
+    """
+    Performs the distillation of functional annotation
+    """
     input:
         dramv_annnotations="results/DRAMv/annotations.tsv"
     output:
@@ -805,6 +904,10 @@ rule dramv_distill:
     '''
 
 rule graphanalyzer:
+    """
+    Performs the post-processing of VCONTACT2 results
+    automatically
+    """
     params:
         graph="workflow/scripts/graphanalyzer.py"
     input:
@@ -836,6 +939,9 @@ rule graphanalyzer:
 
 localrules: get_stats
 rule get_stats:
+    """
+    Performs the aggregation of all relevant files into summaries tables and plots
+    """
     input:
         "results/graphanalyzer/csv_edit_vOTU_results.xlsx",
         "results/DRAMv/distilled/amg_summary.tsv",

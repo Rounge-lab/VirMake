@@ -5,7 +5,7 @@ import re
 import gzip
 
 """
-script to calculate the trimmed mean of contig coverage
+Script to calculate the trimmed mean of contig coverage
 for bbmap output file base_coverage.
 """
 

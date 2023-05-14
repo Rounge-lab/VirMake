@@ -1,0 +1,56 @@
+# This are the cdhit criterias, ANI is the sequence identity threshold with range from float(0>1)
+# Coverage is the alignment coverage for the shorter sequences
+Cd-hit-est_criteria:
+  ANI: 0.95
+  coverage: 0.85
+# This represents the cutoff threshold for the CheckV quality with options:
+# Not-determined, Low, Medium, High, Complete
+CheckV_threshold: Medium
+# The paths to each database location
+Database_dir:
+  CheckV: /Some/Path/VirMake/Databases/checkv/checkv-db-v1.5
+  DRAM: /Some/Path/VirMake/Databases/DRAM
+  Inphared: /Some/Path/VirMake/Databases/INPHARED
+  RefSeq: /Some/Path/VirMake/Databases/RefSeq/viral.1.1.genomic.fna
+  VirSorter2: /Some/Path/VirMake/Databases/VirSorter2/db
+  main_dir: /Some/Path/VirMake/Databases
+Threads: 8
+# The VIBRANT sequence cuttoff lenght and if sequences are virom (yes/no)
+Vibrant_settings:
+  cutoff_length: 1000
+  is_virome: 'no'
+# The VirSorter2 sequence cuttoff lenght and minimum score cutoff
+Virsorter2_settings:
+  pass1:
+    min_lenght: 3000
+    min_score: 0.5
+  pass2:
+    min_lenght: 1000
+    min_score: 0.5
+Workflow_dirs:
+  Log_dir: logs/
+  Profile_dir: profile/
+  Result_dir: results/
+  Samples_dir: samples/
+  working_dir: /Some/Path/VirMake/
+# The location to the Sample table
+sample_table: /Some/Path/VirMake/samples.tsv
+# Below are all resources used when running on cluster.
+# change job_type to be the same as partition in SLURM
+# Change settings here to suit cluster execution
+big_mem: 32000
+big_time: 0-13:00:00
+job_type:
+  big: bigmem
+  normal: normal
+  small: normal
+metaquast_mem: 63000
+metaquast_time: 0-24:00:00
+normal_mem: 16000
+normal_time: 0-06:00:00
+small_mem: 8000
+small_time: 0-01:00:00
+tiny_mem: 1000
+tiny_time: 0-00:30:00
+vcontact2_mem: 63000
+vcontact2_time: 0-24:00:00

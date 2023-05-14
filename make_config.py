@@ -40,7 +40,6 @@ def make_default_config():
     }
     config["Cd-hit-est_criteria"] = {
         "ANI": 0.95,
-        "min_identity": 0.2,
         "coverage": 0.85
     }
     config["CheckV_threshold"] = "Medium"
