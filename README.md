@@ -45,12 +45,13 @@ The pipeline requiers two starting files to be initialized before running. These
 Note: VirMake follows a precise naming convention for samples, they follow the convention of `SAMPLENAME_R1.fastq.gz` where `SAMPLENAME` is the variable name. All samples must be within the same folder.
 
 An expected structuring of samples and other files looks like this:
-    VirMake
-        ./Databases/        % Contains all Databases needed by VirMake
-        ./samples/          % Here is the folder for samples
-        ./workflow/         % Workflow files
-        ./config.yaml       % The generated yaml config file
-        ./samples.tsv       % The generated file of all samples
+
+        VirMake
+            ./Databases/        % Contains all Databases needed by VirMake
+            ./samples/          % Here is the folder for samples
+            ./workflow/         % Workflow files
+            ./config.yaml       % The generated yaml config file
+            ./samples.tsv       % The generated file of all samples
 
 Make sure you are within the directory of VirMake and run:
 
