@@ -73,7 +73,9 @@ If you followed the expected structure you would run:
 
 This will create a basic config file and a sample table which are both needed to run the workflow.
   
-The last required step is to download all needed databases and external files. This can be done by:
+The last required step is to download all needed databases and external files. This command downloads the DRAMv database, it requiers 125 GB minimum RAM and around 35 GB of disk space.
+If this creates problems or you want to download it yourself, follow instruction within the `workflow/rules/download.smk`. 
+Downloading the databases can be done with the command:
 
     Usage: virmake.py download [OPTIONS]          % Requiers the database location to be provided.
 
@@ -86,7 +88,7 @@ The last required step is to download all needed databases and external files. T
 
 If you have the standard Databases location, simply run:
 
-`python virmake.py download -d ./Databases/`
+`python virmake.py download -d ./Databases/ --threads 16`
 
 Depending on if you run the pipeline locally or on a cluster node, you may need to pre-download all environments for Snakemake.
 This can be done with the `prep-offline` command
