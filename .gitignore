@@ -1,0 +1,17 @@
+.snakemake
+/workflow/.snakemake
+/results
+slurm*
+=2
+/benchmarks/*
+/Databases/
+/logs/
+__pycache__/
+config.yaml
+samples.tsv
+/Test_set/
+/slurm_output/
+./finished_assembly
+./finished_taxonomy
+./finished_virus_identification
+./finished_qc

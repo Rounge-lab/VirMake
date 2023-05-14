@@ -1,0 +1,8 @@
+name: seqtk
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - seqtk
+  - biopython==1.79
