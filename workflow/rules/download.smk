@@ -27,6 +27,15 @@ rule metaQUAST:
         mv viral.1.1.genomic.fna {output.reference}
         '''
 rule DRAMv:
+"""
+Downloads DRAMv. 
+If Users want to skip this simply add a # symbol in front of:
+directory(DB_DIR+"/DRAM/DRAM_data"),
+
+Keep in mind that the pipeline needs this to run.
+If downloaded independantly, simply add it to the config with same folder structure
+include the DRAM.config from DRAMv here also.
+"""
     conda:
         "../envs/DRAMv.yaml"
     output:
