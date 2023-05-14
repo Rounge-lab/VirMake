@@ -1,18 +1,38 @@
 # PENDING-Workflow
 Creating a snakemake workflow for metagenomic viral identification
 
+# About the software:
+
+VirMake is a Snakemake based pipeline that offers viral metagenic data analysis on paired-end data. It offer taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution.
+
 # Usage guide:
 
   
 ## Installation
 
 Git clone the project/download the workflow from GitHub. 
-Make sure you have conda or miniconda installed, preferable with mamba installed.
-Create an environment from the enviorment_pending.yaml.
-Activate it.
-Then make sure you are within the directory of PENDING-WORKFLOW and run:
+It requires conda/mamba to install the correct environments. When this has been installed, the necessary packages can be installed with the provided YAML file `virmake.yaml`. This can be done with the command:
+`conda env create --name virmake --file=virmake.yml`
+Or with mamba:
+`mamba env create --name virmake --file=virmake.yml`
 
-    python pending.py init
+The pipeline requiers two starting files to be initialized before running. These are the `config.yaml` and a `samples.tsv`. The `config.yaml` contains parameters for running the Snakemake, and is where users can customize their analysis. The `samples.tsv` is a file containing the name of each sample, thiscan be user made or created with initialization command. 
+Note: VirMake follows a precise naming convention for samples, they follow the convention of `SAMPLENAME_R1.fastq.gz` where `SAMPLENAME` is the variable name. All samples must be within the same folder.
+
+An expected structuring of samples and other files looks like this:
+
+
+VirMake
+  ./resources/        % Here the DRAM.config file will be placed
+  ./samples/          % Here is the folder for samples
+  ./workflow/         % Workflow files
+  ./config.yaml       % The generated yaml config file
+  ./samples.tsv       % The generated file of all samples
+
+
+make sure you are within the directory of PENDING-WORKFLOW and run:
+
+    python virmake.py init
         Options:
       -d, --db-dir PATH       location to store databases
       -w, --working-dir PATH  location for running the application
@@ -23,7 +43,7 @@ This will create a basic config file and a sample table which are both needed to
   
 The last required step is to download all needed databases and external files. This can be done by:
 
-    python pending.py download [OPTIONS]
+    python virmake.py download [OPTIONS]
     Options:
       -d, --db-dir PATH  location to store databases  [required]
       --threads INTEGER  number of threads to use per multi-threaded job
@@ -34,7 +54,7 @@ The files generated are the `config.yaml` file which contains all locations and 
 
 For a smooth performance and setup for eventual offline running use:
 
-    python pending.py prep-offline [OPTIONS]
+    python virmake.py prep-offline [OPTIONS]
         Options:
       --threads INTEGER  number of threads to use per multi-threaded job
       -h, --help         Show this message and exit.
@@ -58,7 +78,7 @@ To new machine:
 ##  Running the workflow
 To run the workflow after the setup steps, simply use the command:
 
-    python pending.py [OPTIONS] {qc|assembly|identification|taxonomy|all|None}
+    python virmake.py [OPTIONS] {qc|assembly|identification|taxonomy|all|None}
        Options:
       --profile TEXT          snakemake profile e.g. for cluster execution.
       -w, --working-dir PATH  location to run pending.
