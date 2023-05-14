@@ -12,7 +12,9 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 `git clone https://github.com/uio-bmi/VirMake.git`
 
 `mamba env create --name virmake --file=virmake.yml`
+
 `python virmake.py download -d ./Databases/`
+
 `python virmake.py prep-offline --threads 8`
 
 Place samples in samples folder, and then run:
@@ -22,7 +24,9 @@ Place samples in samples folder, and then run:
 Get example files by:
 
 `cd ./samples/`
+
 `python ../workflow/scripts/get_example.py`
+
 `cd ../`
 
 Then run:
