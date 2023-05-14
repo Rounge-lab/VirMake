@@ -1,5 +1,4 @@
-# PENDING-Workflow
-Creating a snakemake workflow for metagenomic viral identification
+# VirMake: a Snakemake pipeline for viral metagenomic data analysis
 
 # About the software:
 
