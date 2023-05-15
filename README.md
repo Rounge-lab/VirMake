@@ -2,7 +2,7 @@
 
 # About the software:
 
-VirMake is a Snakemake based pipeline that offers viral metagenic data analysis on paired-end data. It offer taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution.
+VirMake is a Snakemake based pipeline that offers viral metagenic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution.
 
 # Usage guide:
 
