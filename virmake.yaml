@@ -9,7 +9,7 @@ dependencies:
   - numpy = 1.23.3
   - mamba = 1.0.0
   - snakemake = 6.15.2
-  - singularity = 3.8.7
+  - singularity = 3.8.6
   - yaml = 0.2.5
   - matplotlib = 3.6.3
   - gzip = 1.12
