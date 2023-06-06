@@ -10,7 +10,7 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 
 `git clone https://github.com/uio-bmi/VirMake.git`
 
-`mamba env create --name virmake --file=virmake.yml`
+`mamba env create --name virmake --file=virmake.yaml`
 
 `python virmake.py download -d ./Databases/`
 
