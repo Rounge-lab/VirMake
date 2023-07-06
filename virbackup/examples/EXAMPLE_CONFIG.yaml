@@ -1,37 +1,37 @@
-# This are the cdhit criterias, ANI is the sequence identity threshold with range from float(0>1)
-# Coverage is the alignment coverage for the shorter sequences
-Cd-hit-est_criteria:
-  ANI: 0.95
+# This are the cdhit criterias, identity_threshold is the sequence identity threshold with range from float(0>1)
+# coverage is the alignment coverage for the shorter sequences
+cd-hit-est_criteria:
+  identity_threshold: 0.95
   coverage: 0.85
-# This represents the cutoff threshold for the CheckV quality with options:
+# This represents the cutoff threshold for the checkv quality with options:
 # Not-determined, Low, Medium, High, Complete
-CheckV_threshold: Medium
+checkv_threshold: Medium
 # The paths to each database location
-Database_dir:
-  CheckV: /Some/Path/VirMake/Databases/checkv/checkv-db-v1.5
-  DRAM: /Some/Path/VirMake/Databases/DRAM
-  Inphared: /Some/Path/VirMake/Databases/INPHARED
-  RefSeq: /Some/Path/VirMake/Databases/RefSeq/viral.1.1.genomic.fna
-  VirSorter2: /Some/Path/VirMake/Databases/VirSorter2/db
-  main_dir: /Some/Path/VirMake/Databases
-Threads: 8
+database_dir:
+  checkv: /Some/Path/VirMake/databases/checkv/checkv-db-v1.5
+  DRAM: /Some/Path/VirMake/databases/DRAM
+  INPHARED: /Some/Path/VirMake/databases/INPHARED
+  RefSeq: /Some/Path/VirMake/databases/RefSeq/viral.1.1.genomic.fna
+  virsorter2: /Some/Path/VirMake/databases/virsorter2/db
+  main_dir: /Some/Path/VirMake/databases
+threads: 8
 # The VIBRANT sequence cuttoff lenght and if sequences are virom (yes/no)
-Vibrant_settings:
+vibrant_settings:
   cutoff_length: 1000
   is_virome: 'no'
-# The VirSorter2 sequence cuttoff lenght and minimum score cutoff
-Virsorter2_settings:
+# The virsorter2 sequence cuttoff lenght and minimum score cutoff
+virsorter2_settings:
   pass1:
     min_lenght: 3000
     min_score: 0.5
   pass2:
     min_lenght: 1000
     min_score: 0.5
-Workflow_dirs:
-  Log_dir: logs/
-  Profile_dir: profile/
-  Result_dir: results/
-  Samples_dir: samples/
+workflow_dirs:
+  log_dir: logs/
+  profile_dir: profile/
+  output_dir: results/
+  input_dir: samples/
   working_dir: /Some/Path/VirMake/
 # The location to the Sample table
 sample_table: /Some/Path/VirMake/samples.tsv
