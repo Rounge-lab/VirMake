@@ -1,11 +1,10 @@
-import os, sys
-import click
-import multiprocessing
-import subprocess
 import logging
+import os
+import subprocess
+import sys
 
+import click
 from snakemake.io import load_configfile
-from utils.make_config import make_config
 
 
 def get_snakefile(file="workflow/Snakefile"):
@@ -15,7 +14,7 @@ def get_snakefile(file="workflow/Snakefile"):
     return sf
 
 
-##Inspired by ATLAS Metagenome
+# Inspired by ATLAS Metagenome
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     "virmake workflow"
@@ -115,34 +114,34 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
 
 
 # Prep For offline
-@cli.command(
-    "prep-offline",
-    context_settings=dict(ignore_unknown_options=True),
-    short_help="Downloads and creates all enviorments needed to run the workflow offline.",
-)
-@click.option(
-    "--threads",
-    default=8,
-    type=int,
-    help="number of threads to use per multi-threaded job",
-)
-def run_prep_offline(threads):
-    """Downloads and creates all enviorments needed to run the workflow offline."""
+# @cli.command(
+#     "prep-offline",
+#     context_settings=dict(ignore_unknown_options=True),
+#     short_help="Downloads and creates all enviorments needed to run the workflow offline.",
+# )
+# @click.option(
+#     "--threads",
+#     default=8,
+#     type=int,
+#     help="number of threads to use per multi-threaded job",
+# )
+# def run_prep_offline(threads):
+#     """Downloads and creates all enviorments needed to run the workflow offline."""
 
-    cmd = (
-        "snakemake --snakefile {snakefile}"
-        "--rerun-incomplete "
-        "--conda-frontend mamba"
-        " --nolock  --use-conda --use-singularity --conda-create-envs-only"
-        " --show-failed-logs"
-        " -c{threads}"
-    ).format(snakefile=get_snakefile(), threads=threads)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
+#     cmd = (
+#         "snakemake --snakefile {snakefile}"
+#         "--rerun-incomplete "
+#         "--conda-frontend mamba"
+#         " --nolock  --use-conda --use-singularity --conda-create-envs-only"
+#         " --show-failed-logs"
+#         " -c{threads}"
+#     ).format(snakefile=get_snakefile(), threads=threads)
+#     try:
+#         subprocess.check_call(cmd, shell=True)
+#     except subprocess.CalledProcessError as e:
+#         # removes the traceback
+#         logging.critical(e)
+#         exit(1)
 
 
 if __name__ == "__main__":

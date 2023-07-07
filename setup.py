@@ -1,16 +1,17 @@
 # This script is used to setup the environment for VirMake.
+# TODO introduce logging module
 
-import logging
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
 
 # internal functions
-def strip_stout(stout):
-    """Strip stout and return as string."""
-    return stout.decode("utf-8").strip()
+def strip_stdout(stdout):
+    """Strip stdout and return as string."""
+    return stdout.decode("utf-8").strip()
 
 
 # determine absolute path to VirMake
@@ -19,45 +20,47 @@ virmake_path = pathlib.Path(__file__).parent.absolute()
 print(f"\nVirMake setup started at {virmake_path}\n")
 
 # check if conda is installed
-cmd = "conda --version"
 try:
+    cmd = "conda --version"
     conda_ver = subprocess.run(cmd.split(), capture_output=True)
 except FileNotFoundError:
     exit("Conda not found! Please install conda and try again.\n")
-print(f"Using {strip_stout(conda_ver.stdout)}\n")
+print(f"Using {strip_stdout(conda_ver.stdout)}\n")
 
 # check if conda is initialized
-cmd = "conda activate"
+cmd = "conda activate base"
 conda_activate_base = subprocess.run(
     cmd.split(), capture_output=True, shell=True
 )
 if conda_activate_base.returncode != 0:
-    exit(strip_stout(conda_activate_base.stderr))
+    exit(strip_stdout(conda_activate_base.stderr))
 
-# check if mamba is installed
-cmd = "mamba --version"
+# check if mamba is installed in base
 try:
+    cmd = "mamba --version"
     mamba_ver = subprocess.run(cmd.split(), capture_output=True)
 except FileNotFoundError:
     # if not install it using conda
-    print("\nInstalling mamba...\n")
+    print("Installing mamba...\n")
     cmd = "conda install -y -c conda-forge mamba"
     subprocess.run(cmd.split())
-    print("\nMamba installed successfully...\n")
-print(f"Using {strip_stout(mamba_ver.stdout.splitlines()[0])}")
+    print("Mamba installed successfully.\n")
+    cmd = "mamba --version"
+    mamba_ver = subprocess.run(cmd.split(), capture_output=True)
+print(f"Using {strip_stdout(mamba_ver.stdout.splitlines()[0])}")
 
 # check if mamba is initialized
-cmd = "mamba activate"
+cmd = "mamba activate base"
 mamba_activate_base = subprocess.run(
     cmd.split(), capture_output=True, shell=True
 )
 if mamba_activate_base.returncode != 0:
-    exit(strip_stout(mamba_activate_base.stderr))
+    exit(strip_stdout(mamba_activate_base.stderr))
 
 # create virmake environment
 cmd = "mamba env list"
 venv_list = subprocess.run(cmd.split(), capture_output=True)
-if "virmake" not in strip_stout(venv_list.stdout):
+if "virmake" not in strip_stdout(venv_list.stdout):
     print("\nPreparing VirMake virtual environment...\n")
     cmd = f"mamba env create -f {virmake_path / 'venv.yaml'}"
     subprocess.run(cmd.split())
@@ -99,22 +102,27 @@ while True:
             print("Some files were found in databases directory.")
             overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
             if overwrite_db.lower() in ["y", ""]:
-                for f in db_files:
-                    print("Overwriting...")
-                    os.remove(virmake_path / "databases" / f)
+                shutil.rmtree(virmake_path / "databases")
+                os.makedirs(virmake_path / "databases", exist_ok=True)
             elif overwrite_db.lower() == "n":
                 print("Skipping database setup...")
                 break
             else:
                 pass
-        # cmd = f"conda run -n virmake python utils/setup_db.py {virmake_path}"
-        # subprocess.run(cmd.split())
+        # unlock folder if locked and run setup_db.smk workflow
         cmd = (
             "conda run -n virmake --no-capture-output "
-            "snakemake --snakefile utils/setup_db.smk --cores 1 "
-            "--rerun-incomplete --conda-frontend mamba "
+            "snakemake --snakefile utils/setup_db.smk --cores 8 "
             f"--config database_dir={virmake_path / 'databases'} "
-            f"envs_dir={virmake_path / 'envs'} "
+            f"envs_dir={virmake_path / 'envs'} --use-conda "
+            "--unlock"
+        )
+        subprocess.run(cmd.split())
+        cmd = (
+            "conda run -n virmake --no-capture-output "
+            "snakemake --snakefile utils/setup_db.smk --cores 8 "
+            f"--config database_dir={virmake_path / 'databases'} "
+            f"envs_dir={virmake_path / 'envs'} --use-conda"
         )
         subprocess.run(cmd.split())
 
@@ -124,3 +132,17 @@ while True:
         break
     else:
         pass
+
+# prepare main script
+print(f"\nPreparing main script at {virmake_path / 'virmake'}\n")
+cmd = "conda run -n virmake which python"
+virmake_python_path = subprocess.run(cmd.split(), capture_output=True)
+virmake_python_path = strip_stdout(virmake_python_path.stdout)
+if (virmake_path / "virmake").exists():
+    os.remove(virmake_path / "virmake")
+with open(virmake_path / "virmake", "w+") as output:
+    output.write(f"#!{virmake_python_path}\n\n")
+    with open(virmake_path / "utils" / "virmake.py") as input:
+        output.write(input.read())
+cmd = "chmod +x virmake"
+subprocess.run(cmd.split())

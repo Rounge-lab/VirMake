@@ -77,7 +77,7 @@ rule fastqc_raw:
     params:
         "--quiet",
     conda:
-        "envs/fastqc.yaml"
+        envs_dir + "/fastqc.yaml"
     message:
         "Executing FASTQC quality control on raw reads from:  {input}."
     resources:
@@ -118,7 +118,7 @@ rule fastp_pe:
         mem_mb=config["normal_mem"],
         runtime=config["normal_time"],
     conda:
-        "envs/fastp.yaml"
+        envs_dir + "/fastp.yaml"
     threads: 4
     shell:
         """
@@ -144,7 +144,7 @@ rule fastqc_qc:
     params:
         "--quiet",
     conda:
-        "envs/fastqc.yaml"
+        envs_dir + "/fastqc.yaml"
     message:
         "Executing FASTQC quality control on trimmed reads from:{input} files."
     resources:
@@ -176,7 +176,7 @@ rule metaSpades:
     benchmark:
         "benchmarks/metaspades/{sample}_metaspades.tsv"
     conda:
-        "envs/metaSpades.yaml"
+        envs_dir + "/metaSpades.yaml"
     log:
         "logs/metaSPades/{sample}_metaSPADES.log",
     threads: 16
@@ -209,7 +209,7 @@ rule metaQUAST:
     benchmark:
         "benchmarks/metaQUAST/metaQUAST.tsv"
     conda:
-        "envs/metaQUAST.yaml"
+        envs_dir + "/metaQUAST.yaml"
     log:
         "logs/metaQUAST/metaQUAST.log",
     threads: 24
@@ -276,7 +276,7 @@ rule vibrant_pass1:
         results="results/vibrant/{sample}/",
         virome=vibrant_virome(config["vibrant_settings"]["is_virome"]),
     conda:
-        "envs/vibrant.yaml"
+        envs_dir + "/vibrant.yaml"
     log:
         "logs/VIBRANT/{sample}_VIBRANT.log",
     benchmark:
@@ -311,7 +311,7 @@ rule checkv_virsorter2:
         "results/checkv/virsorter2/{sample}/quality_summary.tsv",
         "results/checkv/virsorter2/{sample}/combined.fna",
     conda:
-        "envs/checkv.yaml"
+        envs_dir + "/checkv.yaml"
     log:
         "logs/checkv/virsorter2_{sample}_checkv.log",
     benchmark:
@@ -347,7 +347,7 @@ rule checkv_vibrant:
         "results/checkv/vibrant/{sample}/quality_summary.tsv",
         "results/checkv/vibrant/{sample}/combined.fna",
     conda:
-        "envs/checkv.yaml"
+        envs_dir + "/checkv.yaml"
     log:
         "logs/checkv/vibrant_{sample}_checkv.log",
     benchmark:
@@ -384,7 +384,7 @@ rule filter_contigs_virsorter2:
         filtered_contigs_viruses="results/checkv/virsorter2/{sample}/filtered/filtered_combined.fna",
         filtered_contigs_ID="results/checkv/virsorter2/{sample}/filtered/filtered_contigs",
     conda:
-        "envs/seqtk.yaml"
+        envs_dir + "/seqtk.yaml"
     benchmark:
         "benchmarks/checkv/virsorter2/{sample}/filter_contigs.tsv"
     log:
@@ -417,7 +417,7 @@ rule filter_contigs_vibrant:
         filtered_contigs_viruses="results/checkv/vibrant/{sample}/filtered/filtered_combined.fna",
         filtered_contigs_ID="results/checkv/vibrant/{sample}/filtered/filtered_contigs",
     conda:
-        "envs/seqtk.yaml"
+        envs_dir + "/seqtk.yaml"
     benchmark:
         "benchmarks/checkv/vibrant/{sample}/filter_contigs.tsv"
     log:
@@ -445,7 +445,7 @@ rule combine_results_virsorter2:
     output:
         "results/cdhit/prep/combined_virsorter2.fasta",
     conda:
-        "envs/cdhit.yaml"
+        envs_dir + "/cdhit.yaml"
     log:
         "logs/virsorter2_cdhit_prep.log",
     threads: 2
@@ -470,7 +470,7 @@ rule combine_results_vibrant:
     output:
         "results/cdhit/prep/combined_vibrant.fasta",
     conda:
-        "envs/cdhit.yaml"
+        envs_dir + "/cdhit.yaml"
     log:
         "logs/vibrant_cdhit_prep.log",
     threads: 2
@@ -493,7 +493,7 @@ rule combine_all_results:
     output:
         "results/cdhit/prep/combined_all.fasta",
     conda:
-        "envs/cdhit.yaml"
+        envs_dir + "/cdhit.yaml"
     log:
         "logs/combine_all_cdhit_prep.log",
     threads: 2
@@ -515,7 +515,7 @@ rule dereplication:
     output:
         "results/cdhit/derep95_combined.fasta",
     conda:
-        "envs/cdhit.yaml"
+        envs_dir + "/cdhit.yaml"
     log:
         "logs/combined_cdhit.log",
     threads: 8
@@ -553,7 +553,7 @@ rule transform_vOTUs:
         mem_mb=config["small_mem"],
         runtime=config["tiny_time"],
     conda:
-        "envs/seqtk.yaml"
+        envs_dir + "/seqtk.yaml"
     log:
         "logs/transform_vOTUs.log",
     shell:
@@ -576,7 +576,7 @@ rule vibrant_pass2:
         results="results/vibrant/vOTU/",
         virome=vibrant_virome(config["vibrant_settings"]["is_virome"]),
     conda:
-        "envs/vibrant.yaml"
+        envs_dir + "/vibrant.yaml"
     log:
         "logs/VIBRANT/vOTU_VIBRANT.log",
     benchmark:
@@ -652,7 +652,7 @@ rule checkv_vOTU_virsorter2:
     output:
         "results/checkv/vOTU/virsorter2/quality_summary.tsv",
     conda:
-        "envs/checkv.yaml"
+        envs_dir + "/checkv.yaml"
     log:
         "logs/checkv/vOTU_checkv_virsorter2.log",
     benchmark:
@@ -684,7 +684,7 @@ rule checkv_vOTU_vibrant:
     output:
         "results/checkv/vOTU/vibrant/quality_summary.tsv",
     conda:
-        "envs/checkv.yaml"
+        envs_dir + "/checkv.yaml"
     log:
         "logs/checkv/vOTU_checkv_vibrant.log",
     benchmark:
@@ -715,7 +715,7 @@ rule build_index:
     output:
         touch("results/mapping/index.done"),
     conda:
-        "envs/bowtie2.yaml"
+        envs_dir + "/bowtie2.yaml"
     log:
         "logs/bowtie2_build.log",
     threads: 2
@@ -748,7 +748,7 @@ rule read_mapping:
     output:
         sam="results/mapping/{sample}/{sample}.map.sam",
     conda:
-        "envs/bowtie2.yaml"
+        envs_dir + "/bowtie2.yaml"
     log:
         "logs/{sample}_mapping.log",
     threads: 2
@@ -774,7 +774,7 @@ rule contig_stats:
         covstats="results/contig_stats/{sample}/postfilter_coverage_stats.txt",
         bincov="results/contig_stats/{sample}/postfilter_coverage_binned.txt",
     conda:
-        "envs/bowtie2.yaml"
+        envs_dir + "/bowtie2.yaml"
     log:
         "logs/{sample}_contig_stats.log",
     threads: 2
@@ -833,7 +833,7 @@ rule combine_coverage:
     params:
         min_coverage=75,
     conda:
-        "envs/tidyverse.yaml"
+        envs_dir + "/tidyverse.yaml"
     script:
         "scripts/combine_coverage.R"
 
@@ -850,7 +850,7 @@ rule prodigal:
         proteins="results/prodigal/proteins.faa",
         orf="results/prodigal/orfs.genes",
     conda:
-        "envs/prodigal.yaml"
+        envs_dir + "/prodigal.yaml"
     log:
         "logs/prodigal.log",
     benchmark:
@@ -875,7 +875,7 @@ rule gene2genome:
     output:
         g2g="results/vcontact2/genes_2_genomes/g2g.csv",
     conda:
-        "envs/vcontact2.yaml"
+        envs_dir + "/vcontact2.yaml"
     log:
         "logs/Vcontact2_gene2genome.log",
     resources:
@@ -909,7 +909,7 @@ rule inphared_setup:
     benchmark:
         "benchmarks/inphared/setup.tsv"
     conda:
-        "envs/vibrant.yaml"
+        envs_dir + "/vibrant.yaml"
     resources:
         mem_mb=config["small_mem"],
         runtime=config["tiny_time"],
@@ -938,7 +938,7 @@ rule vcontact2:
     benchmark:
         "benchmarks/vcontact2/vcontact2.tsv"
     conda:
-        "envs/vcontact2.yaml"
+        envs_dir + "/vcontact2.yaml"
     log:
         "logs/Vcontact2.log",
     resources:
@@ -974,7 +974,7 @@ rule dramv_annotate:
         dram_config=config["database_dir"]["DRAM"] + "/DRAM.config",
         output_dir="results/DRAMv",
     conda:
-        "envs/DRAMv.yaml"
+        envs_dir + "/DRAMv.yaml"
     log:
         "logs/DRAMV/DRAM_annotate.log",
     benchmark:
@@ -1012,7 +1012,7 @@ rule dramv_distill:
     benchmark:
         "benchmarks/DRAMv_distill.tsv"
     conda:
-        "envs/DRAMv.yaml"
+        envs_dir + "/DRAMv.yaml"
     resources:
         mem_mb=config["normal_mem"],
         runtime=config["normal_time"],
@@ -1040,7 +1040,7 @@ rule graphanalyzer:
     output:
         "results/graphanalyzer/csv_edit_vOTU_results.xlsx",
     conda:
-        "envs/graphanalyzer.yaml"
+        envs_dir + "/graphanalyzer.yaml"
     threads: 6
     resources:
         mem_mb=config["normal_mem"],
