@@ -18,3 +18,4 @@ samples.tsv
 ./finished_qc
 virmake
 working_dir
+*.log
