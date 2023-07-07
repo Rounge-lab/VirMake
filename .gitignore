@@ -17,3 +17,4 @@ samples.tsv
 ./finished_virus_identification
 ./finished_qc
 virmake
+working_dir
