@@ -110,10 +110,10 @@ while True:
             else:
                 pass
         cmd = (
-            "conda run -n virmake --no-capture-output --nolock "
+            "conda run -n virmake --no-capture-output "
             "snakemake --snakefile utils/setup_db.smk --cores 8 "
             f"--config database_dir={virmake_path / 'databases'} "
-            f"envs_dir={virmake_path / 'envs'} --use-conda"
+            f"envs_dir={virmake_path / 'envs'} --use-conda --nolock"
         )
         subprocess.run(cmd.split())
 
