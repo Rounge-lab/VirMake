@@ -1,23 +1,14 @@
 import logging
-import os
+import pathlib
 import subprocess
-import sys
 
 import click
-from snakemake.io import load_configfile
-
-
-def get_snakefile(file="workflow/Snakefile"):
-    sf = os.path.join(os.path.dirname(os.path.abspath(__file__)), file)
-    if not os.path.exists(sf):
-        sys.exit("Unable to locate the Snakemake workflow file; tried %s" % sf)
-    return sf
 
 
 # Inspired by ATLAS Metagenome
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
-    "virmake workflow"
+    "VirMake is a workflow for the analysis of viral metagenomes"
 
 
 @cli.command(
@@ -41,7 +32,6 @@ def cli():
     "--working-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
     help="location to run atlas.",
-    default=".",
 )
 @click.option(
     "-c",
@@ -59,55 +49,60 @@ def cli():
 )
 @click.option(
     "--threads",
-    default=16,
+    default=8,
     type=int,
     help="Number of threads used on multithreaded jobs",
 )
 def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
-    if config_file is None:
-        config_file = os.path.join(working_dir, "config.yaml")
+    """Runs the main workflow"""
+    # load virmake path
+    virmake_path = pathlib.Path(__file__).parent
 
-    if not os.path.exists(config_file):
+    # load needed paths and check if they exist
+    if not config_file:
+        config_file = virmake_path / "config.yaml"
+    else:
+        config_file = pathlib.Path(config_file).resolve()
+    if not config_file.exists():
         logging.critical(
             f"config-file not found: {config_file}\n"
-            "generate one with 'virmake init'"
+            "generate one by running `python setup.py`"
         )
         exit(1)
-    sample_file = os.path.join(working_dir, "samples.tsv")
+    if profile:
+        profile = f"--profile {pathlib.Path(profile).resolve()} "
+        if not profile.exists():
+            logging.critical(f"profile not found: {profile}\n")
+            exit(1)
+    else:
+        profile = ""
+    if not working_dir:
+        working_dir = virmake_path / "working_dir"
+    else:
+        working_dir = pathlib.Path(working_dir).resolve()
 
-    if not os.path.exists(sample_file):
-        logging.critical(
-            f"sample.tsv not found in the working directory. "
-            "Generate one with 'virmake init'"
-        )
-        exit(1)
-
-    snakefile = get_snakefile()
-    config = load_configfile(config_file)
-    profile = config["workflow_dirs"]["profile_dir"]
-    print("Starting workflow...")
     cmd = (
-        "time"
-        " snakemake --snakefile {snakefile} --directory {working_dir}"
-        " --rerun-incomplete "
+        "time "
+        "snakemake --directory {working_dir} "
+        "--rerun-incomplete "
         "--configfile '{config_file}' --nolock "
-        " {profile} --use-conda --use-singularity {dryrun} "
-        "--until {target_rule}"
-        " -c{threads}"
-        " -T 3"
+        "--use-conda --use-singularity {dryrun} "
+        "--until {target_rule} "
+        "{profile}"
+        "-c{threads} -T 3"
     ).format(
-        snakefile=snakefile,
         config_file=config_file,
-        profile="" if (profile is None) else "--profile {}".format(profile),
         dryrun="-n" if dryrun else "",
         target_rule=workflow if workflow != "None" else "",
         threads=threads,
         working_dir=working_dir,
+        profile=profile,
     )
 
+    print("Starting workflow...")
+    print(cmd)
     try:
-        print(cmd)
-        subprocess.check_call(cmd, shell=True)
+        subprocess.run(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         logging.critical(f"Workflow failed, see log files")
         exit(1)
