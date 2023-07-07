@@ -60,7 +60,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
 
     # load needed paths and check if they exist
     if not config_file:
-        config_file = virmake_path / "config.yaml"
+        config_file = virmake_path / "workflow" / "config.yaml"
     else:
         config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():

@@ -19,7 +19,6 @@ def make_config(virmake_path):
         "INPHARED": str(db_path / "INPHARED"),
         "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
     }
-    config["sample_table"] = str(virmake_path / "samples.tsv")
     config["workflow_dirs"] = {
         "profile_dir": str(virmake_path / "profile"),
         "output_dir": str(virmake_path / "working_dir" / "results"),
@@ -80,7 +79,7 @@ def update_config(config):
 def write_to_file():
     """Saves the config to a file."""
     virmake_path = pathlib.Path(sys.argv[1])
-    config_path = virmake_path / "config.yaml"
+    config_path = virmake_path / "workflow" / "config.yaml"
     config = make_config(virmake_path)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")

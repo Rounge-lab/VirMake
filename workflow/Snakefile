@@ -1,12 +1,7 @@
 import os
 import pandas as pd
 
-
-configfile: "config.yaml"
-
-
 end_reads = ["R1", "R2"]
-samples = pd.read_table(config["sample_table"], sep="\t", usecols=["sample"])
 SAMPLE = samples["sample"].values
 ASSEMBLER = config["assembler"]
 
