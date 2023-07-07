@@ -109,17 +109,8 @@ while True:
                 break
             else:
                 pass
-        # unlock folder if locked and run setup_db.smk workflow
         cmd = (
-            "conda run -n virmake --no-capture-output "
-            "snakemake --snakefile utils/setup_db.smk --cores 8 "
-            f"--config database_dir={virmake_path / 'databases'} "
-            f"envs_dir={virmake_path / 'envs'} --use-conda "
-            "--unlock"
-        )
-        subprocess.run(cmd.split())
-        cmd = (
-            "conda run -n virmake --no-capture-output "
+            "conda run -n virmake --no-capture-output --nolock "
             "snakemake --snakefile utils/setup_db.smk --cores 8 "
             f"--config database_dir={virmake_path / 'databases'} "
             f"envs_dir={virmake_path / 'envs'} --use-conda"
@@ -140,9 +131,9 @@ virmake_python_path = subprocess.run(cmd.split(), capture_output=True)
 virmake_python_path = strip_stdout(virmake_python_path.stdout)
 if (virmake_path / "virmake").exists():
     os.remove(virmake_path / "virmake")
-with open(virmake_path / "virmake", "w+") as output:
-    output.write(f"#!{virmake_python_path}\n\n")
-    with open(virmake_path / "utils" / "virmake.py") as input:
-        output.write(input.read())
+with open(virmake_path / "virmake", "w+") as o:
+    o.write(f"#!{virmake_python_path}\n\n")
+    with open(virmake_path / "utils" / "virmake.py") as i:
+        o.write(i.read())
 cmd = "chmod +x virmake"
 subprocess.run(cmd.split())
