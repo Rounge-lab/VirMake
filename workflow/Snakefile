@@ -132,9 +132,7 @@ rule fastp_pe:
         """
         mkdir -p {output.dir}
         fastp -i {input.R1} -I {input.R2} -o {output.R1} -O {output.R2}\
-        -h {output.html} -j {output.json}\
-        &> {log}
-        gzip {output.dir}/*.fastq
+        -h {output.html} -j {output.json} &> {log}
         """
 
 rule fastqc_qc:
