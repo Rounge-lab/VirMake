@@ -23,18 +23,19 @@ def cli():
     ),
 )
 @click.option(
+    "-p",
     "--profile",
     default=None,
     help="snakemake profile e.g. for cluster execution.",
 )
 @click.option(
-    "-w",
+    "-W",
     "--working-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
     help="location to run atlas.",
 )
 @click.option(
-    "-c",
+    "-C",
     "--config-file",
     type=click.Path(exists=True, resolve_path=True),
     help="config-file generated with 'virmake init'",
@@ -48,8 +49,9 @@ def cli():
     help="Test execution.",
 )
 @click.option(
+    "-c",
     "--threads",
-    default=8,
+    default=24,
     type=int,
     help="Number of threads used on multithreaded jobs",
 )
@@ -108,35 +110,76 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         exit(1)
 
 
-# Prep For offline
-# @cli.command(
-#     "prep-offline",
-#     context_settings=dict(ignore_unknown_options=True),
-#     short_help="Downloads and creates all enviorments needed to run the workflow offline.",
-# )
-# @click.option(
-#     "--threads",
-#     default=8,
-#     type=int,
-#     help="number of threads to use per multi-threaded job",
-# )
-# def run_prep_offline(threads):
-#     """Downloads and creates all enviorments needed to run the workflow offline."""
+# Prepare VirMake for offline use
+@cli.command(
+    "prep-offline",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads and creates all enviorments needed to run the workflow offline.",
+)
+@click.option(
+    "--threads",
+    default=24,
+    type=int,
+    help="number of threads to use per multi-threaded job",
+)
+def run_prep_offline(threads):
+    """Downloads and creates all enviorments needed to run the workflow offline."""
 
-#     cmd = (
-#         "snakemake --snakefile {snakefile}"
-#         "--rerun-incomplete "
-#         "--conda-frontend mamba"
-#         " --nolock  --use-conda --use-singularity --conda-create-envs-only"
-#         " --show-failed-logs"
-#         " -c{threads}"
-#     ).format(snakefile=get_snakefile(), threads=threads)
-#     try:
-#         subprocess.check_call(cmd, shell=True)
-#     except subprocess.CalledProcessError as e:
-#         # removes the traceback
-#         logging.critical(e)
-#         exit(1)
+    cmd = (
+        "snakemake --snakefile {snakefile}"
+        "--rerun-incomplete "
+        "--conda-frontend mamba"
+        " --nolock  --use-conda --use-singularity --conda-create-envs-only"
+        " --show-failed-logs"
+        " -c{threads}"
+    ).format(snakefile=get_snakefile(), threads=threads)
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+
+
+# Download sample data
+@cli.command(
+    "get",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads read data from public databases.",
+)
+@click.argument(
+    "database",
+    type=click.Choice(["SRA"]),
+)
+@click.argument(
+    "accession",
+    type=str,
+)
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    help="location to download data to.",
+    default=None,
+)
+def run_get(database, accession, output_dir):
+    """Downloads read data from public databases."""
+    virmake_path = pathlib.Path(__file__).parent
+    db_commands = {
+        "SRA": "fasterq-dump {accession} -O {output_dir}".format(
+            accession=accession,
+            output_dir=output_dir
+            if output_dir
+            else virmake_path / "working_dir" / "input",
+        )
+    }
+    cmd = db_commands[database]
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
 
 
 if __name__ == "__main__":

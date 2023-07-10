@@ -140,18 +140,18 @@ def setup_db(logger, virmake_path):
         if setup_db.lower() in ["y", ""]:
             logger.info("\nSetting up databases...\n")
             os.makedirs(virmake_path / "databases", exist_ok=True)
-            # db_files = os.listdir(virmake_path / "databases")
-            # if db_files != []:
-            #     logger.info("Some files were found in databases directory.")
-            #     overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
-            #     if overwrite_db.lower() in ["y", ""]:
-            #         shutil.rmtree(virmake_path / "databases")
-            #         os.makedirs(virmake_path / "databases", exist_ok=True)
-            #     elif overwrite_db.lower() == "n":
-            #         logger.info("\nSkipping database setup...\n")
-            #         break
-            #     else:
-            #         pass
+            db_files = os.listdir(virmake_path / "databases")
+            if db_files != []:
+                logger.info("Some files were found in databases directory.")
+                overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
+                if overwrite_db.lower() in ["y", ""]:
+                    shutil.rmtree(virmake_path / "databases")
+                    os.makedirs(virmake_path / "databases", exist_ok=True)
+                elif overwrite_db.lower() == "n":
+                    logger.info("\nSkipping database setup...\n")
+                    break
+                else:
+                    pass
             cmd = (
                 "conda run -n virmake --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 8 "
@@ -197,6 +197,8 @@ def main():
     # determine absolute path to VirMake
     virmake_path = pathlib.Path(__file__).parent.absolute()
     logger.info(f"\nVirMake setup started at {virmake_path}\n")
+
+    # run all steps
     check_conda(logger)
     install_check_mamba(logger)
     create_venv(logger, virmake_path)
@@ -204,6 +206,8 @@ def main():
     create_working_dir(logger, virmake_path)
     setup_db(logger, virmake_path)
     prep_script(logger, virmake_path)
+
+    # remove setup.log on success
     os.remove(f"{virmake_path / 'setup.log'}")
     logger.info("Success!\n")
 
