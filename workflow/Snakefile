@@ -83,6 +83,8 @@ rule fastqc_raw:
         # runtime=config["tiny_time"],
     log:
             config["path"]["log"] + "/fastqc_raw.log",
+    benchmark:
+        config["path"]["benchmark"] + "/fastqc_raw.txt",
     shell:
         """
         mkdir -p {output.dir}
@@ -122,6 +124,8 @@ rule fastp_pe:
         ),
     log:
         config["path"]["log"] + "/fastp_pe.log",
+    benchmark:
+            config["path"]["benchmark"] + "/fastp_pe.txt",
     resources:
         mem_mb=config["normal_mem"],
         # runtime=config["normal_time"],
@@ -132,7 +136,8 @@ rule fastp_pe:
         """
         mkdir -p {output.dir}
         fastp -i {input.R1} -I {input.R2} -o {output.R1} -O {output.R2}\
-        -h {output.html} -j {output.json} &> {log}
+        -h {output.html} -j {output.json}\
+        &> {log}
         """
 
 rule fastqc_qc:
@@ -154,6 +159,8 @@ rule fastqc_qc:
         # runtime=config["tiny_time"],
     log:
         config["path"]["log"] + "/fastqc_qc.log",
+    benchmark:
+            config["path"]["benchmark"] + "/fastqc_qc.txt",
     shell:
         """
         mkdir -p {output.dir}
@@ -196,6 +203,8 @@ rule metaSpades:
         config["path"]["envs"] + "/metaSpades.yaml"
     log:
         config["path"]["log"] + "/metaSpades.log",
+    benchmark:
+            config["path"]["benchmark"] + "/metaSpades.txt",
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -225,6 +234,8 @@ rule metaQUAST:
         config["path"]["envs"] + "/metaQUAST.yaml"
     log:
         config["path"]["log"] + "/metaQUAST.log",
+    benchmark:
+        config["path"]["benchmark"] + "/metaQUAST.txt",
     threads: config["threads"]
     resources:
         mem_mb=config["metaquast_mem"],
@@ -261,7 +272,7 @@ rule virsorter2_pass1:
         [str(subdir) + "/contigs.fasta" for subdir in rules.metaSpades.output.dir]
     output:
         dir = directory(expand(
-            config["path"]["output"] + "/virsorter2/{sample}/",
+            config["path"]["output"] + "/virsorter2_pass1/{sample}/",
             sample=SAMPLE,
         ))
     message:
@@ -270,6 +281,8 @@ rule virsorter2_pass1:
         "docker://jiarong/virsorter:2.2.3"
     log:
         config["path"]["log"] + "/virsorter2_pass1.log",
+    benchmark:
+        config["path"]["benchmark"] + "virsorter2_pass1.txt",
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -285,75 +298,76 @@ rule virsorter2_pass1:
             &> {log}
         """
 
-# rule vibrant_pass1:
-#     """
-#     Performes the first pass of viral identification with VIBRANT
-#     """
-#     input:
-#         [str(subdir) + "/contigs.fasta" for subdir in rules.metaSpades.output.dir]
-#     output:
-#         dir = directory(expand(
-#             config["path"]["output"] + "/vibrant/{sample}/",
-#             sample=SAMPLE,
-#         ))
-#         # "results/vibrant/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna",
-#     params:
-#         db_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/databases",
-#         files_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/files",
-#         results="results/vibrant/{sample}/",
-#         virome=vibrant_virome(config["vibrant"]["is_virome"]),
-#     conda:
-#         envs_dir + "/vibrant.yaml"
-#     log:
-#         config["path"]["log"] + "vibrant_pass1.log",
-#     threads: config["threads"]
-#     resources:
-#         mem_mb=config["big_mem"],
-#         # runtime=config["normal_time"],
-#     shell:
-#         """
-#         rm -rd results/vibrant/{wildcards.sample}/*
-#         VIBRANT_run.py -i {input}\
-#             -t {threads}\
-#             -folder {params.results}\
-#             -d {params.db_dir}\
-#             -m {params.files_dir}\
-#             {params.virome}\
-#             &> {log}
-#         """
-
+rule vibrant_pass1:
+    """
+    Performes the first pass of viral identification with VIBRANT
+    """
+    input:
+        [str(subdir) + "/contigs.fasta" for subdir in rules.metaSpades.output.dir]
+    output:
+        dir = directory(expand(
+            config["path"]["output"] + "/vibrant_pass1/{sample}/",
+            sample=SAMPLE,
+        ))
+    params:
+        db_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/databases",
+        files_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/files",
+        virome=vibrant_virome(config["vibrant"]["is_virome"]),
+    conda:
+        config["path"]["envs"] + "/vibrant.yaml"
+    log:
+        config["path"]["log"] + "vibrant_pass1.log",
+    benchmark:
+        config["path"]["benchmark"] + "/vibrant_pass1.txt",
+    threads: config["threads"]
+    resources:
+        mem_mb=config["big_mem"],
+        # runtime=config["normal_time"],
+    shell:
+        """
+        VIBRANT_run.py -i {input}\
+            -t {threads}\
+            -folder {output.dir}\
+            -d {params.db_dir}\
+            -m {params.files_dir}\
+            {params.virome}\
+            &> {log}
+        """
 
 # rule checkv_virsorter2:
 #     """
 #     Performes Quality control on identified viral sequences
 #     """
 #     params:
-#         out_dir="results/checkv/virsorter2/",
-#         dir_db=config["database_dir"]["checkv"],
+#         db_dir=config["path"]["database"]["checkv"],
 #     input:
-#         expand("results/virsorter2/{{sample}}/final-viral-combined.fa", sample=SAMPLE),
+#         expand(
+#             config["path"]["output"] + "/virsorter2_pass1/{sample}/final-viral-combined.fa",
+#             sample=SAMPLE,
+#         )
 #     output:
-#         "results/checkv/virsorter2/{sample}/quality_summary.tsv",
-#         "results/checkv/virsorter2/{sample}/combined.fna",
+#         dir = directory(expand(
+#             config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
+#             sample=SAMPLE,
+#         )),
 #     conda:
-#         envs_dir + "/checkv.yaml"
+#         config["path"]["envs"] + "/checkv.yaml"
 #     log:
-#         "logs/checkv/virsorter2_{sample}_checkv.log",
+#         config["path"]["log"] + "/checkv_virsorter2_pass1.log",
 #     benchmark:
-#         "benchmarks/checkv/virsorter2_{sample}_checkv.tsv"
-#     threads: 4
+#         config["path"]["benchmark"] + "/checkv_virsorter2_pass1.txt",
+#     threads: config["threads"]
 #     resources:
 #         mem_mb=config["normal_mem"],
-#         runtime=config["small_time"],
+#         # runtime=config["small_time"],
 #     shell:
 #         """
-#     diamond makedb --in {params.dir_db}/genome_db/checkv_reps.faa \
-#         --db {params.dir_db}/genome_db/checkv_reps\
-#         &>{log}
-#     checkv end_to_end {input} {params.out_dir}{wildcards.sample} -t {threads} -d {params.dir_db}\
-#         &>> {log}
-#     cat {params.out_dir}{wildcards.sample}/proviruses.fna {params.out_dir}{wildcards.sample}/viruses.fna > {params.out_dir}{wildcards.sample}/combined.fna
-#     """
+#         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+#             --db {params.db_dir}/genome_db/checkv_reps\
+#             &>{log}
+#         checkv end_to_end {input} {output.dir} -t {threads} -d {params.db_dir}\
+#             &>> {log}
+#         """
 
 
 # rule checkv_vibrant:
@@ -361,22 +375,20 @@ rule virsorter2_pass1:
 #     Performes Quality control on identified viral sequences
 #     """
 #     params:
-#         out_dir="results/checkv/vibrant/",
 #         dir_db=config["database_dir"]["checkv"],
 #     input:
-#         expand(
-#             "results/vibrant/{{sample}}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna",
-#             sample=SAMPLE,
-#         ),
+#         [directory(str(subdir) + "/VIBRANT_contigs/VIBRANT_phages_contigs/") for subdir in rules.vibrant_pass1.output.dir]
 #     output:
-#         "results/checkv/vibrant/{sample}/quality_summary.tsv",
-#         "results/checkv/vibrant/{sample}/combined.fna",
+#         dir = directory(expand(
+#             config["path"]["output"] + "/checkv/vibrant/{sample}/",
+#             sample=SAMPLE,
+#         )),
 #     conda:
-#         envs_dir + "/checkv.yaml"
+#         config["path"]["envs"] + "/checkv.yaml"
 #     log:
-#         "logs/checkv/vibrant_{sample}_checkv.log",
+#         "vibrant_checkv.log",
 #     benchmark:
-#         "benchmarks/checkv/vibrant_{sample}_checkv.tsv"
+#         config["path"]["benchmark"] + "/checkv_vibrant.txt",
 #     threads: 4
 #     resources:
 #         mem_mb=config["normal_mem"],
@@ -388,349 +400,15 @@ rule virsorter2_pass1:
 #         &>{log}
 #     checkv end_to_end {input} {params.out_dir}{wildcards.sample} -t {threads} -d {params.dir_db}\
 #         &>> {log}
-#     cat {params.out_dir}{wildcards.sample}/proviruses.fna {params.out_dir}{wildcards.sample}/viruses.fna > {params.out_dir}{wildcards.sample}/combined.fna
 #     """
 
-
-# rule filter_contigs_virsorter2:
-#     """
-#     Gathers only relevant sequences with above threshold score
-#     """
-#     params:
-#         criteria=get_checkv_threshold(config["checkv_threshold"]),
-#     input:
-#         summary=expand(
-#             "results/checkv/virsorter2/{{sample}}/quality_summary.tsv", sample=SAMPLE
-#         ),
-#         all_contigs=expand(
-#             "results/checkv/virsorter2/{{sample}}/combined.fna", sample=SAMPLE
-#         ),
-#     output:
-#         filtered_contigs_viruses="results/checkv/virsorter2/{sample}/filtered/filtered_combined.fna",
-#         filtered_contigs_ID="results/checkv/virsorter2/{sample}/filtered/filtered_contigs",
-#     conda:
-#         envs_dir + "/seqtk.yaml"
-#     benchmark:
-#         "benchmarks/checkv/virsorter2/{sample}/filter_contigs.tsv"
-#     log:
-#         "logs/checkv/virsorter2/filter_{sample}_checkv.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#         awk -F '\t' '{params.criteria}  {{print $1}}' {input.summary} > {output.filtered_contigs_ID}
-#         seqtk subseq {input.all_contigs} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
-#     """
-
-
-# rule filter_contigs_vibrant:
-#     """
-#     Gathers only relevant sequences with above threshold score
-#     """
-#     params:
-#         criteria=get_checkv_threshold(config["checkv_threshold"]),
-#     input:
-#         summary=expand(
-#             "results/checkv/vibrant/{{sample}}/quality_summary.tsv", sample=SAMPLE
-#         ),
-#         all_contigs=expand(
-#             "results/checkv/vibrant/{{sample}}/combined.fna", sample=SAMPLE
-#         ),
-#     output:
-#         filtered_contigs_viruses="results/checkv/vibrant/{sample}/filtered/filtered_combined.fna",
-#         filtered_contigs_ID="results/checkv/vibrant/{sample}/filtered/filtered_contigs",
-#     conda:
-#         envs_dir + "/seqtk.yaml"
-#     benchmark:
-#         "benchmarks/checkv/vibrant/{sample}/filter_contigs.tsv"
-#     log:
-#         "logs/checkv/vibrant/filter_{sample}_checkv.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#         awk -F '\t' '{params.criteria}  {{print $1}}' {input.summary} > {output.filtered_contigs_ID}
-#         seqtk subseq {input.all_contigs} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
-#     """
-
-
-# rule combine_results_virsorter2:
-#     """
-#     Combine all results from virus identifiaction of all samples with virsorter2
-#     """
-#     input:
-#         expand(
-#             "results/checkv/virsorter2/{sample}/filtered/filtered_combined.fna",
-#             sample=SAMPLE,
-#         ),
-#     output:
-#         "results/cdhit/prep/combined_virsorter2.fasta",
-#     conda:
-#         envs_dir + "/cdhit.yaml"
-#     log:
-#         "logs/virsorter2_cdhit_prep.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#         cat {input} > {output}
-#     """
-
-
-# rule combine_results_vibrant:
-#     """
-#     Combine all results from virus identifiaction of all samples with VIBRANT
-#     """
-#     input:
-#         expand(
-#             "results/checkv/vibrant/{sample}/filtered/filtered_combined.fna",
-#             sample=SAMPLE,
-#         ),
-#     output:
-#         "results/cdhit/prep/combined_vibrant.fasta",
-#     conda:
-#         envs_dir + "/cdhit.yaml"
-#     log:
-#         "logs/vibrant_cdhit_prep.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#         cat {input} > {output}
-#     """
-
-
-# rule combine_all_results:
-#     """
-#     Combine all results from both virus identifiaction tools
-#     """
-#     input:
-#         vibrant="results/cdhit/prep/combined_vibrant.fasta",
-#         virsorter2="results/cdhit/prep/combined_virsorter2.fasta",
-#     output:
-#         "results/cdhit/prep/combined_all.fasta",
-#     conda:
-#         envs_dir + "/cdhit.yaml"
-#     log:
-#         "logs/combine_all_cdhit_prep.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["tiny_time"],
-#     shell:
-#         """
-#         cat {input.vibrant} {input.virsorter2} > {output}
-#     """
-
-
-# rule dereplication:
-#     """
-#     Performs dereplication with clustering on the viral sequences
-#     """
-#     input:
-#         "results/cdhit/prep/combined_all.fasta",
-#     output:
-#         "results/cdhit/derep95_combined.fasta",
-#     conda:
-#         envs_dir + "/cdhit.yaml"
-#     log:
-#         "logs/combined_cdhit.log",
-#     threads: 8
-#     resources:
-#         mem_mb=config["normal_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#         cd-hit-est\
-#         -T {threads}\
-#         -M {resources.mem_mb}\
-#         -i {input}\
-#         -o {output}\
-#         -c 0.95\
-#         -aS 0.85\
-#         -n 9\
-#         -d 0\
-#         -p 1\
-#         -t 4\
-#         -g 1\
-#         &> {log}
-
-#     """
-
-
-# rule transform_vOTUs:
-#     """
-#     Renames viral sequences to unique vOTU_# names
-#     """
-#     input:
-#         "results/cdhit/derep95_combined.fasta",
-#     output:
-#         "results/cdhit/vOTU_derep95_combined.fasta",
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["tiny_time"],
-#     conda:
-#         envs_dir + "/seqtk.yaml"
-#     log:
-#         "logs/transform_vOTUs.log",
-#     shell:
-#         """
-#         awk '/^>/{{print ">vOTU_" ++i; next}}{{print}}' {input} > {output}
-#     """
-
-
-# rule vibrant_pass2:
-#     """
-#     Runs VIBRANT on the vOTUs
-#     """
-#     input:
-#         contigs="results/cdhit/vOTU_derep95_combined.fasta",
-#     output:
-#         "results/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna",
-#     params:
-#         db_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/databases",
-#         files_dir="$CONDA_PREFIX/share/vibrant-1.2.1/db/files",
-#         results="results/vibrant/vOTU/",
-#         virome=vibrant_virome(config["vibrant_settings"]["is_virome"]),
-#     conda:
-#         envs_dir + "/vibrant.yaml"
-#     log:
-#         "logs/VIBRANT/vOTU_VIBRANT.log",
-#     benchmark:
-#         "benchmarks/vibrant/vOTU_vibrant.tsv"
-#     threads: 16
-#     resources:
-#         mem_mb=config["big_mem"],
-#         runtime=config["normal_time"],
-#     shell:
-#         """
-#     rm -rd results/vibrant/vOTU/*
-#     VIBRANT_run.py -i {input.contigs}\
-#         -t {threads}\
-#         -folder {params.results}\
-#         -d {params.db_dir}\
-#         -m {params.files_dir}\
-#         {params.virome}\
-#         &> {log}
-#     """
-
-
-# rule virsorter2_pass2:
-#     """
-#     Runs virsorter2 on the vOTUs
-#     """
-#     params:
-#         out_dir="results/virsorter2/",
-#         cutoff_length=config["virsorter2_settings"]["pass2"]["min_lenght"],
-#         cutoff_score=config["virsorter2_settings"]["pass2"]["min_score"],
-#     input:
-#         assembled_contigs="results/cdhit/vOTU_derep95_combined.fasta",
-#     output:
-#         "results/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
-#         "results/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa",
-#         "results/virsorter2/pass2/final-viral-combined.fa",
-#     message:
-#         "Resources used; threads: {threads}"
-#     benchmark:
-#         "benchmarks/virsorter2/pass2_virsorter2.tsv"
-#     singularity:
-#         "docker://jiarong/virsorter:2.2.3"
-#     log:
-#         "logs/virsorter2/virsorter2_pass2.log",
-#     threads: 8
-#     resources:
-#         mem_mb=config["big_mem"],
-#         runtime=config["normal_time"],
-#     shell:
-#         """
-#     rm -rdf {params.out_dir}pass2/*
-#     virsorter run -w {params.out_dir}pass2/ \
-#         --seqname-suffix-off\
-#         --viral-gene-enrich-off\
-#         --prep-for-dramv\
-#         -i {input} \
-#         -j {threads} --include-groups dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae \
-#         --min-length 3000 \
-#         --min-score 0.5 \
-#         --keep-original-seq all\
-#         &> {log}
-#     """
-
-
-# rule checkv_vOTU_virsorter2:
-#     """
-#     Runs Quality control on the vOTUs after virsorter2
-#     """
-#     params:
-#         out_dir="results/checkv/vOTU/virsorter2/",
-#         dir_db=config["database_dir"]["checkv"],
-#     input:
-#         "results/virsorter2/pass2/final-viral-combined.fa",
-#     output:
-#         "results/checkv/vOTU/virsorter2/quality_summary.tsv",
-#     conda:
-#         envs_dir + "/checkv.yaml"
-#     log:
-#         "logs/checkv/vOTU_checkv_virsorter2.log",
-#     benchmark:
-#         "benchmarks/checkv/vOTU_checkv_virsorter2.tsv"
-#     threads: 2
-#     resources:
-#         mem_mb=config["normal_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#     rm -rdf results/checkv/vOTU/virsorter2
-#     diamond makedb --in {params.dir_db}/genome_db/checkv_reps.faa \
-#         --db {params.dir_db}/genome_db/checkv_reps\
-#         &>{log}
-#     checkv end_to_end {input} {params.out_dir} -t {threads} -d {params.dir_db}\
-#         &>> {log}
-#     """
-
-
-# rule checkv_vOTU_vibrant:
-#     """
-#     Runs Quality control on the vOTUs after VIBRANT
-#     """
-#     params:
-#         out_dir="results/checkv/vOTU/vibrant/",
-#         dir_db=config["database_dir"]["checkv"],
-#     input:
-#         "results/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna",
-#     output:
-#         "results/checkv/vOTU/vibrant/quality_summary.tsv",
-#     conda:
-#         envs_dir + "/checkv.yaml"
-#     log:
-#         "logs/checkv/vOTU_checkv_vibrant.log",
-#     benchmark:
-#         "benchmarks/checkv/vOTU_checkv_vibrant.tsv"
-#     threads: 2
-#     resources:
-#         mem_mb=config["normal_mem"],
-#         runtime=config["small_time"],
-#     shell:
-#         """
-#     rm -rdf results/checkv/vOTU/vibrant
-#     diamond makedb --in {params.dir_db}/genome_db/checkv_reps.faa \
-#         --db {params.dir_db}/genome_db/checkv_reps\
-#         &>{log}
-#     checkv end_to_end {input} {params.out_dir} -t {threads} -d {params.dir_db}\
-#         &>> {log}
-#     """
 
 rule identification:
     input:
         rules.virsorter2_pass1.output,
+        rules.vibrant_pass1.output,
+        # rules.checkv_virsorter2.output,
+        # rules.checkv_vibrant.output,
     output:
         config["path"]["temp"] + "/finished_identification"
     threads: 1
