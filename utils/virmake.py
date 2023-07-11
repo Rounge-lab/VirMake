@@ -182,5 +182,22 @@ def run_get(database, accession, output_dir):
         exit(1)
 
 
+# Clean
+@cli.command(
+    "clean",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Clean VirMake directory.",
+)
+@cli.argument(
+    "target",
+    type=click.Choice(["all", "databases", "working_dir", "config"]),
+)
+@cli.option(
+    "-y",
+    default=False,
+)
+
+
+
 if __name__ == "__main__":
     cli()

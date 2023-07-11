@@ -8,7 +8,6 @@ def make_config(virmake_path):
     config = {}
     db_path = virmake_path / "databases"
 
-    config["snakefile"] = str(virmake_path / "workflow" / "Snakefile")
     config["assembler"] = "metaSpades"
     config["path"] = {
         "virmake": str(virmake_path),
@@ -19,6 +18,7 @@ def make_config(virmake_path):
         "benchmark": str(virmake_path / "working_dir" / "benchmark"),
         "temp": str(virmake_path / "working_dir" / "temp"),
         "database": {
+            "parent_dir": str(db_path),
             "DRAM": str(db_path / "DRAM"),
             "checkv": str(db_path / "checkv/checkv-db-v1.5"),
             "virsorter2": str(db_path / "virsorter2/db"),

@@ -1,5 +1,5 @@
-database_dir = config["database_dir"]
-envs_dir = config["envs_dir"]
+database_dir = config["path"]["database"]["parent_dir"]
+envs_dir = config["path"]["envs"]
 
 
 rule all:
@@ -36,13 +36,13 @@ rule metaQUAST:
 
 rule DRAMv:
     """
-Downloads DRAMv.
-If Users want to skip this simply add a # symbol in front of:
-directory(database_dir+"/DRAM/DRAM_data"),
-Keep in mind that the pipeline needs this to run.
-If downloaded independantly, simply add it to the config with same folder structure
-include the DRAM.config from DRAMv here also.
-"""
+    Downloads DRAMv.
+    If Users want to skip this simply add a # symbol in front of:
+    directory(database_dir+"/DRAM/DRAM_data"),
+    Keep in mind that the pipeline needs this to run.
+    If downloaded independantly, simply add it to the config with same folder structure
+    include the DRAM.config from DRAMv here also.
+    """
     conda:
         envs_dir + "/DRAMv.yaml"
     output:
@@ -61,10 +61,8 @@ rule vibrant:
         directory(database_dir + "/VIBRANT/vibrant-1.2.1/"),
     shell:
         """
-        download-db.sh
-        $CONDA_PREFIX/share/vibrant-1.2.1/db/databases/VIBRANT_setup.py -test
-        cp -R $CONDA_PREFIX/share/vibrant-1.2.1/* {output}
-    """
+        download-db.sh {output}
+        """
 
 
 rule checkv:
