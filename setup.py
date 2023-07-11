@@ -111,8 +111,6 @@ def create_working_dir(logger, virmake_path):
     logger.info("Creating working directory structure...")
     os.makedirs(virmake_path / "working_dir", exist_ok=True)
     os.makedirs(virmake_path / "working_dir" / "input", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "temp", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "output", exist_ok=True)
 
 
 def setup_db(logger, virmake_path):
