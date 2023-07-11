@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import os, sys
+
 """
 Script that downloads the example files,
 same as those used within the Thesis Paper.
 """
+
+
 def download_example():
     """
     Function Handles all samples and addresses to be downloaded
@@ -53,19 +56,21 @@ def download_example():
     for key in urlDict:
         download(key, urlDict[key]["R1"], "R1")
         download(key, urlDict[key]["R2"], "R2")
-    
+
+
 def download(key, URL, end):
     """
     Function downloads and saves the requested sequence
     in current directory
     """
-    destination = "./"+key+"_"+end+".fatq.gz"
-    cmd = ("wget "+"--quiet "+"-O "+destination+" "+URL)
+    destination = "./" + key + "_" + end + ".fatq.gz"
+    cmd = "wget " + "--quiet " + "-O " + destination + " " + URL
     try:
         os.system(cmd)
-        print("Finished downloading: "+key+"_"+end+".fatq.gz")
+        print("Finished downloading: " + key + "_" + end + ".fatq.gz")
     except Exception as e:
         print("Error downloading file: %s" % e)
         sys.exit(1)
+
 
 download_example()

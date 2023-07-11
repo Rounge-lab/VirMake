@@ -1,10 +1,11 @@
 .snakemake
+.vscode
 /workflow/.snakemake
 /results
 slurm*
 =2
 /benchmarks/*
-/Databases/
+/databases/
 /logs/
 __pycache__/
 config.yaml
@@ -15,3 +16,6 @@ samples.tsv
 ./finished_taxonomy
 ./finished_virus_identification
 ./finished_qc
+virmake
+working_dir
+*.log
