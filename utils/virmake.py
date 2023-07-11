@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import shutil
 import subprocess
 
 import click
@@ -196,7 +197,28 @@ def run_get(database, accession, output_dir):
     "-y",
     default=False,
 )
-
+def clean(target, y):
+    """Clean VirMake directory."""
+    virmake_path = pathlib.Path(__file__).parent
+    if not y:
+        click.confirm(
+            f"Are you sure you want to delete {target}?",
+            abort=True,
+            default=False,
+        )
+    if target == "all":
+        shutil.rmtree(virmake_path / "working_dir")
+        shutil.rmtree(virmake_path / "databases")
+        shutil.rmtree(virmake_path / "config.yaml")
+    elif target == "databases":
+        shutil.rmtree(virmake_path / "databases")
+    elif target == "working_dir":
+        shutil.rmtree(virmake_path / "working_dir")
+    elif target == "config":
+        shutil.rmtree(virmake_path / "config.yaml")
+    else:
+        logging.critical(f"Unknown target: {target}")
+        exit(1)
 
 
 if __name__ == "__main__":
