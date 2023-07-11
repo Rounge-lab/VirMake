@@ -2,6 +2,7 @@ import logging
 import pathlib
 import shutil
 import subprocess
+import os
 
 import click
 
@@ -189,35 +190,43 @@ def run_get(database, accession, output_dir):
     context_settings=dict(ignore_unknown_options=True),
     short_help="Clean VirMake directory.",
 )
-@cli.argument(
+@click.argument(
     "target",
     type=click.Choice(["all", "databases", "working_dir", "config"]),
 )
-@cli.option(
+@click.option(
     "-y",
     default=False,
 )
 def clean(target, y):
-    """Clean VirMake directory."""
+    """clean virmake directory."""
     virmake_path = pathlib.Path(__file__).parent
     if not y:
         click.confirm(
-            f"Are you sure you want to delete {target}?",
+            f"are you sure you want to delete {target}?",
             abort=True,
             default=False,
         )
     if target == "all":
-        shutil.rmtree(virmake_path / "working_dir")
-        shutil.rmtree(virmake_path / "databases")
-        shutil.rmtree(virmake_path / "config.yaml")
+        if [
+            (virmake_path / "working_dir").exists(),
+            (virmake_path / "databases").exists(),
+            (virmake_path / "config.yaml").exists(),
+        ]:
+            shutil.rmtree(virmake_path / "working_dir")
+            shutil.rmtree(virmake_path / "databases")
+            os.remove(virmake_path / "config.yaml")
     elif target == "databases":
-        shutil.rmtree(virmake_path / "databases")
+        if (virmake_path / "databases").exists():
+            shutil.rmtree(virmake_path / "databases")
     elif target == "working_dir":
-        shutil.rmtree(virmake_path / "working_dir")
+        if (virmake_path / "working_dir").exists():
+            shutil.rmtree(virmake_path / "working_dir")
     elif target == "config":
-        shutil.rmtree(virmake_path / "config.yaml")
+        if (virmake_path / "workflow" / "config.yaml").exists():
+            os.remove(virmake_path / "workflow" / "config.yaml")
     else:
-        logging.critical(f"Unknown target: {target}")
+        logging.critical(f"unknown target: {target}")
         exit(1)
 
 

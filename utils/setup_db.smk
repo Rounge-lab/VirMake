@@ -1,3 +1,4 @@
+# TODO Fix paths
 database_dir = config["path"]["database"]["parent_dir"]
 envs_dir = config["path"]["envs"]
 
