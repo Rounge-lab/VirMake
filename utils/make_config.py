@@ -8,6 +8,7 @@ def make_config(virmake_path):
     config = {}
     db_path = virmake_path / "databases"
 
+    config["snakefile"] = str(virmake_path / "workflow" / "Snakefile")
     config["assembler"] = "metaSpades"
     config["path"] = {
         "virmake": str(virmake_path),

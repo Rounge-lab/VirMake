@@ -195,6 +195,14 @@ rule metaSpades:
             config["path"]["output"] + "/metaSpades/{sample}/",
             sample=SAMPLE,
         )),
+        contigs = expand(
+            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+            sample=SAMPLE,
+        ),
+        scaffolds = expand(
+            config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+            sample=SAMPLE,
+        ),
     params:
         temp_dir = config["path"]["temp"] + "/metaSpades/",
     message:
@@ -225,7 +233,7 @@ rule metaQUAST:
     params:
         reference = config["path"]["database"]["RefSeq"],
     input:
-        [str(subdir) + "/contigs.fasta" for subdir in rules.metaSpades.output.dir]
+        rules.metaSpades.output.contigs,
     output:
         dir = directory(config["path"]["output"] + "/metaQUAST/"),
     message:
@@ -334,40 +342,40 @@ rule vibrant_pass1:
             &> {log}
         """
 
-# rule checkv_virsorter2:
-#     """
-#     Performes Quality control on identified viral sequences
-#     """
-#     params:
-#         db_dir=config["path"]["database"]["checkv"],
-#     input:
-#         expand(
-#             config["path"]["output"] + "/virsorter2_pass1/{sample}/final-viral-combined.fa",
-#             sample=SAMPLE,
-#         )
-#     output:
-#         dir = directory(expand(
-#             config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
-#             sample=SAMPLE,
-#         )),
-#     conda:
-#         config["path"]["envs"] + "/checkv.yaml"
-#     log:
-#         config["path"]["log"] + "/checkv_virsorter2_pass1.log",
-#     benchmark:
-#         config["path"]["benchmark"] + "/checkv_virsorter2_pass1.txt",
-#     threads: config["threads"]
-#     resources:
-#         mem_mb=config["normal_mem"],
-#         # runtime=config["small_time"],
-#     shell:
-#         """
-#         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-#             --db {params.db_dir}/genome_db/checkv_reps\
-#             &>{log}
-#         checkv end_to_end {input} {output.dir} -t {threads} -d {params.db_dir}\
-#             &>> {log}
-#         """
+rule checkv_virsorter2:
+    """
+    Performes Quality control on identified viral sequences
+    """
+    params:
+        db_dir=config["path"]["database"]["checkv"],
+    input:
+        expand(
+            config["path"]["output"] + "/virsorter2_pass1/{sample}/final-viral-combined.fa",
+            sample=SAMPLE,
+        )
+    output:
+        dir = directory(expand(
+            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
+            sample=SAMPLE,
+        )),
+    conda:
+        config["path"]["envs"] + "/checkv.yaml"
+    log:
+        config["path"]["log"] + "/checkv_virsorter2_pass1.log",
+    benchmark:
+        config["path"]["benchmark"] + "/checkv_virsorter2_pass1.txt",
+    threads: config["threads"]
+    resources:
+        mem_mb=config["normal_mem"],
+        # runtime=config["small_time"],
+    shell:
+        """
+        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+            --db {params.db_dir}/genome_db/checkv_reps\
+            &>{log}
+        checkv end_to_end {input} {output.dir} -t {threads} -d {params.db_dir}\
+            &>> {log}
+        """
 
 
 # rule checkv_vibrant:
@@ -375,9 +383,9 @@ rule vibrant_pass1:
 #     Performes Quality control on identified viral sequences
 #     """
 #     params:
-#         dir_db=config["database_dir"]["checkv"],
+#         dir_db=config["path"]["database"]["checkv"],
 #     input:
-#         [directory(str(subdir) + "/VIBRANT_contigs/VIBRANT_phages_contigs/") for subdir in rules.vibrant_pass1.output.dir]
+#         [directory(str(subdir) + "final-viral-combined.fa") for subdir in rules.vibrant_pass1.output.dir]
 #     output:
 #         dir = directory(expand(
 #             config["path"]["output"] + "/checkv/vibrant/{sample}/",
@@ -395,12 +403,12 @@ rule vibrant_pass1:
 #         runtime=config["small_time"],
 #     shell:
 #         """
-#     diamond makedb --in {params.dir_db}/genome_db/checkv_reps.faa \
-#         --db {params.dir_db}/genome_db/checkv_reps\
-#         &>{log}
-#     checkv end_to_end {input} {params.out_dir}{wildcards.sample} -t {threads} -d {params.dir_db}\
-#         &>> {log}
-#     """
+#         diamond makedb --in {params.dir_db}/genome_db/checkv_reps.faa \
+#             --db {params.dir_db}/genome_db/checkv_reps\
+#             &>{log}
+#         checkv end_to_end {input} {params.out_dir}{wildcards.sample} -t {threads} -d {params.dir_db}\
+#             &>> {log}
+#         """
 
 
 rule identification:

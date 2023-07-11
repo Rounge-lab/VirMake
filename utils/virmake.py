@@ -112,7 +112,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
 
 # Prepare VirMake for offline use
 @cli.command(
-    "prep-offline",
+    "prep",
     context_settings=dict(ignore_unknown_options=True),
     short_help="Downloads and creates all enviorments needed to run the workflow offline.",
 )

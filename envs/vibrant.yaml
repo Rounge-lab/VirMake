@@ -1,3 +1,4 @@
+name: vibrant
 channels:
   - conda-forge
   - bioconda

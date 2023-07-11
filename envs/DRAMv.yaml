@@ -1,3 +1,4 @@
+name: DRAMv
 channels:
   - conda-forge
   - bioconda
