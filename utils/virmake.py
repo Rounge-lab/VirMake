@@ -161,22 +161,19 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     "-o",
     "--output-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="location to download data to.",
-    default=None,
+    help="Location to download data to. Default is 'working_dir/input'.",
+    default=pathlib.Path(__file__).parent / "working_dir" / "input",
 )
 def run_get(database, accession, output_dir):
     """Downloads read data from public databases."""
-    virmake_path = pathlib.Path(__file__).parent
     db_commands = {
         "SRA": "fasterq-dump {accession} -O {output_dir}".format(
-            accession=accession,
-            output_dir=output_dir
-            if output_dir
-            else virmake_path / "working_dir" / "input",
+            accession=accession, output_dir=output_dir
         )
     }
     cmd = db_commands[database]
     try:
+        logging.info(f"Downloading {accession} from {database}...")
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
