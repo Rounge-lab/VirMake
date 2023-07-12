@@ -14,14 +14,14 @@ rule Vcontact2:
     conda:
         config["path"]["envs"] + "/vcontact2.yaml"
     output:
-        config["path"]["database"]["vconcat2"] + "/Vcontact2_setup_done.txt",
+        config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt"
     shell:
         "touch {output}"
 
 
 rule metaQUAST:
     output:
-        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna"
     shell:
         """
         wget https://ftp.ncbi.nlm.nih.gov/refseq/release/viral/viral.1.1.genomic.fna.gz
@@ -42,19 +42,19 @@ rule DRAMv:
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     output:
-        directory(config["path"]["database"]["DRAM"] + "/DRAM_data"),
-    threads: 20
+        directory(config["path"]["database"]["DRAM"] + "/DRAM_data")
+    threads: 24
     shell:
-        "DRAM-setup.py prepare_databases --output_dir {config["path"]["database"]["DRAM"]}/DRAM_data --verbose --skip_uniref --threads {threads}"
+        "DRAM-setup.py prepare_databases --output_dir {output} --verbose --skip_uniref --threads {threads}"
         ";"
-        "DRAM-setup.py export_config --output_file {config["path"]["database"]["DRAM"]}/DRAM.config"
+        "DRAM-setup.py export_config --output_file {output}/DRAM.config"
 
 
 rule vibrant:
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
     output:
-        directory(config["path"]["database"]["vibrant"] + "/VIBRANT/vibrant-1.2.1/"),
+        directory(config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/")
     shell:
         """
         download-db.sh {output}
@@ -65,7 +65,7 @@ rule checkv:
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     output:
-        directory(config["path"]["database"]["checkv"]),
+        directory(config["path"]["database"]["checkv"] + "/checkv-db-v1.5")
     shell:
         "checkv download_database {output}"
 

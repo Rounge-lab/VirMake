@@ -221,7 +221,19 @@ def clean(target, y):
             shutil.rmtree(virmake_path / "databases")
     elif target == "working_dir":
         if (virmake_path / "working_dir").exists():
-            shutil.rmtree(virmake_path / "working_dir")
+            dirs = os.listdir(virmake_path / "working_dir")
+            if ".snakemake" in dirs:
+                logging.warning(
+                    "Not removing .snakemake directory!"
+                    "This is the snakemake working directory."
+                    "If you want to remove this directory, "
+                    "by doing so you will corrupt your workflow setup."
+                    "To retain your workflow setup, copy it into your new"
+                    "working directory."
+                )
+                dirs.remove(".snakemake")
+            for d in dirs:
+                shutil.rmtree(virmake_path / "working_dir" / d)
     elif target == "config":
         if (virmake_path / "workflow" / "config.yaml").exists():
             os.remove(virmake_path / "workflow" / "config.yaml")
