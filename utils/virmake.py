@@ -173,7 +173,7 @@ def run_get(database, accession, output_dir):
     }
     cmd = db_commands[database]
     try:
-        logging.info(f"Downloading {accession} from {database}...")
+        print(f"Downloading {accession} from {database}...")
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
