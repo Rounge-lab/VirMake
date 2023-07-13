@@ -23,6 +23,8 @@ def make_config(virmake_path):
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
+            "vcontact2": str(db_path / "vcontact2"),
+            "vibrant": str(db_path / "vibrant"),
         },
     }
     config["virsorter2"] = {

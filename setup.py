@@ -111,8 +111,6 @@ def create_working_dir(logger, virmake_path):
     logger.info("Creating working directory structure...")
     os.makedirs(virmake_path / "working_dir", exist_ok=True)
     os.makedirs(virmake_path / "working_dir" / "input", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "temp", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "output", exist_ok=True)
 
 
 def setup_db(logger, virmake_path):
@@ -154,9 +152,10 @@ def setup_db(logger, virmake_path):
                     pass
             cmd = (
                 "conda run -n virmake --no-capture-output "
-                "snakemake --snakefile utils/setup_db.smk --cores 8 "
-                f"--config database_dir={virmake_path / 'databases'} "
-                f"envs_dir={virmake_path / 'envs'} --use-conda --nolock"
+                "snakemake --snakefile utils/setup_db.smk --cores 24 "
+                f"--configfile {virmake_path / 'workflow' / 'config.yaml'} "
+                f"--use-conda --nolock "
+                f"--directory {virmake_path / 'working_dir'}"
             )
             db_workflow = subprocess.run(cmd.split(), capture_output=True)
             if db_workflow.returncode != 0:

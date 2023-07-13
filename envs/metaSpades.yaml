@@ -1,3 +1,4 @@
+name: metaSpades
 channels:
   - defaults
   - conda-forge
