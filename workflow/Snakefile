@@ -217,8 +217,7 @@ rule metaSpades:
         """
         mkdir -p {output.dir}
         metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads}\
-        &> {log}
+        --tmp-dir {params.temp_dir} -t {threads} &> {log}
         """
 
 rule metaQUAST:
@@ -440,15 +439,15 @@ rule filter_contigs_virsorter2:
         combined = rules.virsorter2_pass1.output.combined,
     output:
         dir = directory(expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/filtered/",
+            config["path"]["output"] + "/filtered_virsorter2/{sample}/",
             sample=SAMPLE,
         )),
         filtered_contigs_viruses=expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/filtered/filtered_combined.fna",
+            config["path"]["output"] + "/filtered_virsorter2/{sample}/filtered_combined.fna",
             sample=SAMPLE,
         ),
         filtered_contigs_ID=expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/filtered/filtered_contigs",
+            config["path"]["output"] + "/filtered_virsorter2/{sample}/filtered_contigs",
             sample=SAMPLE,
         )
     conda:
@@ -479,15 +478,15 @@ rule filter_contigs_vibrant:
         combined = rules.vibrant_pass1.output.combined,
     output:
         dir = directory(expand(
-            config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/filtered/",
+            config["path"]["output"] + "/filtered_vibrant/{sample}/",
             sample=SAMPLE,
         )),
         filtered_contigs_viruses=expand(
-            config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/filtered/filtered_combined.fna",
+            config["path"]["output"] + "/filtered_vibrant/{sample}/filtered_combined.fna",
             sample=SAMPLE,
         ),
         filtered_contigs_ID=expand(
-            config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/filtered/filtered_contigs",
+            config["path"]["output"] + "/filtered_vibrant/{sample}/filtered_contigs",
             sample=SAMPLE,
         )
     conda:
@@ -514,8 +513,8 @@ rule combine_results_virsorter2:
     input:
         rules.filter_contigs_virsorter2.output.filtered_contigs_viruses,
     output:
-        dir = config["path"]["output"] + "/checkv/virsorter2_pass1/",
-        combined = config["path"]["output"] + "/checkv/virsorter2_pass1/combined_virsorter2.tsv",
+        dir = config["path"]["output"] + "/combined_virsorter2/",
+        combined = config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     log:
@@ -537,8 +536,8 @@ rule combine_results_vibrant:
     input:
         rules.filter_contigs_vibrant.output.filtered_contigs_viruses,
     output:
-        dir = config["path"]["output"] + "/checkv/vibrant_pass1/",
-        combined = config["path"]["output"] + "/checkv/vibrant_pass1/combined_vibrant.tsv",
+        dir = config["path"]["output"] + "/combined_vibrant/",
+        combined = config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     log:
@@ -558,11 +557,11 @@ rule combine_all_results:
     Combine all results from both virus identifiaction tools
     """
     input:
-        vibrant=rules.combine_results_vibrant.output,
-        virsorter2=rules.combine_results_virsorter2.output,
+        vibrant=rules.combine_results_vibrant.output.combined,
+        virsorter2=rules.combine_results_virsorter2.output.combined,
     output:
-        dir = config["path"]["output"] + "/checkv/",
-        combined = config["path"]["output"] + "/checkv/combined_all.fasta",
+        dir = config["path"]["output"] + "/combined_all/",
+        combined = config["path"]["output"] + "/combined_all/combined_all.fasta",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     log:
@@ -764,7 +763,7 @@ rule checkv_vOTU_vibrant:
     shell:
         """
         mkdir -p {output.dir}
-        diamond makedb --in {db_dir}/genome_db/checkv_reps.faa \
+        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
             --db {params.db_dir}/genome_db/checkv_reps &>{log}
         checkv end_to_end {input} {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         """
@@ -799,7 +798,7 @@ rule all:
     input:
         rules.qc.output,
         rules.assembly.output,
-        rules.identifiaction.output
+        rules.identification.output,
     shell:
         """
         echo "All Done!"

@@ -110,6 +110,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     except subprocess.CalledProcessError as e:
         logging.critical(f"Workflow failed, see log files")
         exit(1)
+    print("Done! Files written in: {output_dir}".format(output_dir=output_dir))
 
 
 # # Prepare VirMake for offline use
@@ -174,6 +175,14 @@ def run_get(database, accession, output_dir):
     cmd = db_commands[database]
     try:
         print(f"Downloading {accession} from {database}...")
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+    cmd = "gzip {output_dir}/*".format(output_dir=output_dir)
+    try:
+        print("Compressing files...")
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
