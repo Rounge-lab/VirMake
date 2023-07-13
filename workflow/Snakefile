@@ -15,8 +15,7 @@ config["path"]["temp"] = config["path"]["temp"]
 
 onstart:
     touch(config["path"]["temp"])
-    # print("Starting workflow")
-    # print("Samples: " + ", ".join(SAMPLE))
+    print("Samples: " + ", ".join(SAMPLE))
 
 
 # GLOBAL FUNCTIONS #
@@ -47,20 +46,6 @@ def vibrant_virome(is_virome):
         return "-virome"
     else:
         return ""
-
-
-# WORKFLOW #
-
-rule all:
-    input:
-        config["path"]["temp"] + "/finished_qc",
-        config["path"]["temp"] + "/finished_assembly",
-        config["path"]["temp"] + "/finished_identification",
-    shell:
-        """
-        echo "All Done!"
-        rm {input}
-        """
 
 
 # QUALITY CONTROL #
@@ -808,3 +793,16 @@ rule identification:
         """
         touch {output}
         """
+
+
+rule all:
+    input:
+        rules.qc.output,
+        rules.assembly.output,
+        rules.identifiaction.output
+    shell:
+        """
+        echo "All Done!"
+        rm {input}
+        """
+
