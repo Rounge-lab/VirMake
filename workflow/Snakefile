@@ -449,10 +449,10 @@ rule filter_contigs_virsorter2:
     Gathers only relevant sequences with above threshold score
     """
     params:
-        criteria=get_checkv_threshold(config["checkv_threshold"]),
+        criteria = get_checkv_threshold(config["checkv_threshold"]),
     input:
-        rules.checkv_virsorter2.output.summary,
-        rules.virsorter2_pass1.output.combined,
+        summary = rules.checkv_virsorter2.output.summary,
+        combined = rules.virsorter2_pass1.output.combined,
     output:
         dir = directory(expand(
             config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/filtered/",
@@ -779,8 +779,7 @@ rule checkv_vOTU_vibrant:
     shell:
         """
         mkdir -p {output.dir}
-        rm -rdf results/checkv/vOTU/vibrant
-        diamond makedb --in /genome_db/checkv_reps.faa \
+        diamond makedb --in {db_dir}/genome_db/checkv_reps.faa \
             --db {params.db_dir}/genome_db/checkv_reps &>{log}
         checkv end_to_end {input} {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         """
