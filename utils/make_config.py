@@ -31,10 +31,12 @@ def make_config(virmake_path):
         "pass1": {
             "min_lenght": 3000,
             "min_score": 0.5,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
         "pass2": {
             "min_lenght": 1000,
             "min_score": 0.5,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }
     config["vibrant"] = {"is_virome": "no", "cutoff_length": 1000}
@@ -42,7 +44,7 @@ def make_config(virmake_path):
         "identity_threshold": 0.95,
         "coverage": 0.85,
     }
-    config["checkv_threshold"] = "Medium"
+    config["quality_threshold"] = "low"
     config["threads"] = 24
     config["job_type"] = {
         "small": "normal",

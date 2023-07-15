@@ -1,13 +1,14 @@
 rule all:
     input:
-        config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
-        config["path"]["database"]["DRAM"] + "/DRAM_data",
-        config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/",
-        config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-        config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_proteins.faa",
-        config["path"]["database"]["INPHARED"] + "/1Dec2022_data_excluding_refseq.tsv",
-        config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_gene_to_genome.csv",
-        config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        # config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
+        # config["path"]["database"]["DRAM"] + "/DRAM_data",
+        # config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/",
+        # config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        # config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_proteins.faa",
+        # config["path"]["database"]["INPHARED"] + "/1Dec2022_data_excluding_refseq.tsv",
+        # config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_gene_to_genome.csv",
+        # config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        config["path"]["database"]["virsorter2"]
 
 
 rule Vcontact2:
@@ -65,7 +66,7 @@ rule checkv:
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     output:
-        directory(config["path"]["database"]["checkv"] + "/checkv-db-v1.5")
+        directory(config["path"]["database"]["checkv"])
     shell:
         "checkv download_database {output}"
 
@@ -83,4 +84,15 @@ rule inphared:
         mv 1Dec2022_vConTACT2_gene_to_genome.csv {output.g2g}
         mv 1Dec2022_vConTACT2_proteins.faa {output.prot}
         mv 1Dec2022_data_excluding_refseq.tsv {output.exclref}
+        """
+
+rule virsorter2:
+    output:
+        directory(config["path"]["database"]["virsorter2"])
+    conda:
+        config["path"]["envs"] + "/virsorter2.yaml"
+    threads: 24
+    shell:
+        """
+        virsorter setup -d {output}
         """
