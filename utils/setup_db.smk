@@ -1,13 +1,13 @@
 rule all:
     input:
-        # config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
-        # config["path"]["database"]["DRAM"] + "/DRAM_data",
-        # config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/",
-        # config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-        # config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_proteins.faa",
-        # config["path"]["database"]["INPHARED"] + "/1Dec2022_data_excluding_refseq.tsv",
-        # config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_gene_to_genome.csv",
-        # config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
+        config["path"]["database"]["DRAM"] + "/DRAM_data",
+        config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/",
+        config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_proteins.faa",
+        config["path"]["database"]["INPHARED"] + "/1Dec2022_data_excluding_refseq.tsv",
+        config["path"]["database"]["INPHARED"] + "/1Dec2022_vConTACT2_gene_to_genome.csv",
+        config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
         config["path"]["database"]["virsorter2"]
 
 
