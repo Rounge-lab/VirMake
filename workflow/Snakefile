@@ -875,6 +875,8 @@ rule IDENTIFICATION:
     output:
         config["path"]["temp"] + "/finished_identification"
     threads: 1
+    message:
+        "[IDENTIFICATION] Finished identification of viral contigs"
     shell:
         """
         touch {output}
@@ -883,65 +885,78 @@ rule IDENTIFICATION:
 
 # MAPPING
 
-# rule build_index:
-#     """
-#     Builds an index to prepare for mapping
-#     """
-#     params:
-#         output_dir="results/mapping/index",
-#     input:
-#         rules.transform_vOTUs.output.vOTU
-#     output:
-#         mapping_dir = directory(config["path"]["output"] + "/mapping/"),
-#         index_dir = directory(config["path"]["output"] + "/mapping/index/"),
-#         finished = config["path"]["output"] + "/mapping/indexing_finished",
-#     conda:
-#         config["path"]["envs"] + "/bowtie2.yaml"
-#     log:
-#         config["path"]["log"] + "/bowtie2_build_index.log",
-#     threads: config["threads"]
-#     resources:
-#         mem_mb=config["small_mem"],
-#         # runtime=config["tiny_time"],
-#     shell:
-#         """
-#         mkdir -p {output.index_dir}
-#         bowtie2-build {input} {output.index_dir} &> {log}
-#         touch {output.finished}
-#         """
+rule build_index:
+    """
+    Builds an index to prepare for mapping
+    """
+    input:
+        rules.transform_vOTUs.output.vOTU
+    output:
+        mapping_dir = directory(config["path"]["output"] + "/mapping/"),
+        index_dir = directory(config["path"]["output"] + "/mapping/index"),
+    conda:
+        config["path"]["envs"] + "/bowtie2.yaml"
+    message:
+        "[build_index] Building index for mapping..."
+    benchmark:
+        config["path"]["benchmark"] + "/build_index.txt",
+    log:
+        config["path"]["log"] + "/bowtie2_build_index.log",
+    threads: config["threads"]
+    resources:
+        mem_mb=config["small_mem"],
+        # runtime=config["tiny_time"],
+    shell:
+        """
+        mkdir -p {output.index_dir}
+        bowtie2-build {input} {output.index_dir}/mapping_index &> {log}
+        """
 
 
-# rule read_mapping:
-#     """
-#     Performes read mapping between original sample and vOTUs
-#     """
-#     params:
-#         output_name="results/mapping/index",
-#     input:
-#         rules.build_index.output.finished,
-#         R1=expand(
-#             config["path"]["output"] + "fastp_pe/{sample}_{frac}.fastq",
-#             sample=SAMPLE,
-#         ),
-#         R2=expand(
-#             config["path"]["output"] + "fastp_pe/{sample}_{frac}.fastq",
-#             sample=SAMPLE,
-#         ),
-#     output:
-#         sam="results/mapping/{sample}/{sample}.map.sam",
-#     conda:
-#         config["path"]["envs"] + "/bowtie2.yaml"
-#     log:
-#         config["path"]["log"] + "/bowtie2_mapping.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["tiny_time"],
-#     shell:
-#         """
-#         bowtie2 -p {threads} -x {params.output_name} -1 {input.r1} -2 {input.r2} -S {output.sam} &>{log}
-#         """
+rule read_mapping:
+    """
+    Performes read mapping between original sample and vOTUs
+    """
+    input:
+        R1 = rules.fastp_pe.output.R1,
+        R2 = rules.fastp_pe.output.R2,
+        index_dir = rules.build_index.output.index_dir,
+    output:
+        expand(
+            "results/mapping/SAM/{sample}.map.sam",
+            sample=SAMPLE
+        ),
+    conda:
+        config["path"]["envs"] + "/bowtie2.yaml",
+    log:
+        config["path"]["log"] + "/bowtie2_mapping.log",
+    benchmark:
+        config["path"]["benchmark"] + "/bowtie2_mapping.txt",
+    threads: 2
+    resources:
+        mem_mb=config["small_mem"],
+        # runtime=config["tiny_time"],
+    shell:
+        """
+        bowtie2 -p {threads} -x {input.index_dir}/mapping_index -1 {input.R1} -2 {input.R2} -S {output} &> {log}
+        """
 
+rule MAPPING:
+    input:
+        rules.build_index.output,
+        rules.read_mapping.output,
+    output:
+        config["path"]["temp"] + "/finished_mapping"
+    threads: 1
+    message:
+        "[MAPPING] Mapping finished..."
+    shell:
+        """
+        touch {output}
+        """
+
+
+# STATS
 
 # rule contig_stats:
 #     """
@@ -1367,6 +1382,7 @@ rule ALL:
         rules.QC.output,
         rules.ASSEMBLY.output,
         rules.IDENTIFICATION.output,
+        rules.MAPPING.output,
     shell:
         """
         echo "All Done!"
