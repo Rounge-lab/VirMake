@@ -17,9 +17,10 @@ def make_config(virmake_path):
         "log": str(virmake_path / "working_dir" / "log"),
         "benchmark": str(virmake_path / "working_dir" / "benchmark"),
         "temp": str(virmake_path / "working_dir" / "temp"),
+        "scripts": str(virmake_path / "workflow" / "scripts"),
         "database": {
             "DRAM": str(db_path / "DRAM"),
-            "checkv": str(db_path / "checkv/checkv-db-v1.5"),
+            "checkv": str(db_path / "checkv"),
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
@@ -64,6 +65,7 @@ def make_config(virmake_path):
     config["big_time"] = "0-13:00:00"
     config["vcontact2_time"] = "0-24:00:00"
     config["metaquast_time"] = "0-24:00:00"
+    config["trim_percentage"] = 0.05
 
     return config
 

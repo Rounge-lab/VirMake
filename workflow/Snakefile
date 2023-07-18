@@ -14,6 +14,7 @@ SAMPLE = list(set(SAMPLE))
 FRAC = list(set(FRAC))
 config["path"]["temp"] = config["path"]["temp"]
 
+
 onstart:
     touch(config["path"]["temp"])
     touch(config["path"]["log"])
@@ -21,6 +22,7 @@ onstart:
 
 
 # GLOBAL FUNCTIONS #
+
 
 def get_min_quality(threshold):
     """
@@ -52,20 +54,30 @@ def vibrant_virome(is_virome):
 
 # QUALITY CONTROL #
 
+
 rule fastqc_raw:
     input:
-        list(set(expand(
-            config["path"]["input"] + "/{sample}_{frac}.fastq.gz",
-            sample=SAMPLE,
-            frac=FRAC,
-        ))),
+        list(
+            set(
+                expand(
+                    config["path"]["input"] + "/{sample}_{frac}.fastq.gz",
+                    sample=SAMPLE,
+                    frac=FRAC,
+                )
+            )
+        ),
     output:
-        dir = directory(config["path"]["output"] + "/fastqc_raw/"),
-        report = list(set(expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ))),
+        dir=directory(config["path"]["output"] + "/fastqc_raw/"),
+        report=list(
+            set(
+                expand(
+                    config["path"]["output"]
+                    + "/fastqc_raw/{sample}_{frac}_fastqc.html",
+                    sample=SAMPLE,
+                    frac=FRAC,
+                )
+            )
+        ),
     threads: config["threads"]
     conda:
         config["path"]["envs"] + "/fastqc.yaml"
@@ -75,50 +87,51 @@ rule fastqc_raw:
         mem_mb=config["small_mem"],
         # runtime=config["tiny_time"],
     log:
-            config["path"]["log"] + "/fastqc_raw.log",
+        config["path"]["log"] + "/fastqc_raw.log",
     benchmark:
-        config["path"]["benchmark"] + "/fastqc_raw.txt",
+        config["path"]["benchmark"] + "/fastqc_raw.txt"
     shell:
         """
         mkdir -p {output.dir}
         fastqc -o {output.dir} {input} &> {log}
         """
 
+
 rule fastp_pe:
     """
     Performes quality control/pre-processing of the raw reads
     """
     input:
-        R1 = expand(
+        R1=expand(
             config["path"]["input"] + "/{sample}_1.fastq.gz",
             sample=SAMPLE,
         ),
-        R2 = expand(
+        R2=expand(
             config["path"]["input"] + "/{sample}_2.fastq.gz",
             sample=SAMPLE,
         ),
     output:
-        dir = directory(config["path"]["output"] + "/fastp_pe/"),
-        R1 = expand(
+        dir=directory(config["path"]["output"] + "/fastp_pe/"),
+        R1=expand(
             config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
             sample=SAMPLE,
         ),
-        R2 = expand(
+        R2=expand(
             config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
             sample=SAMPLE,
         ),
-        html = expand(
+        html=expand(
             config["path"]["output"] + "/fastp_pe/{sample}.html",
             sample=SAMPLE,
         ),
-        json = expand(
+        json=expand(
             config["path"]["output"] + "/fastp_pe/{sample}.json",
             sample=SAMPLE,
         ),
     log:
         config["path"]["log"] + "/fastp_pe.log",
     benchmark:
-            config["path"]["benchmark"] + "/fastp_pe.txt",
+        config["path"]["benchmark"] + "/fastp_pe.txt"
     resources:
         mem_mb=config["normal_mem"],
         # runtime=config["normal_time"],
@@ -135,6 +148,7 @@ rule fastp_pe:
         &> {log}
         """
 
+
 rule fastqc_qc:
     """
     Performes quality control of processed QC reads
@@ -143,12 +157,17 @@ rule fastqc_qc:
         rules.fastp_pe.output.R1,
         rules.fastp_pe.output.R2,
     output:
-        dir = directory(config["path"]["output"] + "/fastqc_qc/"),
-        report = list(set(expand(
-            config["path"]["output"] + "/fastqc_qc/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ))),
+        dir=directory(config["path"]["output"] + "/fastqc_qc/"),
+        report=list(
+            set(
+                expand(
+                    config["path"]["output"]
+                    + "/fastqc_qc/{sample}_{frac}_fastqc.html",
+                    sample=SAMPLE,
+                    frac=FRAC,
+                )
+            )
+        ),
     threads: config["threads"]
     conda:
         config["path"]["envs"] + "/fastqc.yaml"
@@ -160,12 +179,13 @@ rule fastqc_qc:
     log:
         config["path"]["log"] + "/fastqc_qc.log",
     benchmark:
-            config["path"]["benchmark"] + "/fastqc_qc.txt",
+        config["path"]["benchmark"] + "/fastqc_qc.txt"
     shell:
         """
         mkdir -p {output.dir}
         fastqc {input} -o {output.dir} &> {log}
         """
+
 
 rule QC:
     input:
@@ -173,7 +193,7 @@ rule QC:
         rules.fastp_pe.output,
         rules.fastqc_qc.output,
     output:
-        config["path"]["temp"] + "/finished_qc"
+        config["path"]["temp"] + "/finished_qc",
     threads: 1
     message:
         "[QC] Finished QC."
@@ -185,28 +205,31 @@ rule QC:
 
 # ASSEMBLY #
 
+
 rule metaSpades:
     """
     Assembles all sequences with metaSpades
     """
     input:
-        R1 = rules.fastp_pe.output.R1,
-        R2 = rules.fastp_pe.output.R2,
+        R1=rules.fastp_pe.output.R1,
+        R2=rules.fastp_pe.output.R2,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/metaSpades/{sample}/",
-            sample=SAMPLE,
-        )),
-        contigs = expand(
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        contigs=expand(
             config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
             sample=SAMPLE,
         ),
-        scaffolds = expand(
+        scaffolds=expand(
             config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
             sample=SAMPLE,
         ),
     params:
-        temp_dir = config["path"]["temp"] + "/metaSpades/",
+        temp_dir=config["path"]["temp"] + "/metaSpades/",
     message:
         "[metaSpades] Performing assembly of paired end reads..."
     conda:
@@ -214,7 +237,7 @@ rule metaSpades:
     log:
         config["path"]["log"] + "/metaSpades.log",
     benchmark:
-            config["path"]["benchmark"] + "/metaSpades.txt",
+        config["path"]["benchmark"] + "/metaSpades.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -226,28 +249,27 @@ rule metaSpades:
         --tmp-dir {params.temp_dir} -t {threads} &> {log}
         """
 
+
 rule metaQUAST:
     """
     Performes quality control on all assembled contigs
     with the reference database RefSeq Viral
     """
     params:
-        reference = config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
     input:
         rules.metaSpades.output.contigs,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/metaQUAST/{sample}/",
-            sample=SAMPLE
-        )),
-        report = expand(
-            config["path"]["output"] + "/metaQUAST/{sample}/report.html",
-            sample=SAMPLE
+        dir=directory(
+            expand(config["path"]["output"] + "/metaQUAST/{sample}/", sample=SAMPLE)
         ),
-        transposed_report = expand(
-            config["path"]["output"] +
-            "/metaQUAST/{sample}/combined_reference/transposed_report.tsv",
-            sample=SAMPLE
+        report=expand(
+            config["path"]["output"] + "/metaQUAST/{sample}/report.html", sample=SAMPLE
+        ),
+        transposed_report=expand(
+            config["path"]["output"]
+            + "/metaQUAST/{sample}/combined_reference/transposed_report.tsv",
+            sample=SAMPLE,
         ),
     message:
         "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
@@ -256,7 +278,7 @@ rule metaQUAST:
     log:
         config["path"]["log"] + "/metaQUAST.log",
     benchmark:
-        config["path"]["benchmark"] + "/metaQUAST.txt",
+        config["path"]["benchmark"] + "/metaQUAST.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["metaquast_mem"],
@@ -268,12 +290,13 @@ rule metaQUAST:
         -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
         """
 
+
 rule ASSEMBLY:
     input:
         rules.metaSpades.output,
         rules.metaQUAST.output,
     output:
-        config["path"]["temp"] + "/finished_ASSEMBLY"
+        config["path"]["temp"] + "/finished_ASSEMBLY",
     threads: 1
     message:
         "[ASSEMBLY] Assembly of all samples finished"
@@ -285,6 +308,7 @@ rule ASSEMBLY:
 
 # VIRAL IDENTIFICATION #
 
+
 rule virsorter2_pass1:
     """
     Performes the first pass of viral identification with virsorter2
@@ -292,18 +316,20 @@ rule virsorter2_pass1:
     params:
         cutoff_length=config["virsorter2"]["pass1"]["min_lenght"],
         cutoff_score=config["virsorter2"]["pass1"]["min_score"],
-        groups = config["virsorter2"]["pass1"]["viral_groups"],
+        groups=config["virsorter2"]["pass1"]["viral_groups"],
     input:
         rules.metaSpades.output.contigs,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/virsorter2_pass1/{sample}/",
-            sample=SAMPLE,
-        )),
-        finished = expand(
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/virsorter2_pass1/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        finished=expand(
             config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
             sample=SAMPLE,
-        )
+        ),
     message:
         "[virsorter2_pass1] Executing viral identification..."
     conda:
@@ -311,7 +337,7 @@ rule virsorter2_pass1:
     log:
         config["path"]["log"] + "/virsorter2_pass1.log",
     benchmark:
-        config["path"]["benchmark"] + "/virsorter2_pass1.txt",
+        config["path"]["benchmark"] + "/virsorter2_pass1.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -328,6 +354,7 @@ rule virsorter2_pass1:
         touch {output.finished}
         """
 
+
 rule vibrant_pass1:
     """
     Performes the first pass of viral identification with VIBRANT
@@ -335,20 +362,23 @@ rule vibrant_pass1:
     input:
         rules.metaSpades.output.contigs,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/vibrant_pass1/{sample}/",
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/vibrant_pass1/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        phages_combined=directory(
+            expand(
+                config["path"]["output"]
+                + "/vibrant_pass1/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/",
+                sample=SAMPLE,
+            )
+        ),
+        finished=expand(
+            config["path"]["output"] + "/vibrant_pass1/{sample}/finished",
             sample=SAMPLE,
-        )),
-        phages_combined = directory(expand(
-            config["path"]["output"] +
-            "/vibrant_pass1/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/",
-            sample=SAMPLE,
-        )),
-        finished = expand(
-            config["path"]["output"] +
-            "/vibrant_pass1/{sample}/finished",
-            sample=SAMPLE,
-        )
+        ),
     params:
         db_dir=config["path"]["database"]["vibrant"] + "/databases",
         files_dir=config["path"]["database"]["vibrant"] + "/files",
@@ -360,7 +390,7 @@ rule vibrant_pass1:
     log:
         config["path"]["log"] + "/vibrant_pass1.log",
     benchmark:
-        config["path"]["benchmark"] + "/vibrant_pass1.txt",
+        config["path"]["benchmark"] + "/vibrant_pass1.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -378,31 +408,35 @@ rule vibrant_pass1:
         touch {output.finished}
         """
 
+
 rule checkv_virsorter2:
     """
     Performes Quality control on identified viral sequences
     """
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-        fa_paths = [
-            f"{d}/final-viral-combined.fa" for d in
-            rules.virsorter2_pass1.output.dir
-        ]
+        fa_paths=[
+            f"{d}/final-viral-combined.fa" for d in rules.virsorter2_pass1.output.dir
+        ],
     input:
         rules.virsorter2_pass1.output.dir,
         rules.virsorter2_pass1.output.finished,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
-            sample=SAMPLE,
-        )),
-        summary = expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        summary=expand(
+            config["path"]["output"]
+            + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
             sample=SAMPLE,
         ),
         combined=expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/combined.fna",
-            sample=SAMPLE
+            config["path"]["output"]
+            + "/checkv/virsorter2_pass1/{sample}/combined.fna",
+            sample=SAMPLE,
         ),
     conda:
         config["path"]["envs"] + "/checkv.yaml"
@@ -411,7 +445,7 @@ rule checkv_virsorter2:
     log:
         config["path"]["log"] + "/checkv_virsorter2_pass1.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_virsorter2_pass1.txt",
+        config["path"]["benchmark"] + "/checkv_virsorter2_pass1.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["normal_mem"],
@@ -425,6 +459,7 @@ rule checkv_virsorter2:
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 
+
 rule checkv_vibrant:
     """
     Performes Quality control on identified viral sequences
@@ -434,23 +469,26 @@ rule checkv_vibrant:
         rules.vibrant_pass1.output.finished,
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-        fna_paths = [
-            f"{d}/contigs.phages_combined.fna" for d in
-            rules.vibrant_pass1.output.phages_combined
-        ]
+        fna_paths=[
+            f"{d}/contigs.phages_combined.fna"
+            for d in rules.vibrant_pass1.output.phages_combined
+        ],
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/",
-            sample=SAMPLE,
-        )),
-        summary = expand(
-            config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/quality_summary.tsv",
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        summary=expand(
+            config["path"]["output"]
+            + "/checkv/vibrant_pass1/{sample}/quality_summary.tsv",
             sample=SAMPLE,
         ),
-        combined = expand(
+        combined=expand(
             config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/combined.fna",
             sample=SAMPLE,
-        )
+        ),
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -458,7 +496,7 @@ rule checkv_vibrant:
     log:
         config["path"]["log"] + "/checkv_vibrant_pass1.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_vibrant_pass1.txt",
+        config["path"]["benchmark"] + "/checkv_vibrant_pass1.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["normal_mem"],
@@ -473,34 +511,39 @@ rule checkv_vibrant:
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 
+
 rule filter_contigs_virsorter2:
     """
     Gathers only relevant sequences with above threshold score
     """
     params:
-        criteria = get_min_quality(config["quality_threshold"]),
+        criteria=get_min_quality(config["quality_threshold"]),
     input:
-        summary = rules.checkv_virsorter2.output.summary,
-        combined = rules.checkv_virsorter2.output.combined,
+        summary=rules.checkv_virsorter2.output.summary,
+        combined=rules.checkv_virsorter2.output.combined,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/filtered_virsorter2/{sample}/",
-            sample=SAMPLE,
-        )),
-        filtered_contigs_viruses = expand(
-            config["path"]["output"] + "/filtered_virsorter2/{sample}/filtered_combined.fna",
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/filtered_virsorter2/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
+        filtered_contigs_viruses=expand(
+            config["path"]["output"]
+            + "/filtered_virsorter2/{sample}/filtered_combined.fna",
             sample=SAMPLE,
         ),
-        filtered_contigs_ID = expand(
-            config["path"]["output"] + "/filtered_virsorter2/{sample}/filtered_contigs",
+        filtered_contigs_ID=expand(
+            config["path"]["output"]
+            + "/filtered_virsorter2/{sample}/filtered_contigs",
             sample=SAMPLE,
-        )
+        ),
     conda:
         config["path"]["envs"] + "/seqtk.yaml"
     message:
         "[filter_contigs_virsorter2] Filtering contigs with respect to quality scores (quality threshold: {params.criteria})..."
     benchmark:
-        config["path"]["benchmark"] + "/filter_contigs_virsorter2.txt",
+        config["path"]["benchmark"] + "/filter_contigs_virsorter2.txt"
     log:
         config["path"]["log"] + "/filter_contigs_virsorter2.log",
     threads: config["threads"]
@@ -514,6 +557,7 @@ rule filter_contigs_virsorter2:
         seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
         """
 
+
 rule filter_contigs_vibrant:
     """
     Gathers only relevant sequences with above threshold score
@@ -521,27 +565,30 @@ rule filter_contigs_vibrant:
     params:
         criteria=get_min_quality(config["quality_threshold"]),
     input:
-        summary = rules.checkv_vibrant.output.summary,
-        combined = rules.checkv_vibrant.output.combined,
+        summary=rules.checkv_vibrant.output.summary,
+        combined=rules.checkv_vibrant.output.combined,
     output:
-        dir = directory(expand(
-            config["path"]["output"] + "/filtered_vibrant/{sample}/",
-            sample=SAMPLE,
-        )),
+        dir=directory(
+            expand(
+                config["path"]["output"] + "/filtered_vibrant/{sample}/",
+                sample=SAMPLE,
+            )
+        ),
         filtered_contigs_viruses=expand(
-            config["path"]["output"] + "/filtered_vibrant/{sample}/filtered_combined.fna",
+            config["path"]["output"]
+            + "/filtered_vibrant/{sample}/filtered_combined.fna",
             sample=SAMPLE,
         ),
         filtered_contigs_ID=expand(
             config["path"]["output"] + "/filtered_vibrant/{sample}/filtered_contigs",
             sample=SAMPLE,
-        )
+        ),
     conda:
         config["path"]["envs"] + "/seqtk.yaml"
     message:
         "[filter_contigs_vibrant] Filtering contigs with respect to quality scores (quality threshold: {params.criteria})..."
     benchmark:
-        config["path"]["benchmark"] + "/filter_contigs_vibrant.txt",
+        config["path"]["benchmark"] + "/filter_contigs_vibrant.txt"
     log:
         config["path"]["log"] + "/filter_contigs_vibrant.log",
     threads: config["threads"]
@@ -555,6 +602,7 @@ rule filter_contigs_vibrant:
         seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
         """
 
+
 rule combine_results_virsorter2:
     """
     Combine all results from virus identifiaction of all samples with virsorter2
@@ -562,8 +610,9 @@ rule combine_results_virsorter2:
     input:
         rules.filter_contigs_virsorter2.output.filtered_contigs_viruses,
     output:
-        dir = directory(config["path"]["output"] + "/combined_virsorter2/"),
-        combined = config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
+        dir=directory(config["path"]["output"] + "/combined_virsorter2/"),
+        combined=config["path"]["output"]
+        + "/combined_virsorter2/combined_virsorter2.tsv",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     message:
@@ -571,7 +620,7 @@ rule combine_results_virsorter2:
     log:
         config["path"]["log"] + "/combine_results_virsorter2.log",
     benchmark:
-        config["path"]["benchmark"] + "/combine_results_virsorter2.txt",
+        config["path"]["benchmark"] + "/combine_results_virsorter2.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["small_mem"],
@@ -582,6 +631,7 @@ rule combine_results_virsorter2:
         cat {input} > {output.combined}
         """
 
+
 rule combine_results_vibrant:
     """
     Combine all results from virus identifiaction of all samples with VIBRANT
@@ -589,8 +639,8 @@ rule combine_results_vibrant:
     input:
         rules.filter_contigs_vibrant.output.filtered_contigs_viruses,
     output:
-        dir = directory(config["path"]["output"] + "/combined_vibrant/"),
-        combined = config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
+        dir=directory(config["path"]["output"] + "/combined_vibrant/"),
+        combined=config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     message:
@@ -598,7 +648,7 @@ rule combine_results_vibrant:
     log:
         config["path"]["log"] + "/combine_results_vibrant.log",
     benchmark:
-        config["path"]["benchmark"] + "/combine_results_vibrant.txt",
+        config["path"]["benchmark"] + "/combine_results_vibrant.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["small_mem"],
@@ -608,6 +658,7 @@ rule combine_results_vibrant:
         mkdir -p {output.dir}
         cat {input} > {output.combined}
         """
+
 
 rule combine_all_results:
     """
@@ -617,10 +668,10 @@ rule combine_all_results:
         vibrant=rules.combine_results_vibrant.output.combined,
         virsorter2=rules.combine_results_virsorter2.output.combined,
     output:
-        dir = directory(
+        dir=directory(
             config["path"]["output"] + "/combined_all/",
         ),
-        combined = config["path"]["output"] + "/combined_all/combined_all.fasta",
+        combined=config["path"]["output"] + "/combined_all/combined_all.fasta",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     message:
@@ -628,7 +679,7 @@ rule combine_all_results:
     log:
         config["path"]["log"] + "/combine_all_results.log",
     benchmark:
-        config["path"]["benchmark"] + "/combine_all_results.txt",
+        config["path"]["benchmark"] + "/combine_all_results.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["small_mem"],
@@ -641,6 +692,7 @@ rule combine_all_results:
         """
         # {input.virsorter2}
 
+
 rule dereplication:
     """
     Performs dereplication with clustering on the viral sequences
@@ -648,8 +700,8 @@ rule dereplication:
     input:
         rules.combine_all_results.output.combined,
     output:
-        dir = directory(config["path"]["output"] + "/cdhit/"),
-        derep = config["path"]["output"] + "/cdhit/derep95_combined.fasta",
+        dir=directory(config["path"]["output"] + "/cdhit/"),
+        derep=config["path"]["output"] + "/cdhit/derep95_combined.fasta",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     message:
@@ -657,7 +709,7 @@ rule dereplication:
     log:
         config["path"]["log"] + "/dereplication.log",
     benchmark:
-        config["path"]["benchmark"] + "/dereplication.txt",
+        config["path"]["benchmark"] + "/dereplication.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["normal_mem"],
@@ -680,6 +732,7 @@ rule dereplication:
         &> {log}
         """
 
+
 rule transform_vOTUs:
     """
     Renames viral sequences to unique vOTU_# names
@@ -687,8 +740,8 @@ rule transform_vOTUs:
     input:
         rules.dereplication.output.derep,
     output:
-        dir = directory(config["path"]["output"] + "/vOTU/"),
-        vOTU = config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        dir=directory(config["path"]["output"] + "/vOTU/"),
+        vOTU=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
     resources:
         mem_mb=config["small_mem"],
         # runtime=config["tiny_time"],
@@ -699,12 +752,13 @@ rule transform_vOTUs:
     log:
         config["path"]["log"] + "/transform_vOTUs.log",
     benchmark:
-        config["path"]["benchmark"] + "/transform_vOTUs.txt",
+        config["path"]["benchmark"] + "/transform_vOTUs.txt"
     shell:
         """
         mkdir -p {output.dir}
         awk '/^>/{{print ">vOTU_" ++i; next}}{{print}}' {input} > {output.vOTU}
         """
+
 
 rule virsorter2_pass2:
     """
@@ -713,12 +767,12 @@ rule virsorter2_pass2:
     params:
         cutoff_length=config["virsorter2"]["pass2"]["min_lenght"],
         cutoff_score=config["virsorter2"]["pass2"]["min_score"],
-        groups = config["virsorter2"]["pass2"]["viral_groups"],
+        groups=config["virsorter2"]["pass2"]["viral_groups"],
     input:
         rules.transform_vOTUs.output.vOTU,
     output:
-        dir = directory(config["path"]["output"] + "/virsorter2_pass2/"),
-        finished = config["path"]["output"] + "/virsorter2_pass2/finished",
+        dir=directory(config["path"]["output"] + "/virsorter2_pass2/"),
+        finished=config["path"]["output"] + "/virsorter2_pass2/finished",
     message:
         "[virsorter2_pass2] Running virsorter2 on the vOTUs..."
     conda:
@@ -726,7 +780,7 @@ rule virsorter2_pass2:
     log:
         config["path"]["log"] + "/virsorter2_pass2.log",
     benchmark:
-        config["path"]["benchmark"] + "/virsorter2_pass2.txt",
+        config["path"]["benchmark"] + "/virsorter2_pass2.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -746,6 +800,7 @@ rule virsorter2_pass2:
         touch {output.finished}
         """
 
+
 rule vibrant_pass2:
     """
     Runs VIBRANT on the vOTUs
@@ -753,12 +808,12 @@ rule vibrant_pass2:
     input:
         rules.transform_vOTUs.output.vOTU,
     output:
-        dir = directory(config["path"]["output"] + "/vibrant_pass2/"),
-        phages_combined = directory(
-            config["path"]["output"] +
-            "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/",
+        dir=directory(config["path"]["output"] + "/vibrant_pass2/"),
+        phages_combined=directory(
+            config["path"]["output"]
+            + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/",
         ),
-        finished = config["path"]["output"] + "/vibrant_pass2/finished",
+        finished=config["path"]["output"] + "/vibrant_pass2/finished",
     params:
         db_dir=config["path"]["database"]["vibrant"] + "/databases",
         files_dir=config["path"]["database"]["vibrant"] + "/files",
@@ -770,7 +825,7 @@ rule vibrant_pass2:
     log:
         config["path"]["log"] + "/vibrant_pass2.log",
     benchmark:
-        config["path"]["benchmark"] + "/vibrant_pass2.txt",
+        config["path"]["benchmark"] + "/vibrant_pass2.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["big_mem"],
@@ -788,6 +843,7 @@ rule vibrant_pass2:
         touch {output.finished}
         """
 
+
 rule checkv_vOTU_virsorter2:
     """
     Runs Quality control on the vOTUs after virsorter2
@@ -795,12 +851,12 @@ rule checkv_vOTU_virsorter2:
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
-        dir = rules.virsorter2_pass2.output.dir,
-        finished = rules.virsorter2_pass2.output.finished,
+        dir=rules.virsorter2_pass2.output.dir,
+        finished=rules.virsorter2_pass2.output.finished,
     output:
-        dir = directory(config["path"]["output"] + "/checkv/virsorter2_pass2/"),
-        summary = config["path"]["output"] +
-        "/checkv/virsorter2_pass2/quality_summary.tsv",
+        dir=directory(config["path"]["output"] + "/checkv/virsorter2_pass2/"),
+        summary=config["path"]["output"]
+        + "/checkv/virsorter2_pass2/quality_summary.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -808,7 +864,7 @@ rule checkv_vOTU_virsorter2:
     log:
         config["path"]["log"] + "/checkv_virsorter2_pass2.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_virsorter2_pass2.txt",
+        config["path"]["benchmark"] + "/checkv_virsorter2_pass2.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["normal_mem"],
@@ -821,19 +877,19 @@ rule checkv_vOTU_virsorter2:
         checkv end_to_end {input.dir}/final-viral-combined.fa {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         """
 
+
 rule checkv_vOTU_vibrant:
     """
     Runs Quality control on the vOTUs after VIBRANT
     """
     input:
-        combined = rules.vibrant_pass2.output.phages_combined,
-        finished = rules.vibrant_pass2.output.finished,
+        combined=rules.vibrant_pass2.output.phages_combined,
+        finished=rules.vibrant_pass2.output.finished,
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     output:
-        dir = directory(config["path"]["output"] + "/checkv/vibrant_pass2/"),
-        summary = config["path"]["output"] +
-        "/checkv/vibrant_pass2/quality_summary.tsv",
+        dir=directory(config["path"]["output"] + "/checkv/vibrant_pass2/"),
+        summary=config["path"]["output"] + "/checkv/vibrant_pass2/quality_summary.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -841,7 +897,7 @@ rule checkv_vOTU_vibrant:
     log:
         config["path"]["log"] + "/checkv_vibrant_pass2.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_vibrant_pass2.txt",
+        config["path"]["benchmark"] + "/checkv_vibrant_pass2.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["normal_mem"],
@@ -854,6 +910,7 @@ rule checkv_vOTU_vibrant:
         checkv end_to_end {input.combined}/vOTU_derep95_combined.phages_combined.fna\
         {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         """
+
 
 rule IDENTIFICATION:
     input:
@@ -873,7 +930,7 @@ rule IDENTIFICATION:
         rules.checkv_vOTU_virsorter2.output,
         rules.checkv_vOTU_vibrant.output,
     output:
-        config["path"]["temp"] + "/finished_identification"
+        config["path"]["temp"] + "/finished_identification",
     threads: 1
     message:
         "[IDENTIFICATION] Finished identification of viral contigs"
@@ -885,21 +942,21 @@ rule IDENTIFICATION:
 
 # MAPPING
 
+
 rule build_index:
     """
     Builds an index to prepare for mapping
     """
     input:
-        rules.transform_vOTUs.output.vOTU
+        rules.transform_vOTUs.output.vOTU,
     output:
-        mapping_dir = directory(config["path"]["output"] + "/mapping/"),
-        index_dir = directory(config["path"]["output"] + "/mapping/index"),
+        index_dir=directory(config["path"]["output"] + "/mapping/index"),
     conda:
         config["path"]["envs"] + "/bowtie2.yaml"
     message:
         "[build_index] Building index for mapping..."
     benchmark:
-        config["path"]["benchmark"] + "/build_index.txt",
+        config["path"]["benchmark"] + "/build_index.txt"
     log:
         config["path"]["log"] + "/bowtie2_build_index.log",
     threads: config["threads"]
@@ -918,21 +975,20 @@ rule read_mapping:
     Performes read mapping between original sample and vOTUs
     """
     input:
-        R1 = rules.fastp_pe.output.R1,
-        R2 = rules.fastp_pe.output.R2,
-        index_dir = rules.build_index.output.index_dir,
+        R1=rules.fastp_pe.output.R1,
+        R2=rules.fastp_pe.output.R2,
+        index_dir=rules.build_index.output.index_dir,
     output:
         expand(
-            "results/mapping/SAM/{sample}.map.sam",
-            sample=SAMPLE
+            config["path"]["output"] + "/mapping/SAM/{sample}.map.sam", sample=SAMPLE
         ),
     conda:
-        config["path"]["envs"] + "/bowtie2.yaml",
+        config["path"]["envs"] + "/bowtie2.yaml"
     log:
         config["path"]["log"] + "/bowtie2_mapping.log",
     benchmark:
-        config["path"]["benchmark"] + "/bowtie2_mapping.txt",
-    threads: 2
+        config["path"]["benchmark"] + "/bowtie2_mapping.txt"
+    threads: config["threads"]
     resources:
         mem_mb=config["small_mem"],
         # runtime=config["tiny_time"],
@@ -941,78 +997,86 @@ rule read_mapping:
         bowtie2 -p {threads} -x {input.index_dir}/mapping_index -1 {input.R1} -2 {input.R2} -S {output} &> {log}
         """
 
-rule MAPPING:
+
+rule contig_stats:
+    """
+    Creates simple coverage statisitcs for each read mapping
+    """
     input:
-        rules.build_index.output,
-        rules.read_mapping.output,
+        genomes=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        sam=rules.read_mapping.output,
     output:
-        config["path"]["temp"] + "/finished_mapping"
-    threads: 1
+        basecov=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
+            sample=SAMPLE,
+        ),
+        covhist=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/postfilter_coverage_histogram.txt",
+            sample=SAMPLE,
+        ),
+        covstats=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
+            sample=SAMPLE,
+        ),
+        bincov=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
+            sample=SAMPLE,
+        ),
+    conda:
+        config["path"]["envs"] + "/bowtie2.yaml"
+    log:
+        config["path"]["log"] + "/contig_stats.log",
+    benchmark:
+        config["path"]["benchmark"] + "/contig_stats.txt"
     message:
-        "[MAPPING] Mapping finished..."
+        "[contig_stats] Creating coverage statistics for each sample..."
+    threads: config["threads"]
+    resources:
+        mem_mb=config["small_mem"],
+        # runtime=config["tiny_time"],
     shell:
         """
-        touch {output}
+        pileup.sh ref={input.genomes} in={input.sam} \
+            threads={threads} \
+            -Xmx{resources.mem_mb}m \
+            covstats={output.covstats} \
+            hist={output.covhist} \
+            basecov={output.basecov}\
+            concise=t \
+            secondary=t \
+            bincov={output.bincov} &> {log}
         """
 
 
-# STATS
-
-# rule contig_stats:
-#     """
-#     Creates simple coverage statisitcs for each read mapping
-#     """
-#     input:
-#         genomes="results/cdhit/vOTU_derep95_combined.fasta",
-#         sam="results/mapping/{sample}/{sample}.map.sam",
-#     output:
-#         basecov="results/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
-#         covhist="results/contig_stats/{sample}/postfilter_coverage_histogram.txt",
-#         covstats="results/contig_stats/{sample}/postfilter_coverage_stats.txt",
-#         bincov="results/contig_stats/{sample}/postfilter_coverage_binned.txt",
-#     conda:
-#         envs_dir + "/bowtie2.yaml"
-#     log:
-#         "logs/{sample}_contig_stats.log",
-#     threads: 2
-#     resources:
-#         mem_mb=config["small_mem"],
-#         runtime=config["tiny_time"],
-#     shell:
-#         """
-#         pileup.sh ref={input.genomes} in={input.sam} \
-#                threads={threads} \
-#                -Xmx{resources.mem_mb}m \
-#                covstats={output.covstats} \
-#                hist={output.covhist} \
-#                basecov={output.basecov}\
-#                concise=t \
-#                secondary=t \
-#                bincov={output.bincov} &> {log}
-#     """
-
-
-# localrules:
-#     get_trimmed_coverage,
-
-
-# rule get_trimmed_coverage:
-#     """
-#     Gets the trimmed mean of the coverage
-#     """
-#     input:
-#         basecov="results/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
-#         coverage_stats="results/contig_stats/{sample}/postfilter_coverage_stats.txt",
-#     output:
-#         trimmed_mean="results/contig_stats/{sample}/trimmed_mean_coverage.tsv",
-#     params:
-#         trim_perc=0.05,
-#     script:
-#         "scripts/trimmed_mean.py"
-
-
-# localrules:
-#     combine_coverage,
+rule get_trimmed_coverage:
+    """
+    Gets the trimmed mean of the coverage
+    """
+    input:
+        basecov=rules.contig_stats.output.basecov,
+        covstats=rules.contig_stats.output.covstats
+    output:
+        trimmed_mean=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/trimmed_mean_coverage.tsv",
+            sample=SAMPLE,
+        ),
+    # conda:
+    #     config["path"]["envs"] + "/scripts.yaml"
+    params:
+        trim_perc=config["trim_percentage"],
+    log:
+        config["path"]["log"] + "/trimmed_mean.log",
+    benchmark:
+        config["path"]["benchmark"] + "/trimmed_mean.txt"
+    message:
+        "[get_trimmed_coverage] Getting trimmed mean of coverage..."
+    script:
+        config["path"]["scripts"] + "/trimmed_mean.py"
 
 
 # rule combine_coverage:
@@ -1022,17 +1086,39 @@ rule MAPPING:
 #     """
 #     input:
 #         covstats=expand(
-#             "results/contig_stats/{sample}/postfilter_coverage_stats.txt",
+#             config["path"]["output"]
+#             + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
 #             sample=SAMPLE,
 #         ),
 #     output:
-#         abundance_table="results/contig_stats/raw_coverage_table.tsv",
+#         abundance_table=config["path"]["output"]
+#         + "/contig_stats/raw_coverage_table.tsv",
 #     params:
-#         min_coverage=75,
+#         min_coverage=config["min_coverage"]
 #     conda:
-#         envs_dir + "/tidyverse.yaml"
+#         config["path"]["envs"] + "/scripts.yaml"
+#     message:
+#         "[combine_coverage] Combining coverage statistics..."
 #     script:
-#         "scripts/combine_coverage.R"
+#         config["path"]["scripts"] + "combine_coverage.R"
+
+
+rule MAPPING:
+    input:
+        rules.build_index.output,
+        rules.read_mapping.output,
+        rules.contig_stats.output,
+        rules.get_trimmed_coverage.output,
+        # rules.combine_coverage.output,
+    output:
+        config["path"]["temp"] + "/finished_mapping",
+    threads: 1
+    message:
+        "[MAPPING] Mapping finished..."
+    shell:
+        """
+        touch {output}
+        """
 
 
 # rule prodigal:
@@ -1040,14 +1126,14 @@ rule MAPPING:
 #     Performes gene prediction on vOTUs
 #     """
 #     params:
-#         out_dir="results/prodigal/",
+#         out_dir=config["path"]["output"] + "/prodigal/",
 #     input:
-#         genomes="results/cdhit/vOTU_derep95_combined.fasta",
+#         genomes=config["path"]["output"] + "/cdhit/vOTU_derep95_combined.fasta",
 #     output:
-#         proteins="results/prodigal/proteins.faa",
-#         orf="results/prodigal/orfs.genes",
+#         proteins=config["path"]["output"] + "/prodigal/proteins.faa",
+#         orf=config["path"]["output"] + "/prodigal/orfs.genes",
 #     conda:
-#         envs_dir + "/prodigal.yaml"
+#         config["path"]["envs"] + "/prodigal.yaml"
 #     log:
 #         "logs/prodigal.log",
 #     benchmark:
@@ -1068,11 +1154,11 @@ rule MAPPING:
 #     Performes gene2genome setup for VCONTACT2
 #     """
 #     input:
-#         proteins="results/prodigal/orfs.genes",
+#         proteins=config["path"]["output"] + "/prodigal/orfs.genes",
 #     output:
-#         g2g="results/vcontact2/genes_2_genomes/g2g.csv",
+#         g2g=config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
 #     conda:
-#         envs_dir + "/vcontact2.yaml"
+#         config["path"]["envs"] + "/vcontact2.yaml"
 #     log:
 #         "logs/Vcontact2_gene2genome.log",
 #     resources:
@@ -1096,17 +1182,17 @@ rule MAPPING:
 #         + "/1Dec2022_vConTACT2_proteins.faa",
 #         simplify_faa="workflow/scripts/simplify_faa-ffn_derep.py",
 #     input:
-#         g2g="results/vcontact2/genes_2_genomes/g2g.csv",
-#         proteins="results/prodigal/proteins.faa",
-#         orf="results/prodigal/orfs.genes",
+#         g2g=config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
+#         proteins=config["path"]["output"] + "/prodigal/proteins.faa",
+#         orf=config["path"]["output"] + "/prodigal/orfs.genes",
 #     output:
-#         combinedg2g="results/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
-#         combined_proteins="results/vcontact2/genes_2_genomes/combined_proteins.faa",
-#         simplified_orfs="results/prodigal/orfs.genes.simple.faa",
+#         combinedg2g=config["path"]["output"] + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+#         combined_proteins=config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+#         simplified_orfs=config["path"]["output"] + "/prodigal/orfs.genes.simple.faa",
 #     benchmark:
 #         "benchmarks/inphared/setup.tsv"
 #     conda:
-#         envs_dir + "/vibrant.yaml"
+#         config["path"]["envs"] + "/vibrant.yaml"
 #     resources:
 #         mem_mb=config["small_mem"],
 #         runtime=config["tiny_time"],
@@ -1124,18 +1210,18 @@ rule MAPPING:
 #     Performs Taxonomic annotation with VCONTACT2
 #     """
 #     input:
-#         proteins="results/vcontact2/genes_2_genomes/combined_proteins.faa",
-#         g2g="results/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+#         proteins=config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+#         g2g=config["path"]["output"] + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
 #     output:
-#         cluster_overview="results/vcontact2/viral_cluster_overview.csv",
-#         genome_by_genome="results/vcontact2/genome_by_genome_overview.csv",
-#         network="results/vcontact2/c1.ntw",
+#         cluster_overview=config["path"]["output"] + "/vcontact2/viral_cluster_overview.csv",
+#         genome_by_genome=config["path"]["output"] + "/vcontact2/genome_by_genome_overview.csv",
+#         network=config["path"]["output"] + "/vcontact2/c1.ntw",
 #     params:
-#         outdir="results/vcontact2/",
+#         outdir=config["path"]["output"] + "/vcontact2/",
 #     benchmark:
 #         "benchmarks/vcontact2/vcontact2.tsv"
 #     conda:
-#         envs_dir + "/vcontact2.yaml"
+#         config["path"]["envs"] + "/vcontact2.yaml"
 #     log:
 #         "logs/Vcontact2.log",
 #     resources:
@@ -1158,20 +1244,35 @@ rule MAPPING:
 #     """
 
 
+rule TAXONOMY:
+    input:
+        # rules.prodigal.output,
+        # rules.gene2genome.output,
+        # rules.inphared_setup.output,
+        # rules.vconcat2.output,
+    output:
+        config["path"]["output"] + "/taxonomy_finished",
+    threads: 1
+    shell:
+        """
+        touch {output}
+        """
+
+
 # rule dramv_annotate:
 #     """
 #     Performs Functional annotation with DRAMv
 #     """
 #     input:
-#         affi_contigs="results/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
-#         viruses="results/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa",
+#         affi_contigs=config["path"]["output"] + "/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
+#         viruses=config["path"]["output"] + "/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa",
 #     output:
-#         results="results/DRAMv/annotations.tsv",
+#         results=config["path"]["output"] + "/DRAMv/annotations.tsv",
 #     params:
 #         dram_config=config["database_dir"]["DRAM"] + "/DRAM.config",
-#         output_dir="results/DRAMv",
+#         output_dir=config["path"]["output"] + "/DRAMv",
 #     conda:
-#         envs_dir + "/DRAMv.yaml"
+#         config["path"]["envs"] + "/DRAMv.yaml"
 #     log:
 #         "logs/DRAMV/DRAM_annotate.log",
 #     benchmark:
@@ -1199,17 +1300,17 @@ rule MAPPING:
 #     Performs the distillation of functional annotation
 #     """
 #     input:
-#         dramv_annnotations="results/DRAMv/annotations.tsv",
+#         dramv_annnotations=config["path"]["output"] + "/DRAMv/annotations.tsv",
 #     output:
-#         distilled="results/DRAMv/distilled/amg_summary.tsv",
+#         distilled=config["path"]["output"] + "/DRAMv/distilled/amg_summary.tsv",
 #     params:
-#         output_dir="results/DRAMv/distilled/",
+#         output_dir=config["path"]["output"] + "/DRAMv/distilled/",
 #     log:
 #         "logs/DRAMV/DRAM_distill.log",
 #     benchmark:
 #         "benchmarks/DRAMv_distill.tsv"
 #     conda:
-#         envs_dir + "/DRAMv.yaml"
+#         config["path"]["envs"] + "/DRAMv.yaml"
 #     resources:
 #         mem_mb=config["normal_mem"],
 #         runtime=config["normal_time"],
@@ -1231,13 +1332,13 @@ rule MAPPING:
 #     params:
 #         graph="workflow/scripts/graphanalyzer.py",
 #     input:
-#         cluster="results/vcontact2/c1.ntw",
-#         csv="results/vcontact2/genome_by_genome_overview.csv",
+#         cluster=config["path"]["output"] + "/vcontact2/c1.ntw",
+#         csv=config["path"]["output"] + "/vcontact2/genome_by_genome_overview.csv",
 #         meta=config["database_dir"]["INPHARED"] + "/1Dec2022_data_excluding_refseq.tsv",
 #     output:
-#         "results/graphanalyzer/csv_edit_vOTU_results.xlsx",
+#         config["path"]["output"] + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
 #     conda:
-#         envs_dir + "/graphanalyzer.yaml"
+#         config["path"]["envs"] + "/graphanalyzer.yaml"
 #     threads: 6
 #     resources:
 #         mem_mb=config["normal_mem"],
@@ -1265,110 +1366,110 @@ rule MAPPING:
 #     Performs the aggregation of all relevant files into summaries tables and plots
 #     """
 #     input:
-#         "results/graphanalyzer/csv_edit_vOTU_results.xlsx",
-#         "results/DRAMv/distilled/amg_summary.tsv",
-#         "results/checkv/vOTU/virsorter2/quality_summary.tsv",
-#         "results/checkv/vOTU/vibrant/quality_summary.tsv",
-#         "results/metaQUAST/combined_reference/transposed_report.tsv",
+#         config["path"]["output"] + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
+#         config["path"]["output"] + "/DRAMv/distilled/amg_summary.tsv",
+#         config["path"]["output"] + "/checkv/vOTU/virsorter2/quality_summary.tsv",
+#         config["path"]["output"] + "/checkv/vOTU/vibrant/quality_summary.tsv",
+#         config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
 #     output:
-#         "results/statistics/Sample_stats_vibrant.tsv",
-#         "results/statistics/Sample_stats_virsorter2.tsv",
-#         "results/statistics/vOTU_Stats_vibrant.tsv",
-#         "results/statistics/vOTU_Stats_virsorter2.tsv",
-#         "results/statistics/vOTU_AMGs.tsv",
+#         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
+#         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
 #     script:
-#         "scripts/table_stats.py"
+#         config["path"]["scripts"] + "table_stats.py"
 # rule ASSEMBLY:
 #     input:
-#         expand("results/metaSpades_ASSEMBLY/{sample}/contigs.fasta", sample=SAMPLE),
-#         expand("results/metaSpades_ASSEMBLY/{sample}/scaffolds.fasta", sample=SAMPLE),
-#         "results/metaQUAST/report.html",
-#         "results/metaQUAST/combined_reference/transposed_report.tsv",
+#         expand(config["path"]["output"] + "/metaSpades_ASSEMBLY/{sample}/contigs.fasta", sample=SAMPLE),
+#         expand(config["path"]["output"] + "/metaSpades_ASSEMBLY/{sample}/scaffolds.fasta", sample=SAMPLE),
+#         config["path"]["output"] + "/metaQUAST/report.html",
+#         config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
 #     output:
 #         touch("finished_ASSEMBLY"),
 # rule identification:
 #     input:
-#         expand("results/virsorter2/{sample}/final-viral-combined.fa", sample=SAMPLE),
-#         expand("results/virsorter2/{sample}/final-viral-score.tsv", sample=SAMPLE),
+#         expand(config["path"]["output"] + "/virsorter2/{sample}/final-viral-combined.fa", sample=SAMPLE),
+#         expand(config["path"]["output"] + "/virsorter2/{sample}/final-viral-score.tsv", sample=SAMPLE),
 #         expand(
-#             "results/vibrant/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna",
+#             config["path"]["output"] + "/vibrant/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/checkv/{assembler}/{sample}/quality_summary.tsv",
-#             sample=SAMPLE,
-#             assembler=ASSEMBLER,
-#         ),
-#         expand(
-#             "results/checkv/{assembler}/{sample}/combined.fna",
+#             config["path"]["output"] + "/checkv/{assembler}/{sample}/quality_summary.tsv",
 #             sample=SAMPLE,
 #             assembler=ASSEMBLER,
 #         ),
 #         expand(
-#             "results/checkv/virsorter2/{sample}/filtered/filtered_combined.fna",
+#             config["path"]["output"] + "/checkv/{assembler}/{sample}/combined.fna",
+#             sample=SAMPLE,
+#             assembler=ASSEMBLER,
+#         ),
+#         expand(
+#             config["path"]["output"] + "/checkv/virsorter2/{sample}/filtered/filtered_combined.fna",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/checkv/virsorter2/{sample}/filtered/filtered_contigs",
+#             config["path"]["output"] + "/checkv/virsorter2/{sample}/filtered/filtered_contigs",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/checkv/vibrant/{sample}/filtered/filtered_combined.fna",
+#             config["path"]["output"] + "/checkv/vibrant/{sample}/filtered/filtered_combined.fna",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/checkv/vibrant/{sample}/filtered/filtered_contigs", sample=SAMPLE
+#             config["path"]["output"] + "/checkv/vibrant/{sample}/filtered/filtered_contigs", sample=SAMPLE
 #         ),
-#         "results/checkv/vOTU/virsorter2/quality_summary.tsv",
-#         "results/checkv/vOTU/vibrant/quality_summary.tsv",
-#         "results/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
-#         "results/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa",
-#         "results/virsorter2/pass2/final-viral-combined.fa",
-#         "results/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna",
-#         "results/cdhit/prep/combined_virsorter2.fasta",
-#         "results/cdhit/prep/combined_vibrant.fasta",
-#         "results/cdhit/prep/combined_all.fasta",
-#         "results/mapping/index.done",
-#         "results/cdhit/derep95_combined.fasta",
-#         "results/cdhit/vOTU_derep95_combined.fasta",
-#         expand("results/mapping/{sample}/{sample}.map.sam", sample=SAMPLE),
+#         config["path"]["output"] + "/checkv/vOTU/virsorter2/quality_summary.tsv",
+#         config["path"]["output"] + "/checkv/vOTU/vibrant/quality_summary.tsv",
+#         config["path"]["output"] + "/virsorter2/pass2/for-dramv/viral-affi-contigs-for-dramv.tab",
+#         config["path"]["output"] + "/virsorter2/pass2/for-dramv/final-viral-combined-for-dramv.fa",
+#         config["path"]["output"] + "/virsorter2/pass2/final-viral-combined.fa",
+#         config["path"]["output"] + "/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna",
+#         config["path"]["output"] + "/cdhit/prep/combined_virsorter2.fasta",
+#         config["path"]["output"] + "/cdhit/prep/combined_vibrant.fasta",
+#         config["path"]["output"] + "/cdhit/prep/combined_all.fasta",
+#         config["path"]["output"] + "/mapping/index.done",
+#         config["path"]["output"] + "/cdhit/derep95_combined.fasta",
+#         config["path"]["output"] + "/cdhit/vOTU_derep95_combined.fasta",
+#         expand(config["path"]["output"] + "/mapping/{sample}/{sample}.map.sam", sample=SAMPLE),
 #         expand(
-#             "results/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
+#             config["path"]["output"] + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/contig_stats/{sample}/postfilter_coverage_histogram.txt",
+#             config["path"]["output"] + "/contig_stats/{sample}/postfilter_coverage_histogram.txt",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/contig_stats/{sample}/postfilter_coverage_stats.txt",
+#             config["path"]["output"] + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
 #             sample=SAMPLE,
 #         ),
 #         expand(
-#             "results/contig_stats/{sample}/postfilter_coverage_binned.txt",
+#             config["path"]["output"] + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
 #             sample=SAMPLE,
 #         ),
-#         expand("results/contig_stats/{sample}/trimmed_mean_coverage.tsv", sample=SAMPLE),
-#         "results/contig_stats/raw_coverage_table.tsv",
+#         expand(config["path"]["output"] + "/contig_stats/{sample}/trimmed_mean_coverage.tsv", sample=SAMPLE),
+#         config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
 #     output:
 #         touch("finished_virus_identification"),
 # rule taxonomy:
 #     input:
-#         "results/prodigal/proteins.faa",
-#         "results/prodigal/orfs.genes",
-#         "results/prodigal/orfs.genes.simple.faa",
-#         "results/vcontact2/genes_2_genomes/combined_proteins.faa",
-#         "results/vcontact2/genes_2_genomes/g2g.csv",
-#         "results/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
-#         "results/vcontact2/viral_cluster_overview.csv",
-#         "results/DRAMv/annotations.tsv",
-#         "results/DRAMv/distilled/amg_summary.tsv",
-#         "results/graphanalyzer/csv_edit_vOTU_results.xlsx",
-#         "results/statistics/Sample_stats_vibrant.tsv",
-#         "results/statistics/Sample_stats_virsorter2.tsv",
-#         "results/statistics/vOTU_Stats_vibrant.tsv",
-#         "results/statistics/vOTU_Stats_virsorter2.tsv",
-#         "results/statistics/vOTU_AMGs.tsv",
+#         config["path"]["output"] + "/prodigal/proteins.faa",
+#         config["path"]["output"] + "/prodigal/orfs.genes",
+#         config["path"]["output"] + "/prodigal/orfs.genes.simple.faa",
+#         config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+#         config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
+#         config["path"]["output"] + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+#         config["path"]["output"] + "/vcontact2/viral_cluster_overview.csv",
+#         config["path"]["output"] + "/DRAMv/annotations.tsv",
+#         config["path"]["output"] + "/DRAMv/distilled/amg_summary.tsv",
+#         config["path"]["output"] + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
+#         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
+#         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
+#         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
 #     output:
 #         touch("finished_taxonomy"),
 # onsuccess:
