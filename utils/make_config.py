@@ -9,6 +9,8 @@ def make_config(virmake_path):
     db_path = virmake_path / "databases"
 
     config["assembler"] = "metaSpades"
+    config["trim_percentage"] = 0.05
+    config["min_coverage"] = 75
     config["path"] = {
         "virmake": str(virmake_path),
         "envs": str(virmake_path / "envs"),
@@ -52,20 +54,22 @@ def make_config(virmake_path):
         "normal": "normal",
         "big": "bigmem",
     }
-    config["tiny_mem"] = 1000
-    config["small_mem"] = 8000
-    config["normal_mem"] = 16000
-    config["big_mem"] = 32000
-    config["vcontact2_mem"] = 63000
-    config["metaquast_mem"] = 63000
-
-    config["tiny_time"] = "0-00:30:00"
-    config["small_time"] = "0-01:00:00"
-    config["normal_time"] = "0-06:00:00"
-    config["big_time"] = "0-13:00:00"
-    config["vcontact2_time"] = "0-24:00:00"
-    config["metaquast_time"] = "0-24:00:00"
-    config["trim_percentage"] = 0.05
+    config["memory"] = {
+        "tiny": 1000,
+        "small": 8000,
+        "normal": 16000,
+        "big": 32000,
+        "vcontact2": 63000,
+        "metaquast": 63000,
+    }
+    config["time"] = {
+        "tiny": "30 m",
+        "small": "1 h",
+        "normal": "6 h",
+        "big": "13 h",
+        "vcontact2": "24 h",
+        "metaquast": "24 h",
+    }
 
     return config
 

@@ -20,7 +20,9 @@ def cli():
 )
 @click.argument(
     "workflow",
-    type=click.Choice(["qc", "assembly", "identification", "taxonomy", "all"]),
+    type=click.Choice([
+        "all", "qc", "assembly", "identification", "mapping", "taxonomy", "function", "stats"
+    ]),
     default="all",
 )
 @click.option(
@@ -110,7 +112,6 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     except subprocess.CalledProcessError as e:
         logging.critical(f"Workflow failed, see log files")
         exit(1)
-    print("Done! Files written in: {output_dir}".format(output_dir=output_dir))
 
 
 # # Prepare VirMake for offline use
