@@ -207,7 +207,6 @@ def main():
     prep_script(logger, virmake_path)
 
     # remove setup.log on success
-    os.remove(f"{virmake_path / 'setup.log'}")
     logger.info("Success!\n")
 
 

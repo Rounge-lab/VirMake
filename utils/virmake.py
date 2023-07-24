@@ -236,11 +236,11 @@ def clean(target, y):
         if [
             (virmake_path / "working_dir").exists(),
             (virmake_path / "databases").exists(),
-            (virmake_path / "config.yaml").exists(),
+            (virmake_path / "workflow" / "config.yaml").exists(),
         ]:
             shutil.rmtree(virmake_path / "working_dir")
             shutil.rmtree(virmake_path / "databases")
-            os.remove(virmake_path / "config.yaml")
+            os.remove(virmake_path / "workflow" / "config.yaml")
     elif target == "databases":
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")
