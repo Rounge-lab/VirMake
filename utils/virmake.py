@@ -20,9 +20,18 @@ def cli():
 )
 @click.argument(
     "workflow",
-    type=click.Choice([
-        "all", "qc", "assembly", "identification", "mapping", "taxonomy", "function", "stats"
-    ]),
+    type=click.Choice(
+        [
+            "all",
+            "qc",
+            "assembly",
+            "identification",
+            "mapping",
+            "taxonomy",
+            "function",
+            "stats",
+        ]
+    ),
     default="all",
 )
 @click.option(
@@ -82,7 +91,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     else:
         profile = ""
     if not working_dir:
-        working_dir = virmake_path / "working_dir"
+        working_dir = virmake_path / "workflow"
     else:
         working_dir = pathlib.Path(working_dir).resolve()
 

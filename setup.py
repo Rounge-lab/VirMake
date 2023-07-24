@@ -155,7 +155,7 @@ def setup_db(logger, virmake_path):
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
                 f"--configfile {virmake_path / 'workflow' / 'config.yaml'} "
                 f"--use-conda --nolock "
-                f"--directory {virmake_path / 'working_dir'}"
+                f"--directory {virmake_path / 'workflow'}"
             )
             db_workflow = subprocess.run(cmd.split(), capture_output=True)
             if db_workflow.returncode != 0:

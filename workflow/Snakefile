@@ -1,8 +1,8 @@
 # TODO: change runtime formatting in config
 # TODO: write all the messages
 
-# PREAMBLE #
-#
+# PREAMBLE
+
 # set glob wildcards
 (
     SAMPLE,
@@ -201,7 +201,7 @@ rule QC:
         rules.fastp_pe.output,
         rules.fastqc_qc.output,
     output:
-        config["path"]["temp"] + "/finished_qc",
+        config["path"]["temp"] + "/finished_QC",
     threads: 1
     message:
         "[QC] Finished QC."
@@ -376,20 +376,20 @@ rule vibrant_pass1:
                 sample=SAMPLE,
             )
         ),
-        phages_combined=directory(
-            expand(
-                config["path"]["output"]
-                + "/vibrant_pass1/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/",
-                sample=SAMPLE,
-            )
-        ),
+        # phages_combined=directory(
+        #     expand(
+        #         config["path"]["output"]
+        #         + "/vibrant_pass1/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/",
+        #         sample=SAMPLE,
+        #     )
+        # ),
         finished=expand(
             config["path"]["output"] + "/vibrant_pass1/{sample}/finished",
             sample=SAMPLE,
         ),
     params:
-        db_dir=config["path"]["database"]["vibrant"] + "/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/files",
+        db_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/databases",
+        files_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/files",
         virome=vibrant_virome(config["vibrant"]["is_virome"]),
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
@@ -473,13 +473,13 @@ rule checkv_vibrant:
     Performes Quality control on identified viral sequences
     """
     input:
-        rules.vibrant_pass1.output.phages_combined,
+        rules.vibrant_pass1.output.dir,
         rules.vibrant_pass1.output.finished,
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
         fna_paths=[
-            f"{d}/contigs.phages_combined.fna"
-            for d in rules.vibrant_pass1.output.phages_combined
+            f"{d}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna"
+            for d in rules.vibrant_pass1.output.dir
         ],
     output:
         dir=directory(
@@ -823,8 +823,8 @@ rule vibrant_pass2:
         ),
         finished=config["path"]["output"] + "/vibrant_pass2/finished",
     params:
-        db_dir=config["path"]["database"]["vibrant"] + "/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/files",
+        db_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/databases",
+        files_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/files",
         virome=vibrant_virome(config["vibrant"]["is_virome"]),
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
@@ -939,7 +939,7 @@ rule IDENTIFICATION:
         rules.checkv_vOTU_virsorter2.output,
         rules.checkv_vOTU_vibrant.output,
     output:
-        config["path"]["temp"] + "/finished_identification",
+        config["path"]["temp"] + "/finished_IDENTIFICATION",
     threads: 1
     message:
         "[IDENTIFICATION] Finished identification of viral contigs"
@@ -1119,7 +1119,7 @@ rule MAPPING:
         rules.get_trimmed_coverage.output,
         rules.combine_coverage.output,
     output:
-        config["path"]["temp"] + "/finished_mapping",
+        config["path"]["temp"] + "/finished_MAPPING",
     threads: 1
     message:
         "[MAPPING] Mapping finished..."
@@ -1249,16 +1249,16 @@ rule vcontact2:
     threads: config["threads"]
     shell:
         """
-            rm -rdf {output.dir}/combined*
-            vcontact2 -t {threads} \
-                --raw-proteins {input.proteins} \
-                --rel-mode 'Diamond' \
-                --proteins-fp {input.g2g} \
-                --db 'None' \
-                --pcs-mode MCL \
-                --vcs-mode ClusterONE \
-                --output-dir {output.dir} \
-                &> {log}
+        rm -rdf {output.dir}/combined*
+        vcontact2 -t {threads} \
+            --raw-proteins {input.proteins} \
+            --rel-mode 'Diamond' \
+            --proteins-fp {input.g2g} \
+            --db 'None' \
+            --pcs-mode MCL \
+            --vcs-mode ClusterONE \
+            --output-dir {output.dir} \
+            &> {log}
         """
 
 
@@ -1269,7 +1269,7 @@ rule TAXONOMY:
         rules.inphared_setup.output,
         rules.vcontact2.output,
     output:
-        config["path"]["output"] + "/taxonomy_finished",
+        config["path"]["temp"] + "/finished_TAXONOMY",
     threads: 1
     shell:
         """
@@ -1289,7 +1289,8 @@ rule dramv_annotate:
     output:
         dir=directory(config["path"]["output"] + "/DRAMv/annotations/"),
     params:
-        config=config["path"]["database"]["DRAM"] + "/DRAM.config",
+        DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
+        min_contig_size=config["min_contig_size"],
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     log:
@@ -1302,14 +1303,13 @@ rule dramv_annotate:
     threads: config["threads"]
     shell:
         """
-        DRAM-setup.py import_config --config_loc {params.config}
+        DRAM-setup.py import_config --config_loc {params.DRAM_config}
         rm -rdf {output.dir}
         DRAM-v.py annotate -i {input}/for-dramv/final-viral-combined-for-dramv.fa\
         -v {input}/for-dramv/viral-affi-contigs-for-dramv.tab\
-        -o dramv-annotate \
         --output_dir {output.dir}\
         --threads {threads}\
-        --min_contig_size 1000\
+        --min_contig_size {params.min_contig_size}\
         &> {log}
         """
 
@@ -1336,10 +1336,10 @@ rule dramv_distill:
         """
         rm -rd {output.dir}
         DRAM-v.py distill -i {input}/annotations.tsv\
-        -o dramv-distill\
         --output_dir {output.dir}\
         &> {log}
-    """
+        cat {output.amg_summary}
+        """
 
 
 rule graphanalyzer:
@@ -1372,11 +1372,12 @@ rule graphanalyzer:
         --graph {input}/c1.ntw\
         --csv {input}/genome_by_genome_overview.csv\
         --metas {params.meta}\
-        --output {output.dir}\
+        --output {output.dir}/\
         --prefix vOTU\
         --suffix vOTU_results\
         --threads {threads}\
         &> {log}
+        cat {output.vOTU_results}
         """
 
 
@@ -1386,7 +1387,7 @@ rule FUNCTION:
         rules.dramv_distill.output,
         rules.graphanalyzer.output,
     output:
-        config["path"]["output"] + "/function_finished",
+        config["path"]["output"] + "/finished_FUNCTION",
     threads: 1
     shell:
         """
@@ -1413,6 +1414,11 @@ rule get_stats:
         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
+    log:
+        config["path"]["log"] + "/get_stats.log",
+    benchmark:
+        config["path"]["benchmark"] + "/get_stats.txt"
+    threads: config["threads"]
     script:
         config["path"]["scripts"] + "/table_stats.py"
 
@@ -1421,7 +1427,7 @@ rule STATS:
     input:
         rules.get_stats.output,
     output:
-        config["path"]["temp"] + "/finished_stats",
+        config["path"]["temp"] + "/finished_STATS",
     threads: 1
     shell:
         """
