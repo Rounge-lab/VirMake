@@ -22,13 +22,13 @@ def make_config(virmake_path):
         "temp": str(virmake_path / "working_dir" / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
         "database": {
-            "DRAM": str(db_path / "DRAM"),
-            "checkv": str(db_path / "checkv"),
+            "DRAM": str(db_path / "DRAM" / "DRAM_data"),
+            "checkv": str(db_path / "checkv" / "checkv-db-v1.5"),
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
             "vcontact2": str(db_path / "vcontact2"),
-            "vibrant": str(db_path / "vibrant"),
+            "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1"),
         },
     }
     config["virsorter2"] = {

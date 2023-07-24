@@ -388,8 +388,8 @@ rule vibrant_pass1:
             sample=SAMPLE,
         ),
     params:
-        db_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/files",
+        db_dir=config["path"]["database"]["vibrant"] + "/databases",
+        files_dir=config["path"]["database"]["vibrant"] + "/files",
         virome=vibrant_virome(config["vibrant"]["is_virome"]),
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
@@ -422,7 +422,7 @@ rule checkv_virsorter2:
     Performes Quality control on identified viral sequences
     """
     params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        db_dir=config["path"]["database"]["checkv"],
         fa_paths=[
             f"{d}/final-viral-combined.fa" for d in rules.virsorter2_pass1.output.dir
         ],
@@ -476,7 +476,7 @@ rule checkv_vibrant:
         rules.vibrant_pass1.output.dir,
         rules.vibrant_pass1.output.finished,
     params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        db_dir=config["path"]["database"]["checkv"],
         fna_paths=[
             f"{d}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna"
             for d in rules.vibrant_pass1.output.dir
@@ -823,8 +823,8 @@ rule vibrant_pass2:
         ),
         finished=config["path"]["output"] + "/vibrant_pass2/finished",
     params:
-        db_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/files",
+        db_dir=config["path"]["database"]["vibrant"] + "/databases",
+        files_dir=config["path"]["database"]["vibrant"] + "/files",
         virome=vibrant_virome(config["vibrant"]["is_virome"]),
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
@@ -857,7 +857,7 @@ rule checkv_vOTU_virsorter2:
     Runs Quality control on the vOTUs after virsorter2
     """
     params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        db_dir=config["path"]["database"]["checkv"],
     input:
         dir=rules.virsorter2_pass2.output.dir,
         finished=rules.virsorter2_pass2.output.finished,
@@ -895,7 +895,7 @@ rule checkv_vOTU_vibrant:
         combined=rules.vibrant_pass2.output.phages_combined,
         finished=rules.vibrant_pass2.output.finished,
     params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        db_dir=config["path"]["database"]["checkv"],
     output:
         dir=directory(config["path"]["output"] + "/checkv/vibrant_pass2/"),
         summary=config["path"]["output"] + "/checkv/vibrant_pass2/quality_summary.tsv",

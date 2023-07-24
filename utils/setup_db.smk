@@ -1,9 +1,9 @@
 rule all:
     input:
-        config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
+        config["path"]["database"]["vcontact2"] + "/vcontact2_setup_done.txt",
         config["path"]["database"]["DRAM"],
         config["path"]["database"]["vibrant"],
-        config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        config["path"]["database"]["checkv"],
         config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
         config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
         config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
@@ -15,7 +15,7 @@ rule Vcontact2:
     conda:
         config["path"]["envs"] + "/vcontact2.yaml"
     output:
-        config["path"]["database"]["vcontact2"] + "/Vcontact2_setup_done.txt",
+        config["path"]["database"]["vcontact2"] + "/vcontact2_setup_done.txt",
     shell:
         "touch {output}"
 
@@ -55,7 +55,7 @@ rule vibrant:
     conda:
         config["path"]["envs"] + "/vibrant.yaml"
     output:
-        directory(config["path"]["database"]["vibrant"] + "/vibrant-1.2.1/"),
+        directory(config["path"]["database"]["vibrant"]),
     shell:
         """
         download-db.sh {output}
