@@ -21,8 +21,18 @@ def cli():
 @click.argument(
     "workflow",
     type=click.Choice(
-        ["qc", "assembly", "identification", "taxonomy", "all", "None"]
+        [
+            "all",
+            "qc",
+            "assembly",
+            "identification",
+            "mapping",
+            "taxonomy",
+            "function",
+            "stats",
+        ]
     ),
+    default="all",
 )
 @click.option(
     "-p",
@@ -34,13 +44,13 @@ def cli():
     "-W",
     "--working-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="location to run atlas.",
+    help="location to run virmake.",
 )
 @click.option(
     "-C",
     "--config-file",
     type=click.Path(exists=True, resolve_path=True),
-    help="config-file generated with 'virmake init'",
+    help="config file generated during virmake setup",
 )
 @click.option(
     "-n",
@@ -48,14 +58,14 @@ def cli():
     is_flag=True,
     default=False,
     show_default=True,
-    help="Test execution.",
+    help="test execution",
 )
 @click.option(
     "-c",
     "--threads",
     default=24,
     type=int,
-    help="Number of threads used on multithreaded jobs",
+    help="maximum number of threads used on multithreaded jobs",
 )
 def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     """Runs the main workflow"""
@@ -81,13 +91,14 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     else:
         profile = ""
     if not working_dir:
-        working_dir = virmake_path / "working_dir"
+        working_dir = virmake_path / "workflow"
     else:
         working_dir = pathlib.Path(working_dir).resolve()
 
     cmd = (
         "time "
         "snakemake --directory {working_dir} "
+        "--conda-frontend mamba "
         "--rerun-incomplete "
         "--configfile '{config_file}' --nolock "
         "--use-conda --use-singularity {dryrun} "
@@ -97,7 +108,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     ).format(
         config_file=config_file,
         dryrun="-n" if dryrun else "",
-        target_rule=workflow if workflow != "None" else "",
+        target_rule=workflow.upper(),
         threads=threads,
         working_dir=working_dir,
         profile=profile,
@@ -161,7 +172,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     "-o",
     "--output-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="Location to download data to. Default is 'working_dir/input'.",
+    help="location to download data to. Default is 'working_dir/input'.",
     default=pathlib.Path(__file__).parent / "working_dir" / "input",
 )
 def run_get(database, accession, output_dir):
@@ -179,6 +190,23 @@ def run_get(database, accession, output_dir):
         # removes the traceback
         logging.critical(e)
         exit(1)
+    cmd = "gzip {output_dir}/*".format(output_dir=output_dir)
+    try:
+        print("Compressing files...")
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+    cmd = "for i in $(ls); do mv $i ${i/_[aA-zZ]/_}; done"
+    try:
+        print("Renaming files...")
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+    print("Done! Files written in: {output_dir}".format(output_dir=output_dir))
 
 
 # Clean
@@ -205,14 +233,12 @@ def clean(target, y):
             default=False,
         )
     if target == "all":
-        if [
-            (virmake_path / "working_dir").exists(),
-            (virmake_path / "databases").exists(),
-            (virmake_path / "config.yaml").exists(),
-        ]:
+        if (virmake_path / "working_dir").exists():
             shutil.rmtree(virmake_path / "working_dir")
+        if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")
-            os.remove(virmake_path / "config.yaml")
+        if (virmake_path / "workflow" / "config.yaml").exists():
+            os.remove(virmake_path / "workflow" / "config.yaml")
     elif target == "databases":
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")

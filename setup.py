@@ -95,7 +95,7 @@ def create_venv(logger, virmake_path):
     venv_list = subprocess.run(cmd.split(), capture_output=True)
     if "virmake" not in strip_stdout(venv_list.stdout):
         logger.info("\nPreparing VirMake virtual environment...\n")
-        cmd = f"mamba env create -f {virmake_path / 'venv.yaml'}"
+        cmd = f"mamba env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
         subprocess.run(cmd.split())
 
 
@@ -155,7 +155,7 @@ def setup_db(logger, virmake_path):
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
                 f"--configfile {virmake_path / 'workflow' / 'config.yaml'} "
                 f"--use-conda --nolock "
-                f"--directory {virmake_path / 'working_dir'}"
+                f"--directory {virmake_path / 'workflow'}"
             )
             db_workflow = subprocess.run(cmd.split(), capture_output=True)
             if db_workflow.returncode != 0:
@@ -207,7 +207,6 @@ def main():
     prep_script(logger, virmake_path)
 
     # remove setup.log on success
-    os.remove(f"{virmake_path / 'setup.log'}")
     logger.info("Success!\n")
 
 
