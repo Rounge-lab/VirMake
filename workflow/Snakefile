@@ -268,17 +268,10 @@ rule metaQUAST:
     input:
         rules.metaSpades.output.contigs,
     output:
-        dir=directory(
-            expand(config["path"]["output"] + "/metaQUAST/{sample}/", sample=SAMPLE)
-        ),
-        report=expand(
-            config["path"]["output"] + "/metaQUAST/{sample}/report.html", sample=SAMPLE
-        ),
-        transposed_report=expand(
-            config["path"]["output"]
-            + "/metaQUAST/{sample}/combined_reference/transposed_report.tsv",
-            sample=SAMPLE,
-        ),
+        dir=directory(config["path"]["output"] + "/metaQUAST/"),
+        report=config["path"]["output"] + "/metaQUAST/report.html",
+        transposed_report=config["path"]["output"]
+        + "/metaQUAST/combined_reference/transposed_report.tsv",
     message:
         "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
     conda:
@@ -1387,7 +1380,7 @@ rule FUNCTION:
         rules.dramv_distill.output,
         rules.graphanalyzer.output,
     output:
-        config["path"]["output"] + "/finished_FUNCTION",
+        config["path"]["temp"] + "/finished_FUNCTION",
     threads: 1
     shell:
         """
@@ -1403,17 +1396,21 @@ rule get_stats:
     Performs the aggregation of all relevant files into summaries tables and plots
     """
     input:
-        rules.graphanalyzer.output.vOTU_results,
-        rules.dramv_distill.output.amg_summary,
-        rules.checkv_vOTU_virsorter2.output.summary,
-        rules.checkv_vOTU_vibrant.output.summary,
-        rules.metaQUAST.output.transposed_report,
+        vOTU_results=rules.graphanalyzer.output.vOTU_results,
+        amg_summary=rules.dramv_distill.output.amg_summary,
+        virsorter2_summary=rules.checkv_vOTU_virsorter2.output.summary,
+        vibrant_summary=rules.checkv_vOTU_vibrant.output.summary,
+        transposed_report=rules.metaQUAST.output.transposed_report,
     output:
         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
+        dir=directory(config["path"]["output"] + "/statistics/"),
+    params:
+        samples=SAMPLE,
+        output_path=config["path"]["output"]
     log:
         config["path"]["log"] + "/get_stats.log",
     benchmark:

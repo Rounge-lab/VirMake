@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 script to calculate the aggregated results, statistics and simple plots for the
 pipeline
@@ -8,11 +7,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import re
+import pathlib
 
 
-samples = pd.read_table("./samples.tsv", sep="\t", usecols=["sample"])
-out_dir = "results/statistics/plots/"
-st_dir = "results/statistics/"
+output_path = snakemake.params.output_path
+samples = snakemake.params.samples
+out_dir = pathlib.Path(snakemake.output.dir) / "plots"
+st_dir = snakemake.output.dir
 
 
 def create_sample_stats_virsorter2():
@@ -43,7 +44,7 @@ def create_sample_stats_virsorter2():
     df = pd.DataFrame(columns=column_names)
 
     metaQuast_reads = pd.read_table(
-        "results/metaQUAST/combined_reference/transposed_report.tsv",
+        output_path + "/metaQUAST/combined_reference/transposed_report.tsv",
         usecols=["Assembly", "# contigs (>= 0 bp)"],
     )
     metaQuast_reads["Assembly"] = metaQuast_reads["Assembly"].str.replace(
@@ -53,12 +54,15 @@ def create_sample_stats_virsorter2():
         zip(metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"])
     )
 
-    for x in samples["sample"]:
+    for x in samples:
         checkV = getcheckv(
-            "results/checkv/virsorter2/" + x + "/quality_summary.tsv"
+            output_path
+            + "/checkv/virsorter2_pass1/"
+            + x
+            + "/quality_summary.tsv"
         )
         virSorter2 = getVirSorter(
-            "results/virsorter2/" + x + "/final-viral-score.tsv"
+            output_path + "/virsorter2_pass1/" + x + "/final-viral-score.tsv"
         )
 
         raw_reads, filtered_reads = get_trimmed_report(x)
@@ -68,9 +72,12 @@ def create_sample_stats_virsorter2():
         # Amount of reads filtered
         row[1] = raw_reads
         row[2] = filtered_reads
-        row[3] = metaQuast_reads[x]
+        try:
+            row[3] = metaQuast_reads[x]
+        except KeyError:
+            row[3] = metaQuast_reads["contigs"]
         row[4] = getMetaSpades(
-            "results/checkv/virsorter2/" + x + "/filtered/filtered_combined.fna"
+            output_path + "/filtered_virsorter2/" + x + "/filtered_combined.fna"
         )
         # checkv Score
         row[5] = checkV["Complete"]
@@ -85,7 +92,9 @@ def create_sample_stats_virsorter2():
         row[13] = virSorter2["RNA"]
         row[14] = virSorter2["lavidaviridae"]
         df.loc[len(df.index)] = row
-        df.to_csv("./results/statistics/Sample_stats_virsorter2.tsv", sep="\t")
+        df.to_csv(
+            output_path + "/statistics/Sample_stats_virsorter2.tsv", sep="\t"
+        )
 
 
 def create_sample_stats_vibrant():
@@ -118,7 +127,7 @@ def create_sample_stats_vibrant():
     df = pd.DataFrame(columns=column_names)
 
     metaQuast_reads = pd.read_table(
-        "results/metaQUAST/combined_reference/transposed_report.tsv",
+        output_path + "/metaQUAST/combined_reference/transposed_report.tsv",
         usecols=["Assembly", "# contigs (>= 0 bp)"],
     )
     metaQuast_reads["Assembly"] = metaQuast_reads["Assembly"].str.replace(
@@ -128,12 +137,13 @@ def create_sample_stats_vibrant():
         zip(metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"])
     )
 
-    for x in samples["sample"]:
+    for x in samples:
         checkV = getcheckv(
-            "results/checkv/vibrant/" + x + "/quality_summary.tsv"
+            output_path + "/checkv/vibrant_pass1/" + x + "/quality_summary.tsv"
         )
         vibrant = get_vibrant_quality(
-            "results/vibrant/"
+            output_path
+            + "/vibrant_pass1/"
             + x
             + "/VIBRANT_contigs/VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv"
         )
@@ -144,9 +154,12 @@ def create_sample_stats_vibrant():
         # Amount of reads filtered
         row[1] = raw_reads
         row[2] = filtered_reads
-        row[3] = metaQuast_reads[x]
+        try:
+            row[3] = metaQuast_reads[x]
+        except KeyError:
+            row[3] = metaQuast_reads["contigs"]
         row[4] = getMetaSpades(
-            "results/checkv/vibrant/" + x + "/filtered/filtered_combined.fna"
+            output_path + "/filtered_vibrant/" + x + "/filtered_combined.fna"
         )
         # checkv Score
         row[5] = checkV["Complete"]
@@ -164,7 +177,9 @@ def create_sample_stats_vibrant():
         row[16] = vibrant["lysogenic"]
 
         df.loc[len(df.index)] = row
-        df.to_csv("./results/statistics/Sample_stats_vibrant.tsv", sep="\t")
+        df.to_csv(
+            output_path + "/statistics/Sample_stats_vibrant.tsv", sep="\t"
+        )
 
 
 def get_trimmed_report(sample):
@@ -172,7 +187,7 @@ def get_trimmed_report(sample):
     Returns the fastp quality controlled number of sequences,
     before and after.
     """
-    df = pd.read_json("results/trimmed/report/" + sample + ".json")
+    df = pd.read_json(output_path + "/fastp_pe/" + sample + ".json")
     raw = df["summary"]["before_filtering"]["total_reads"]
     qc = df["summary"]["after_filtering"]["total_reads"]
     return raw, qc
@@ -302,7 +317,7 @@ def get_graphAnalyzer():
     Helper function for gathering results from graphanalyzer
     """
     gA_df = pd.read_table(
-        "./results/graphanalyzer/results_vcontact2_vOTU_results.csv",
+        output_path + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
         sep=",",
         usecols=[
             "Scaffold",
@@ -348,13 +363,15 @@ def stats_vOTUs_virsorter2():
     vOTU_stats = pd.DataFrame(columns=column_names)
     gA_df = get_graphAnalyzer()
     cV_df = pd.read_table(
-        "results/checkv/vOTU/virsorter2/quality_summary.tsv",
+        output_path + "/checkv/virsorter2_pass2/quality_summary.tsv",
         sep="\t",
         usecols=["contig_id", "provirus", "checkv_quality"],
     )
     cV_df = cV_df.rename(columns={"contig_id": "Scaffold"})
     result = pd.merge(gA_df, cV_df, on="Scaffold", how="outer")
-    result.to_csv("./results/statistics/vOTU_Stats_virsorter2.tsv", sep="\t")
+    result.to_csv(
+        output_path + "/statistics/vOTU_Stats_virsorter2.tsv", sep="\t"
+    )
 
 
 def stats_vOTUs_vibrant():
@@ -374,13 +391,13 @@ def stats_vOTUs_vibrant():
     vOTU_stats = pd.DataFrame(columns=column_names)
     gA_df = get_graphAnalyzer()
     cV_df = pd.read_table(
-        "results/checkv/vOTU/vibrant/quality_summary.tsv",
+        output_path + "/checkv/vibrant_pass2/quality_summary.tsv",
         sep="\t",
         usecols=["contig_id", "provirus", "checkv_quality"],
     )
     cV_df = cV_df.rename(columns={"contig_id": "Scaffold"})
     result = pd.merge(gA_df, cV_df, on="Scaffold", how="outer")
-    result.to_csv("./results/statistics/vOTU_Stats_vibrant.tsv", sep="\t")
+    result.to_csv(output_path + "/statistics/vOTU_Stats_vibrant.tsv", sep="\t")
 
 
 def vOTU_AMG_stats():
@@ -391,12 +408,13 @@ def vOTU_AMG_stats():
     column_names = ["protein/gene", "scaffold", "ID", "Description"]
     df = pd.DataFrame(columns=column_names)
     vibrant_amgs = pd.read_table(
-        "results/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_AMG_individuals_vOTU_derep95_combined.tsv",
+        output_path
+        + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_AMG_individuals_vOTU_derep95_combined.tsv",
         sep="\t",
         usecols=["protein", "scaffold", "AMG KO", "AMG KO name"],
     )
     dramv_amgs = pd.read_table(
-        "results/DRAMv/distilled/amg_summary.tsv",
+        output_path + "/DRAMv/distilled/amg_summary.tsv",
         sep="\t",
         usecols=["gene", "scaffold", "gene_id", "gene_description"],
     )
@@ -417,7 +435,7 @@ def vOTU_AMG_stats():
         row["Description"] = x["gene_description"]
         df = df.append(row, ignore_index=True)
 
-    df.to_csv("./results/statistics/vOTU_AMGs.tsv", sep="\t")
+    df.to_csv(output_path + "/statistics/vOTU_AMGs.tsv", sep="\t")
 
 
 def combine_vOTU_stats():
@@ -426,10 +444,10 @@ def combine_vOTU_stats():
     both virsorter2 rerun and VIBRANT.
     """
     df_v = pd.read_table(
-        "./results/statistics/vOTU_Stats_virsorter2.tsv", sep="\t"
+        output_path + "/statistics/vOTU_Stats_virsorter2.tsv", sep="\t"
     )
     df_vs2 = pd.read_table(
-        "./results/statistics/vOTU_Stats_vibrant.tsv", sep="\t"
+        output_path + "/statistics/vOTU_Stats_vibrant.tsv", sep="\t"
     )
     df = df_v.set_index("Scaffold").combine_first(df_vs2.set_index("Scaffold"))
     df.drop(df.filter(regex="Unnamed"), axis=1, inplace=True)
@@ -438,7 +456,7 @@ def combine_vOTU_stats():
         inplace=True,
         key=lambda x: x.str.extract("(\d+)").squeeze().astype(int),
     )
-    df.to_csv("./results/statistics/vOTU_stats_combined.tsv", sep="\t")
+    df.to_csv(output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t")
 
 
 def create_relative_Abundance():
@@ -446,7 +464,7 @@ def create_relative_Abundance():
     Function that creates the relative abundance table.
     It calculates the relative abundance based on the coverage file.
     """
-    df = pd.read_table("./results/contig_stats/raw_coverage_table.tsv")
+    df = pd.read_table(output_path + "/contig_stats/raw_coverage_table.tsv")
     ra_df = pd.DataFrame(columns=df.columns, index=df.index, data=None)
     ra_df["ID"] = df["ID"]
     for column in df.columns[1:]:
@@ -455,7 +473,9 @@ def create_relative_Abundance():
             relative_abundance = (v / total_instances) * 100
             ra_df[column][index_r] = round(relative_abundance, 2)
     ra_df = ra_df.set_index("ID")
-    ra_df.to_csv("./results/statistics/vOTU_Relative_Abundance.tsv", sep="\t")
+    ra_df.to_csv(
+        output_path + "/statistics/vOTU_Relative_Abundance.tsv", sep="\t"
+    )
 
 
 def combine_sample_stats():
@@ -463,8 +483,8 @@ def combine_sample_stats():
     Function that creates the Combined stats table. Combines results gathered from the
     stats tables of virsorter2 and VIBRANT
     """
-    df1 = pd.read_table("./results/statistics/Sample_stats_virsorter2.tsv")
-    df2 = pd.read_table("./results/statistics/Sample_stats_vibrant.tsv")
+    df1 = pd.read_table(output_path + "/statistics/Sample_stats_virsorter2.tsv")
+    df2 = pd.read_table(output_path + "/statistics/Sample_stats_vibrant.tsv")
 
     my_df1 = []
     for index, row in df1.iterrows():
@@ -513,7 +533,9 @@ def combine_sample_stats():
     combined_df = new_df1.add(new_df2, fill_value=0)
     combined_df.set_index("Sample")
     combined_df.to_csv(
-        "./results/statistics/Combined_Sample_stats.tsv", sep="\t", index=False
+        output_path + "/statistics/Combined_Sample_stats.tsv",
+        sep="\t",
+        index=False,
     )
 
 
@@ -523,7 +545,7 @@ def plot_sampleStats():
     """
     data = []
     df = pd.read_table(
-        "./results/statistics/Combined_Sample_stats.tsv", sep="\t"
+        output_path + "/statistics/Combined_Sample_stats.tsv", sep="\t"
     )
     for index, row in df.iterrows():
         data.append(row.to_list())
@@ -541,7 +563,7 @@ def plot_sampleStats():
     # transposing (switching rows and columns) of DataFrame df and
     # plot a line for each column on the axis ax, which was created previously
     df2.T.plot(ax=ax)
-    plt.savefig("./results/statistics/plots/Combined_Sample_stats_all.png")
+    plt.savefig(output_path + "/statistics/plots/Combined_Sample_stats_all.png")
 
 
 def plot_sampleStats_viral():
@@ -551,7 +573,7 @@ def plot_sampleStats_viral():
     """
     data = []
     df = pd.read_table(
-        "./results/statistics/Combined_Sample_stats.tsv",
+        output_path + "/statistics/Combined_Sample_stats.tsv",
         sep="\t",
         usecols=["Sample", "Viral Contigs", "QC Viral Contigs"],
     )
@@ -573,7 +595,8 @@ def plot_sampleStats_viral():
     df2.T.plot(ax=ax)
     plt.xticks(ticks=[0, 1], labels=["Viral Contigs", "QC Viral Contigs"])
     plt.savefig(
-        "./results/statistics/plots/Combined_Sample_stats_viral_contigs.png"
+        output_path
+        + "/statistics/plots/Combined_Sample_stats_viral_contigs.png"
     )
 
 
@@ -582,7 +605,7 @@ def relative_abundace_plot():
     Function that plots the relative abundance as a boxplot
     """
     df = pd.read_table(
-        "./results/statistics/vOTU_Relative_Abundance.tsv", sep="\t"
+        output_path + "/statistics/vOTU_Relative_Abundance.tsv", sep="\t"
     )
     df = df.drop("ID", axis=1)
     df.columns = ["S" + str(i + 1) for i in range(len(df.columns))]
@@ -593,7 +616,7 @@ def relative_abundace_plot():
     plt.xlabel("Samples")
     plt.ylabel("Abundance in %")
     fig.savefig(
-        "./results/statistics/plots/relative_abundance_plot.png",
+        output_path + "/statistics/plots/relative_abundance_plot.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -604,7 +627,9 @@ def vOTU_families_plot():
     Function that plots a barchart of the taxonomic annotation of the vOTUs
     at the family level
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv", sep="\t")
+    df = pd.read_table(
+        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
+    )
 
     plot_df = df[["Scaffold", "Family", "Status"]]
 
@@ -620,7 +645,7 @@ def vOTU_families_plot():
         fontsize="small",
     )
     fig.savefig(
-        "./results/statistics/plots/Family_vOTU_BarChart.png",
+        output_path + "/statistics/plots/Family_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -631,7 +656,9 @@ def vOTU_Subfamily_plot():
     Function that plots a barchart of the taxonomic annotation of the vOTUs
     at the subfamily level
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv", sep="\t")
+    df = pd.read_table(
+        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
+    )
 
     plot_df = df[["Scaffold", "Subfamily", "Status"]]
 
@@ -647,7 +674,7 @@ def vOTU_Subfamily_plot():
         fontsize="small",
     )
     fig.savefig(
-        "./results/statistics/plots/Subfamily_vOTU_BarChart.png",
+        output_path + "/statistics/plots/Subfamily_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -658,7 +685,9 @@ def vOTU_Genus_plot():
     Function that plots a barchart of the taxonomic annotation of the vOTUs
     at the genus level
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv", sep="\t")
+    df = pd.read_table(
+        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
+    )
 
     plot_df = df[["Scaffold", "Genus", "Status"]]
 
@@ -674,7 +703,7 @@ def vOTU_Genus_plot():
         fontsize="small",
     )
     fig.savefig(
-        "./results/statistics/plots/Genus_vOTU_BarChart.png",
+        output_path + "/statistics/plots/Genus_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -684,7 +713,7 @@ def vOTU_checkv_plot():
     """
     Function that plots a barchart of the vOTU checkv quality
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv")
+    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
 
     plot_df = df[["Scaffold", "checkv_quality", "Status"]]
 
@@ -700,7 +729,7 @@ def vOTU_checkv_plot():
         fontsize="small",
     )
     fig.savefig(
-        "./results/statistics/plots/checkv_quality_vOTU_BarChart.png",
+        output_path + "/statistics/plots/checkv_quality_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -713,12 +742,12 @@ def vOTU_to_reads_mapping():
     """
     contig_ID = []
     vOTU_ID = []
-    with open("./results/cdhit/derep95_combined.fasta", "r") as sf:
+    with open(output_path + "/cdhit/derep95_combined.fasta", "r") as sf:
         for ln in sf.readlines():
             if ln.startswith(">"):
                 contig_ID.append(ln[1:].strip("\n"))
 
-    with open("./results/cdhit/vOTU_derep95_combined.fasta", "r") as sf:
+    with open(output_path + "/vOTU/vOTU_derep95_combined.fasta", "r") as sf:
         for ln in sf.readlines():
             if ln.startswith(">"):
                 vOTU_ID.append(ln[1:].strip("\n"))
@@ -728,16 +757,20 @@ def vOTU_to_reads_mapping():
     combined_df["Contig_ID"] = contig_ID
 
     cV_combined_vibrant = pd.DataFrame(columns=["contig_id", "provirus"])
-    for x in samples["sample"]:
+    for x in samples:
         cV_df = pd.read_table(
-            "./results/checkv/vibrant/" + x + "/quality_summary.tsv", sep="\t"
+            output_path + "/checkv/vibrant_pass1/" + x + "/quality_summary.tsv",
+            sep="\t",
         )
         cV_combined_vibrant = pd.concat([cV_combined_vibrant, cV_df])
 
     cV_combined_virsorter2 = pd.DataFrame(columns=["contig_id", "provirus"])
-    for x in samples["sample"]:
+    for x in samples:
         cV_df = pd.read_table(
-            "./results/checkv/virsorter2/" + x + "/quality_summary.tsv",
+            output_path
+            + "/checkv/virsorter2_pass1/"
+            + x
+            + "/quality_summary.tsv",
             sep="\t",
         )
         cV_combined_virsorter2 = pd.concat([cV_combined_virsorter2, cV_df])
@@ -765,7 +798,7 @@ def vOTU_to_reads_mapping():
         else:
             combined_df.at[index, "Provirus"] = "No"
     combined_df.to_csv(
-        "./results/statistics/vOTU_mapped_to_reads.tsv", sep="\t"
+        output_path + "/statistics/vOTU_mapped_to_reads.tsv", sep="\t"
     )
 
 
@@ -774,13 +807,14 @@ def gather_lytic():
     Function that updates the vOTU stats table to include lytic/lysogenic classification
     """
     provirus_df = pd.read_table(
-        "./results/statistics/vOTU_mapped_to_reads.tsv", sep="\t"
+        output_path + "/statistics/vOTU_mapped_to_reads.tsv", sep="\t"
     )
     combined_df = pd.read_table(
-        "./results/statistics/vOTU_stats_combined.tsv", sep="\t"
+        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
     )
     lysogenic_df = pd.read_table(
-        "./results/vibrant/vOTU/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_genome_quality_vOTU_derep95_combined.tsv",
+        output_path
+        + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_genome_quality_vOTU_derep95_combined.tsv",
         sep="\t",
     )
     combined_df["provirus"] = provirus_df["Provirus"]
@@ -795,14 +829,16 @@ def gather_lytic():
                 combined_df.at[index, "Type"] = str(lysogenic.iloc[0]["type"])
             else:
                 combined_df.at[index, "Type"] = str(lysogenic["type"].item())
-    combined_df.to_csv("./results/statistics/vOTU_stats_combined.tsv", sep="\t")
+    combined_df.to_csv(
+        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
+    )
 
 
 def vOTU_provirus_plot():
     """
     Function that plots a barchart of if a vOTU is a provirus or not
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv")
+    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
 
     plot_df = df[["Scaffold", "provirus"]]
     print(plot_df)
@@ -816,7 +852,7 @@ def vOTU_provirus_plot():
     plt.ylabel("# vOTU")
     plt.xticks(rotation=45, fontweight="light", fontsize="medium")
     fig.savefig(
-        "./results/statistics/plots/provirus_vOTU_BarChart.png",
+        output_path + "/statistics/plots/provirus_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
@@ -826,7 +862,7 @@ def vOTU_lysogenic_plot():
     """
     Function that plots a barchart of if a vOTU is lysogenic or lytic
     """
-    df = pd.read_table("./results/statistics/vOTU_stats_combined.tsv")
+    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
 
     plot_df = df[["Scaffold", "Type"]]
 
@@ -837,7 +873,7 @@ def vOTU_lysogenic_plot():
     plt.ylabel("# vOTU")
     plt.xticks(rotation=45, fontweight="light", fontsize="medium")
     fig.savefig(
-        "./results/statistics/plots/lysogenic_vOTU_BarChart.png",
+        output_path + "/statistics/plots/lysogenic_vOTU_BarChart.png",
         bbox_inches="tight",
     )
     plt.clf()
