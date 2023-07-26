@@ -23,7 +23,7 @@ def make_config(virmake_path):
         "scripts": str(virmake_path / "workflow" / "scripts"),
         "database": {
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
-            "checkv": str(db_path / "checkv" / "checkv-db-v1.5"),
+            "checkv": str(db_path / "checkv"),
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),

@@ -123,35 +123,40 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         exit(1)
 
 
-# # Prepare VirMake for offline use
-# @cli.command(
-#     "prep",
-#     context_settings=dict(ignore_unknown_options=True),
-#     short_help="Downloads and creates all enviorments needed to run the workflow offline.",
-# )
-# @click.option(
-#     "--threads",
-#     default=24,
-#     type=int,
-#     help="number of threads to use per multi-threaded job",
-# )
-# def run_prep_offline(threads):
-#     """Downloads and creates all enviorments needed to run the workflow offline."""
-
-#     cmd = (
-#         "snakemake --snakefile {snakefile}"
-#         "--rerun-incomplete "
-#         "--conda-frontend mamba"
-#         " --nolock  --use-conda --use-singularity --conda-create-envs-only"
-#         " --show-failed-logs"
-#         " -c{threads}"
-#     ).format(snakefile=get_snakefile(), threads=threads)
-#     try:
-#         subprocess.check_call(cmd, shell=True)
-#     except subprocess.CalledProcessError as e:
-#         # removes the traceback
-#         logging.critical(e)
-#         exit(1)
+# Prepare VirMake for offline use
+@cli.command(
+    "prep",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads and creates all enviorments needed to run the workflow offline.",
+)
+@click.option(
+    "-c",
+    "--threads",
+    default=24,
+    type=int,
+    help="number of threads to use per multi-threaded job",
+)
+def run_prep_offline(threads):
+    """Downloads and creates all enviorments needed to run the workflow offline."""
+    virmake_path = pathlib.Path(__file__).parent
+    cmd = (
+        "snakemake --snakefile {snakefile} "
+        "--conda-frontend mamba --configfile {config} "
+        "--nolock  --use-conda --conda-create-envs-only "
+        "--show-failed-logs --directory {working_dir} "
+        "-c{threads}"
+    ).format(
+        snakefile=virmake_path / "workflow" / "Snakefile",
+        threads=threads,
+        config=virmake_path / "workflow" / "config.yaml",
+        working_dir=virmake_path / "workflow",
+    )
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
 
 
 # Download sample data
