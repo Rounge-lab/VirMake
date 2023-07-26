@@ -369,13 +369,6 @@ rule vibrant_pass1:
                 sample=SAMPLE,
             )
         ),
-        # phages_combined=directory(
-        #     expand(
-        #         config["path"]["output"]
-        #         + "/vibrant_pass1/{sample}/VIBRANT_contigs/VIBRANT_phages_contigs/",
-        #         sample=SAMPLE,
-        #     )
-        # ),
         finished=expand(
             config["path"]["output"] + "/vibrant_pass1/{sample}/finished",
             sample=SAMPLE,
@@ -1410,7 +1403,7 @@ rule get_stats:
         dir=directory(config["path"]["output"] + "/statistics/"),
     params:
         samples=SAMPLE,
-        output_path=config["path"]["output"]
+        output_path=config["path"]["output"],
     log:
         config["path"]["log"] + "/get_stats.log",
     benchmark:

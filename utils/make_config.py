@@ -43,12 +43,14 @@ def make_config(virmake_path):
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }
-    config["vibrant"] = {"is_virome": "no", "cutoff_length": 1000}
+    config["vibrant"] = {
+        "is_virome": "no",
+    }
     config["cd-hit-est"] = {
         "identity_threshold": 0.95,
         "coverage": 0.85,
     }
-    config["quality_threshold"] = "low"
+    config["quality_threshold"] = "medium"
     config["threads"] = 24
     config["job_type"] = {
         "small": "normal",

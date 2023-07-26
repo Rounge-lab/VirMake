@@ -105,6 +105,82 @@ To run the workflow use:
 
 To run the workflow with more personalized options please use `./virmake run -h` and read the help page.
 
+### Config file
+
+To adjust the workflow settings edit the `config.yaml` file. The file is located in `VirMake/workflow/config.yaml`.
+The file contains the following adjustable settings (default values are provided in brackets):
+
+```
+assembler: [metaSpades]                     # assembler being used
+                                            # currently only metaSpades is supported
+cd-hit-est:
+    coverage: [0.85]                        # coverage threshold for cd-hit-est
+    identity_threshold: [0.95]              # identity threshold for cd-hit-est
+job_type:
+    big: [bigmem]
+    normal: [normal]
+    small: [normal]
+memory:                                     # memory requirements for each job type in megabytes
+    big: [32000]
+    metaquast: [63000]
+    normal: [16000]
+    small: [8000]
+    tiny: [1000]
+    vcontact2: [63000]
+min_contig_size: [1000]                     # minimum contig size for DRAMv annotate
+min_coverage: [75]                          # minimum coverage for combine_coverage.R script
+
+###############################################################################################
+
+# absolute paths to various folders being used by the pipeline
+# we do not recommend changing these unless you know what you are doing!
+path:
+    benchmark: [/.../VirMake/working_dir/benchmark]
+    database:
+        DRAM: [/.../VirMake/databases/DRAM]
+        INPHARED: [/.../VirMake/databases/INPHARED]
+        RefSeq: [/.../VirMake/databases/RefSeq]
+        checkv: [/.../VirMake/databases/checkv]
+        vcontact2: [/.../VirMake/databases/vcontact2]
+        vibrant: [/.../VirMake/databases/vibrant]
+        virsorter2: [/.../VirMake/databases/virsorter2]
+    envs: [/.../VirMake/envs]
+    input: [/.../VirMake/working_dir/input]
+    log: [/.../VirMake/working_dir/log]
+    output: [/.../VirMake/working_dir/output]
+    scripts: [/.../VirMake/workflow/scripts]
+    temp: [/.../VirMake/working_dir/temp]
+    virmake: [/.../VirMake]
+
+###############################################################################################
+
+quality_threshold: [medium]                 # quality threshold for fastp
+threads: [24]                               # minimum number of threads to use for parallelized jobs
+time:                                       # time requirements for each job type
+    big: [13 h]
+    metaquast: [24 h]
+    normal: [6 h]
+    small: [1 h]
+    tiny: [30 min]
+    vcontact2: [24 h]
+trim_percentage: [0.95]
+vibrant:
+    is_virome: ['no']                       # is the sample a virome? ('yes' or 'no')
+virsorter2:
+    pass1:
+        min_lenght: [3000]                  # minimum contig length for virsorter2_pass1
+                                            # contigs with length < 3000 will be discarded
+
+        min_score: [0.5]                    # minimum quality score for virsorter2_pass1
+
+        # viral groups searched for by virsorter2_pass1
+        viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
+    pass2:
+        min_lenght: [1000]
+        min_score: [0.5]
+        viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
+```
+
 ## Output explained
 
 The pipeline provides many files and to help navigate these this section will explain what each section provides.
