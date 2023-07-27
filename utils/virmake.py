@@ -270,5 +270,20 @@ def clean(target, y):
         exit(1)
 
 
+@cli.command(
+    "show",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Show VirMake Results.",
+)
+def show():
+    cmd = "Rscript utils/app.R"
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+
+
 if __name__ == "__main__":
     cli()
