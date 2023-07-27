@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 import os
+import yaml
 
 import click
 
@@ -11,6 +12,19 @@ import click
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     "VirMake is a workflow for the analysis of viral metagenomes"
+
+
+# load config file
+try:
+    with open("workflow/config.yaml", "r") as cf:
+        try:
+            config = yaml.safe_load(cf)
+        except yaml.YAMLError as ye:
+            logging.critical(ye)
+            exit(1)
+except FileNotFoundError:
+    logging.critical("Config file not found: workflow/config.yaml")
+    exit(1)
 
 
 @cli.command(
@@ -70,7 +84,7 @@ def cli():
 def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     """Runs the main workflow"""
     # load virmake path
-    virmake_path = pathlib.Path(__file__).parent
+    virmake_path = config["path"]["virmake"]
 
     # load needed paths and check if they exist
     if not config_file:
@@ -138,7 +152,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
 )
 def run_prep_offline(threads):
     """Downloads and creates all enviorments needed to run the workflow offline."""
-    virmake_path = pathlib.Path(__file__).parent
+    virmake_path = config["path"]["virmake"]
     cmd = (
         "snakemake --snakefile {snakefile} "
         "--conda-frontend mamba --configfile {config} "
@@ -230,7 +244,7 @@ def run_get(database, accession, output_dir):
 )
 def clean(target, y):
     """clean virmake directory."""
-    virmake_path = pathlib.Path(__file__).parent
+    virmake_path = config["path"]["virmake"]
     if not y:
         click.confirm(
             f"are you sure you want to delete {target}?",
@@ -276,7 +290,9 @@ def clean(target, y):
     short_help="Show VirMake Results.",
 )
 def show():
-    cmd = "Rscript utils/app.R"
+    cmd = "Rscript utils/app.R {stats_path}".format(
+        stats_path=config["path"]["output"] + "/statistics"
+    )
     try:
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
