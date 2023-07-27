@@ -105,6 +105,18 @@ To run the workflow use:
 
 To run the workflow with more personalized options please use `./virmake run -h` and read the help page.
 
+### Inspecting results
+
+You can inspect the results by running:
+
+```
+./virmake inspect
+```
+
+and click on the link that will be provided in the terminal. This will launch shiny app within your browser.
+The link should look like `http://127.0.0.1:4075` (the port number may vary).
+To exit the shiny app press `CTRL + C` in the terminal.
+
 ### Config file
 
 To adjust the workflow settings edit the `config.yaml` file. The file is located in `VirMake/workflow/config.yaml`.

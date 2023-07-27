@@ -285,7 +285,7 @@ def clean(target, y):
 
 
 @cli.command(
-    "show",
+    "inspect",
     context_settings=dict(ignore_unknown_options=True),
     short_help="Show VirMake Results.",
 )
