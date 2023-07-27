@@ -1,6 +1,12 @@
+options(warn=-1)
+
 require("shiny")
 require("shinydashboard")
 require("shinythemes")
+require("tidyverse")
+require("ggplot2")
+require("reshape2")
+
 
 args = commandArgs(trailingOnly=TRUE)
 stats.path <- args[1]
@@ -39,7 +45,19 @@ UI <- fluidPage(theme = shinytheme("cerulean"),
             )
         ),
         tabPanel("Assembly",
-            titlePanel("Assembly results")
+            titlePanel("Assembly results"),
+            sidebarPanel(
+                checkboxGroupInput(
+                    inputId = "sel.sample.assembly1",
+                    label = "Filter by sample:",
+                    choices = sort(c("All", unique(combined.sample.stats$Sample))),
+                    selected = "All"
+                ),
+            ),
+            mainPanel(
+                plotOutput("assembly1.plot"),
+                # plotOutput("assembly2.plot")
+            )
         ),
         tabPanel("Taxonomy",
             titlePanel("Taxonomy results"),
@@ -69,30 +87,74 @@ UI <- fluidPage(theme = shinytheme("cerulean"),
                 plotOutput("genus.plot"),
             )
         ),
-        tabPanel("Functional analysis"),
+        tabPanel("Functional analysis",
+            titlePanel("Functional analysis results"),
+            sidebarPanel(
+                checkboxGroupInput(
+                    inputId = "sel.type",
+                    label = "Filter by type:",
+                    choices = sort(c("All", unique(vOTU.stats.combined$Type))),
+                    selected = "All"
+                ),
+                checkboxGroupInput(
+                    inputId = "sel.provirus",
+                    label = "Filter by provirus:",
+                    choices = sort(c("All", unique(vOTU.stats.combined$provirus))),
+                    selected = "All"
+                ),
+            ),
+            mainPanel(
+                plotOutput("type.plot"),
+                plotOutput("provirus.plot"),
+            )
+        )
     )
-
 )
 
 server <- function(input, output) {
-
     # QC
     relative.abundances <- subset(vOTU.relative.abundance, select=-ID)
     sel.sample <- reactive({input$sel.sample})
     output$abundance.plot <- renderPlot({
         if ("All" %in% sel.sample()) {
-            boxplot(relative.abundances, main = "Relative abundances", xlab = "Sample", ylab = "Relative abundance")
+            ggplot(melt(relative.abundances), aes(x = variable, y=value)) +
+            geom_boxplot(aes(fill=variable)) +
+            labs(title = "Relative abundances", x = "Sample", y = "Relative abundance", fill="Sample")
         } else {
-            boxplot(relative.abundances[,sel.sample()], main = "Relative abundances", xlab = "Sample", ylab = "Relative abundance")
+            print(relative.abundances)
+            df <- relative.abundances %>% select(sel.sample())
+            ggplot(melt(df), aes(x = variable, y=value)) +
+            geom_boxplot(aes(fill=variable)) +
+            labs(title = "Relative abundances", x = "Sample", y = "Relative abundance", fill="Sample")
         }
     })
     quality.counts <- table(vOTU.stats.combined$checkv_quality)
     sel.quality <- reactive({input$sel.quality})
     output$checkv.quality.plot <- renderPlot({
         if ("All" %in% sel.quality()) {
-            barplot(quality.counts, main = "CheckV quality", xlab = "Quality", ylab = "Number of vOTUs")
+            ggplot(data.frame(quality.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "CheckV quality", x = "Quality", y = "Number of vOTUs", fill="Quality")
         } else {
-            barplot(quality.counts[sel.quality()], main = "CheckV quality", xlab = "Quality", ylab = "Number of vOTUs")
+            df <- data.frame(quality.counts) %>% filter(Var1 %in% sel.quality())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "CheckV quality", x = "Quality", y = "Number of vOTUs", fill="Quality")
+        }
+    })
+
+    # Assembly
+    sel.sample.assembly1 <- reactive({input$sel.sample.assembly1})
+    output$assembly1.plot <- renderPlot({
+        if ("All" %in% sel.sample.assembly1()) {
+            ggplot(melt(combined.sample.stats), aes(x = variable, y=value, group=Sample)) +
+            geom_line(aes(colour=Sample)) +
+            labs(title = "Assembly statistics", x = "Workflow interval", y = "# contigs")
+        } else {
+            df <- combined.sample.stats %>% filter(Sample %in% sel.sample.assembly1())
+            ggplot(melt(df), aes(x = variable, y=value, group=Sample)) +
+            geom_line(aes(colour=Sample)) +
+            labs(title = "Assembly statistics", x = "Workflow interval", y = "# contigs")
         }
     })
 
@@ -101,31 +163,74 @@ server <- function(input, output) {
     sel.family <- reactive({input$sel.family})
     output$family.plot <- renderPlot({
         if ("All" %in% sel.family()) {
-            barplot(family.counts, main = "Identified families", xlab = "Family", ylab = "Number of vOTUs")
+            ggplot(data.frame(family.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified families", x = "Family", y = "Number of vOTUs", fill="Family")
         } else {
-            barplot(family.counts[sel.family()], main = "Identified families", xlab = "Family", ylab = "Number of vOTUs")
+            df <- data.frame(family.counts) %>% filter(Var1 %in% sel.family())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified families", x = "Family", y = "Number of vOTUs", fill="Family")
         }
     })
     subfamily.counts <- table(vOTU.stats.combined$Subfamily)
     sel.subfamily <- reactive({input$sel.subfamily})
     output$subfamily.plot <- renderPlot({
         if ("All" %in% sel.subfamily()) {
-            barplot(subfamily.counts, main = "Identified subfamilies", xlab = "Subfamily", ylab = "Number of vOTUs")
+            ggplot(data.frame(subfamily.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified subfamilies", x = "Subfamily", y = "Number of vOTUs", fill="Subfamily")
         } else {
-            barplot(subfamily.counts[sel.subfamily()], main = "Identified subfamilies", xlab = "Subfamily", ylab = "Number of vOTUs")
+            df <- data.frame(subfamily.counts) %>% filter(Var1 %in% sel.subfamily())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified subfamilies", x = "Subfamily", y = "Number of vOTUs", fill="Subfamily")
         }
     })
     genus.counts <- table(vOTU.stats.combined$Genus)
     sel.genus <- reactive({input$sel.genus})
     output$genus.plot <- renderPlot({
         if ("All" %in% sel.genus()) {
-            barplot(genus.counts, main = "Identified genera", xlab = "Genus", ylab = "Number of vOTUs")
+            ggplot(data.frame(genus.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified genera", x = "Genus", y = "Number of vOTUs", fill="Genus")
         } else {
-            barplot(genus.counts[sel.genus()], main = "CheckV quality", xlab = "Genus", ylab = "Number of vOTUs")
+            df <- data.frame(genus.counts) %>% filter(Var1 %in% sel.genus())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified genera", x = "Genus", y = "Number of vOTUs", fill="Genus")
         }
     })
 
-
+    # Functional analysis
+    type.counts <- table(vOTU.stats.combined$Type)
+    sel.type <- reactive({input$sel.type})
+    output$type.plot <- renderPlot({
+        if ("All" %in% sel.type()) {
+            ggplot(data.frame(type.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified types", x = "type", y = "Number of vOTUs", fill="Type")
+        } else {
+            df <- data.frame(type.counts) %>% filter(Var1 %in% sel.type())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified types", x = "type", y = "Number of vOTUs", fill="Type")
+        }
+    })
+    provirus.counts <- table(vOTU.stats.combined$provirus)
+    sel.provirus <- reactive({input$sel.provirus})
+    output$provirus.plot <- renderPlot({
+        if ("All" %in% sel.provirus()) {
+            ggplot(data.frame(provirus.counts), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified proviruses", x = "Provirus", y = "Number of vOTUs", fill="Provirus")
+        } else {
+            df <- data.frame(provirus.counts) %>% filter(Var1 %in% sel.provirus())
+            ggplot(data.frame(df), aes(x=Var1, y=Freq)) +
+            geom_col(aes(fill=Var1)) +
+            labs(title = "Identified proviruses", x = "Provirus", y = "Number of vOTUs", fill="Provirus")
+        }
+    })
 }
 
 shinyApp(ui = UI, server = server)
