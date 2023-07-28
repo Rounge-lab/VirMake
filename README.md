@@ -6,7 +6,6 @@
 2. [Installation](#installation)
 3. [Usage](#usage)
 4. [Output explained](#output-explained)
-5. [Citations](#citations)
 
 ## About VirMake
 
