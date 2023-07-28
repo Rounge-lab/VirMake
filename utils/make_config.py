@@ -21,6 +21,7 @@ def make_config(virmake_path):
         "benchmark": str(virmake_path / "working_dir" / "benchmark"),
         "temp": str(virmake_path / "working_dir" / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
+        "profile": "",
         "database": {
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
             "checkv": str(db_path / "checkv"),

@@ -6,12 +6,13 @@
 2. [Installation](#installation)
 3. [Usage](#usage)
 4. [Output explained](#output-explained)
+5. [Citations](#citations)
 
 ## About VirMake
 
 VirMake is a Snakemake based pipeline that offers viral metagenic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution.
 
-![Flowchart](img/flowchart.png)
+<!-- ![Flowchart](img/flowchart.png) -->
 
 ## Installation
 
@@ -95,6 +96,12 @@ You can also download samples from SRA database by using:
 
 This command will download the samples from SRA database, place them in `VirMake/working_dir/input/` folder, `gzip` them and rename them accordingly.
 
+You can get example files from [1] by running:
+
+```
+./virmake get SRA PRJNA524703
+```
+
 ### Running the workflow
 
 To run the workflow use:
@@ -107,20 +114,28 @@ To run the workflow with more personalized options please use `./virmake run -h`
 
 ### Inspecting results
 
-You can inspect the results by running:
+If you are working on a remote server do not forget to **log in with port tunneling enabled**.
+To do this run:
+
+```
+ssh -R 8080:localhost:8080 username@server_address
+```
+
+Once the workflow is finished you can inspect the results by running:
 
 ```
 ./virmake inspect
 ```
 
-and click on the link that will be provided in the terminal. This will launch shiny app within your browser.
-The link should look like `http://127.0.0.1:4075` (the port number may vary).
+and click on the link that will be provided in the terminal.
+The link should look like `http://127.0.0.1:8080`.
+This will launch shiny app within your browser.
 To exit the shiny app press `CTRL + C` in the terminal.
 
-### Config file
+### Workflow config file
 
 To adjust the workflow settings edit the `config.yaml` file. The file is located in `VirMake/workflow/config.yaml`.
-The file contains the following adjustable settings (default values are provided in brackets):
+The file contains the following adjustable settings (default values are provided in square brackets):
 
 ```
 assembler: [metaSpades]                     # assembler being used
@@ -160,6 +175,7 @@ path:
     input: [/.../VirMake/working_dir/input]
     log: [/.../VirMake/working_dir/log]
     output: [/.../VirMake/working_dir/output]
+    profile: []
     scripts: [/.../VirMake/workflow/scripts]
     temp: [/.../VirMake/working_dir/temp]
     virmake: [/.../VirMake]
@@ -191,6 +207,38 @@ virsorter2:
         min_lenght: [1000]
         min_score: [0.5]
         viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
+```
+
+### HPC profile file
+
+You can adjust the HPC profile file to suit your needs. To do this create a new profile file and
+copy its absolute path to config.yaml under `path:profile:` key. This key is empty by default.
+
+The profile file should look like this:
+
+```
+---
+reason: True
+show-failed-logs: True
+keep-going: True
+printshellcmds: True
+
+# Cluster submission
+
+# Provide a custom name for the jobscript that is submitted to the cluster
+jobname: "{rule}.{jobid}"
+
+# Maximal number of cluster/drmaa jobs per second, fractions allowed
+max-jobs-per-second: 20
+
+# Maximal number of job status checks per second
+max-status-checks-per-second: 10
+
+cluster: "sbatch -A [INSTER_ACCOUNT] --output=slurm_out/slurm-%j.out -J {rule}_{wildcards} --mem={resources.mem_mb} --time={resources.runtime} --cpus-per-task={threads} --partition={resources.partition}"
+default-resources:
+  - mem_mb=4000
+  - runtime="0-00:30:00"
+  - partition=normal
 ```
 
 ## Output explained
@@ -279,3 +327,7 @@ These folders contain all results from virsorter2 (pass 1 and 2 respectively). T
 ### vOTU
 
 This folder contains dereplicated combined `.fasta` file in which all headers were renamed to subsequent vOTUs.
+
+## Citations
+
+[1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)

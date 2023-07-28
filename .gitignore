@@ -19,3 +19,4 @@ samples.tsv
 virmake
 working_dir
 *.log
+*fasterq*
