@@ -102,6 +102,8 @@ You can get example files from [1] by running:
 ./virmake get SRA PRJNA524703
 ```
 
+[1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)
+
 ### Running the workflow
 
 To run the workflow use:
@@ -327,7 +329,3 @@ These folders contain all results from virsorter2 (pass 1 and 2 respectively). T
 ### vOTU
 
 This folder contains dereplicated combined `.fasta` file in which all headers were renamed to subsequent vOTUs.
-
-## Citations
-
-[1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)
