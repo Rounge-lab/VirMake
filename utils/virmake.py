@@ -26,6 +26,9 @@ except FileNotFoundError:
     logging.critical("Config file not found: workflow/config.yaml")
     exit(1)
 
+# load virmake path
+virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
+
 
 @cli.command(
     "run",
@@ -83,8 +86,6 @@ except FileNotFoundError:
 )
 def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     """Runs the main workflow"""
-    # load virmake path
-    virmake_path = config["path"]["virmake"]
 
     # load needed paths and check if they exist
     if not config_file:
@@ -97,13 +98,14 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
             "generate one by running `python setup.py`"
         )
         exit(1)
+    profile = config["path"]["profile"]
     if profile:
-        profile = f"--profile {pathlib.Path(profile).resolve()} "
+        profile_cmd = f"--profile {pathlib.Path(profile).resolve()} "
         if not profile.exists():
             logging.critical(f"profile not found: {profile}\n")
             exit(1)
     else:
-        profile = ""
+        profile_cmd = ""
     if not working_dir:
         working_dir = virmake_path / "workflow"
     else:
@@ -117,7 +119,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         "--configfile '{config_file}' --nolock "
         "--use-conda --use-singularity {dryrun} "
         "--until {target_rule} "
-        "{profile}"
+        "{profile_cmd}"
         "-c{threads} -T 3"
     ).format(
         config_file=config_file,
@@ -125,7 +127,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         target_rule=workflow.upper(),
         threads=threads,
         working_dir=working_dir,
-        profile=profile,
+        profile_cmd=profile_cmd,
     )
 
     print("Starting workflow...")
@@ -152,7 +154,6 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
 )
 def run_prep_offline(threads):
     """Downloads and creates all enviorments needed to run the workflow offline."""
-    virmake_path = config["path"]["virmake"]
     cmd = (
         "snakemake --snakefile {snakefile} "
         "--conda-frontend mamba --configfile {config} "
@@ -209,17 +210,9 @@ def run_get(database, accession, output_dir):
         # removes the traceback
         logging.critical(e)
         exit(1)
-    cmd = "gzip {output_dir}/*".format(output_dir=output_dir)
+    cmd = f"gzip {output_dir}/*"
     try:
         print("Compressing files...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    cmd = "for i in $(ls); do mv $i ${i/_[aA-zZ]/_}; done"
-    try:
-        print("Renaming files...")
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
@@ -244,7 +237,6 @@ def run_get(database, accession, output_dir):
 )
 def clean(target, y):
     """clean virmake directory."""
-    virmake_path = config["path"]["virmake"]
     if not y:
         click.confirm(
             f"are you sure you want to delete {target}?",
