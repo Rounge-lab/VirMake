@@ -78,7 +78,7 @@ rule ALL:
 rule QC:
     input:
         expand(
-            config["path"]["output"] + "/6astqc_raw/{sample}_{frac}_fastqc.html",
+            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
             sample=SAMPLE,
             frac=FRAC,
         ),
