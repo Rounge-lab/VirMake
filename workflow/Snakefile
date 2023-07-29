@@ -139,7 +139,7 @@ rule fastqc_raw:
         config["path"]["benchmark"] + "/fastqc_raw/{sample}_{frac}.txt"
     shell:
         """
-        fastqc {input} -o {params.outdir} -t {threads} &> {log}
+        fastqc {input} -o {params.outdir} &> {log}
         """
 
 
@@ -208,7 +208,7 @@ rule fastqc_qc:
         config["path"]["benchmark"] + "/fastqc_qc/{sample}_{frac}.txt"
     shell:
         """
-        fastqc {input} -o {params.outdir} -t {threads} &> {log}
+        fastqc {input} -o {params.outdir} &> {log}
         """
 
 
