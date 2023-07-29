@@ -158,8 +158,6 @@ rule fastp_pe:
             sample=SAMPLE,
             frac=FRAC,
         ),
-        # R1=config["path"]["input"] + "/{sample}_1.fastq.gz",
-        # R2=config["path"]["input"] + "/{sample}_2.fastq.gz",
     output:
         R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
         R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
