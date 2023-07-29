@@ -117,7 +117,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         "--conda-frontend mamba "
         "--rerun-incomplete "
         "--configfile '{config_file}' --nolock "
-        "--use-conda --use-singularity {dryrun} "
+        "--use-conda {dryrun} "
         "--until {target_rule} "
         "{profile_cmd}"
         "-c{threads} -T 3"
