@@ -78,7 +78,7 @@ rule ALL:
 rule QC:
     input:
         expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
+            config["path"]["output"] + "/6astqc_raw/{sample}_{frac}_fastqc.html",
             sample=SAMPLE,
             frac=FRAC,
         ),
@@ -139,7 +139,7 @@ rule fastqc_raw:
         config["path"]["benchmark"] + "/fastqc_raw/{sample}_{frac}.txt"
     shell:
         """
-        fastqc {input} -o {params.outdir} &> {log}
+        fastqc {input} -o {params.outdir} -t {threads} &> {log}
         """
 
 
@@ -210,7 +210,7 @@ rule fastqc_qc:
         config["path"]["benchmark"] + "/fastqc_qc/{sample}_{frac}.txt"
     shell:
         """
-        fastqc {input} -o {params.outdir} &> {log}
+        fastqc {input} -o {params.outdir} -t {threads} &> {log}
         """
 
 
