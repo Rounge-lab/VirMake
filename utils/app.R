@@ -172,7 +172,7 @@ server <- function(input, output, session) {
             melt(combined.sample.stats) %>%
             ggplot(aes(x = variable, y=value, group=Sample)) +
             geom_line(aes(colour=Sample), lwd=2) +
-            labs(title = "Assembly statistics", x = "Workflow interval", y = "# contigs") +
+            labs(title = "Assembly statistics", x = "Workflow interval", y = "Number of contigs") +
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
@@ -285,7 +285,7 @@ server <- function(input, output, session) {
             mutate(Var1 = str_replace_all(Var1, "n.a.", "Unclassified")) %>%
             ggplot(aes(x=Var1, y=Freq)) +
             geom_col(aes(fill=Var1)) +
-            labs(title = "Identified types", x = "type", y = "Number of vOTUs", fill="Type") +
+            labs(title = "Identified types", x = "Type", y = "Number of vOTUs", fill="Type") +
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
@@ -296,7 +296,7 @@ server <- function(input, output, session) {
             mutate(Var1 = str_replace_all(Var1, "n.a.", "Unclassified")) %>%
             ggplot(aes(x=Var1, y=Freq)) +
             geom_col(aes(fill=Var1)) +
-            labs(title = "Identified types", x = "type", y = "Number of vOTUs", fill="Type") +
+            labs(title = "Identified types", x = "Type", y = "Number of vOTUs", fill="Type") +
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))

@@ -1,18 +1,14 @@
 """
-script to calculate the aggregated results, statistics and simple plots for the
-pipeline
-"""
+script to calculate the aggregated results and statistics for the pipeline """
 import pandas as pd
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import re
 import pathlib
 
 
 output_path = snakemake.params.output_path
 samples = snakemake.params.samples
-out_dir = pathlib.Path(snakemake.output.dir) / "plots"
 st_dir = snakemake.output.dir
 
 
@@ -539,202 +535,6 @@ def combine_sample_stats():
     )
 
 
-def plot_sampleStats():
-    """
-    Function that plots the samples stats on the contig progression
-    """
-    data = []
-    df = pd.read_table(
-        output_path + "/statistics/Combined_Sample_stats.tsv", sep="\t"
-    )
-    for index, row in df.iterrows():
-        data.append(row.to_list())
-    df2 = pd.DataFrame(
-        data, columns=["Sample", "Contigs", "Viral Contigs", "QC Viral Contigs"]
-    ).set_index("Sample")
-    # create figure and axis
-    fig, ax = plt.subplots(figsize=(20, 20))
-    # setting the axis' labels
-    ax.set_ylabel("Number of Contigs", fontsize=32)
-    ax.set_xlabel("Pipeline Intervals", fontsize=32)
-    plt.rcParams.update({"font.size": 32})
-    plt.xticks(fontsize=25, rotation=90)
-    plt.yticks(fontsize=25)
-    # transposing (switching rows and columns) of DataFrame df and
-    # plot a line for each column on the axis ax, which was created previously
-    df2.T.plot(ax=ax)
-    plt.savefig(output_path + "/statistics/plots/Combined_Sample_stats_all.png")
-
-
-def plot_sampleStats_viral():
-    """
-    Function that plots the samples stats on the contig progression,
-    but only from identified viral contigs to QC contigs
-    """
-    data = []
-    df = pd.read_table(
-        output_path + "/statistics/Combined_Sample_stats.tsv",
-        sep="\t",
-        usecols=["Sample", "Viral Contigs", "QC Viral Contigs"],
-    )
-    for index, row in df.iterrows():
-        data.append(row.to_list())
-    df2 = pd.DataFrame(
-        data, columns=["Sample", "Viral Contigs", "QC Viral Contigs"]
-    ).set_index("Sample")
-    # create figure and axis
-    fig, ax = plt.subplots(figsize=(20, 20))
-    # setting the axis' labels
-    ax.set_ylabel("Number of Contigs", fontsize=32)
-    ax.set_xlabel("Pipeline Intervals", fontsize=32)
-    plt.rcParams.update({"font.size": 32})
-    plt.xticks(fontsize=25, rotation=90)
-    plt.yticks(fontsize=25)
-    # transposing (switching rows and columns) of DataFrame df and
-    # plot a line for each column on the axis ax, which was created previously
-    df2.T.plot(ax=ax)
-    plt.xticks(ticks=[0, 1], labels=["Viral Contigs", "QC Viral Contigs"])
-    plt.savefig(
-        output_path
-        + "/statistics/plots/Combined_Sample_stats_viral_contigs.png"
-    )
-
-
-def relative_abundace_plot():
-    """
-    Function that plots the relative abundance as a boxplot
-    """
-    df = pd.read_table(
-        output_path + "/statistics/vOTU_Relative_Abundance.tsv", sep="\t"
-    )
-    df = df.drop("ID", axis=1)
-    df.columns = ["S" + str(i + 1) for i in range(len(df.columns))]
-    b_plot = df.boxplot(column=list(df.columns.values))
-    plt.title("Relative Abundance")
-    b_plot.plot()
-    fig = b_plot.get_figure()
-    plt.xlabel("Samples")
-    plt.ylabel("Abundance in %")
-    fig.savefig(
-        output_path + "/statistics/plots/relative_abundance_plot.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
-def vOTU_families_plot():
-    """
-    Function that plots a barchart of the taxonomic annotation of the vOTUs
-    at the family level
-    """
-    df = pd.read_table(
-        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
-    )
-
-    plot_df = df[["Scaffold", "Family", "Status"]]
-
-    counts_table = plot_df[["Family"]].value_counts()
-    b_plot = counts_table.plot(kind="barh")
-    fig = b_plot.get_figure()
-    plt.ylabel("Family name")
-    plt.xlabel("Count")
-    plt.xticks(
-        rotation=45,
-        horizontalalignment="right",
-        fontweight="light",
-        fontsize="small",
-    )
-    fig.savefig(
-        output_path + "/statistics/plots/Family_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
-def vOTU_Subfamily_plot():
-    """
-    Function that plots a barchart of the taxonomic annotation of the vOTUs
-    at the subfamily level
-    """
-    df = pd.read_table(
-        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
-    )
-
-    plot_df = df[["Scaffold", "Subfamily", "Status"]]
-
-    counts_table = plot_df[["Subfamily"]].value_counts()
-    b_plot = counts_table.plot(kind="barh")
-    fig = b_plot.get_figure()
-    plt.ylabel("Subfamily name")
-    plt.xlabel("Count")
-    plt.xticks(
-        rotation=45,
-        horizontalalignment="right",
-        fontweight="light",
-        fontsize="small",
-    )
-    fig.savefig(
-        output_path + "/statistics/plots/Subfamily_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
-def vOTU_Genus_plot():
-    """
-    Function that plots a barchart of the taxonomic annotation of the vOTUs
-    at the genus level
-    """
-    df = pd.read_table(
-        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
-    )
-
-    plot_df = df[["Scaffold", "Genus", "Status"]]
-
-    counts_table = plot_df[["Genus"]].value_counts()
-    b_plot = counts_table.plot(kind="barh")
-    fig = b_plot.get_figure()
-    plt.ylabel("Genus name")
-    plt.xlabel("Count")
-    plt.xticks(
-        rotation=45,
-        horizontalalignment="right",
-        fontweight="light",
-        fontsize="small",
-    )
-    fig.savefig(
-        output_path + "/statistics/plots/Genus_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
-def vOTU_checkv_plot():
-    """
-    Function that plots a barchart of the vOTU checkv quality
-    """
-    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
-
-    plot_df = df[["Scaffold", "checkv_quality", "Status"]]
-
-    counts_table = plot_df[["checkv_quality"]].value_counts()
-    b_plot = counts_table.plot(kind="barh")
-    fig = b_plot.get_figure()
-    plt.xlabel("checkv Quality")
-    plt.ylabel("# vOTU in category")
-    plt.xticks(
-        rotation=45,
-        horizontalalignment="right",
-        fontweight="light",
-        fontsize="small",
-    )
-    fig.savefig(
-        output_path + "/statistics/plots/checkv_quality_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
 def vOTU_to_reads_mapping():
     """
     Function that creates table which contains the vOTU and its
@@ -834,59 +634,11 @@ def gather_lytic():
     )
 
 
-def vOTU_provirus_plot():
-    """
-    Function that plots a barchart of if a vOTU is a provirus or not
-    """
-    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
-
-    plot_df = df[["Scaffold", "provirus"]]
-    print(plot_df)
-    plot_df = plot_df[["provirus"]].replace(
-        {"Yes": "Provirus", "No": "Non-Provirus"}
-    )
-    counts_table = plot_df[["provirus"]].value_counts()
-    b_plot = counts_table.plot(kind="bar")
-    fig = b_plot.get_figure()
-    plt.xlabel("Is Provirus or Non-Provirus")
-    plt.ylabel("# vOTU")
-    plt.xticks(rotation=45, fontweight="light", fontsize="medium")
-    fig.savefig(
-        output_path + "/statistics/plots/provirus_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
-def vOTU_lysogenic_plot():
-    """
-    Function that plots a barchart of if a vOTU is lysogenic or lytic
-    """
-    df = pd.read_table(output_path + "/statistics/vOTU_stats_combined.tsv")
-
-    plot_df = df[["Scaffold", "Type"]]
-
-    counts_table = plot_df[["Type"]].value_counts()
-    b_plot = counts_table.plot(kind="bar")
-    fig = b_plot.get_figure()
-    plt.xlabel("Lysogenic / Lytic")
-    plt.ylabel("# vOTU")
-    plt.xticks(rotation=45, fontweight="light", fontsize="medium")
-    fig.savefig(
-        output_path + "/statistics/plots/lysogenic_vOTU_BarChart.png",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-
 if not os.path.exists(st_dir):
     print("Missing output directory, creating now ....")
     os.makedirs(st_dir)
-if not os.path.exists(out_dir):
-    print("Missing output directory, creating now ....")
-    os.makedirs(out_dir)
 
-# Runs all small functions to create statistics, tables and plots.
+# Runs all small functions to create statistics and tables.
 create_sample_stats_virsorter2()
 create_sample_stats_vibrant()
 stats_vOTUs_virsorter2()
@@ -897,13 +649,3 @@ create_relative_Abundance()
 combine_sample_stats()
 vOTU_to_reads_mapping()
 gather_lytic()
-
-relative_abundace_plot()
-vOTU_families_plot()
-vOTU_Subfamily_plot()
-vOTU_Genus_plot()
-vOTU_checkv_plot()
-vOTU_provirus_plot()
-vOTU_lysogenic_plot()
-plot_sampleStats()
-plot_sampleStats_viral()
