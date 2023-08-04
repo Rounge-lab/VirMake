@@ -281,9 +281,16 @@ def clean(target, y):
     context_settings=dict(ignore_unknown_options=True),
     short_help="Show VirMake Results.",
 )
-def show():
-    cmd = "Rscript utils/app.R {stats_path}".format(
-        stats_path=config["path"]["output"] + "/statistics"
+@click.option(
+    "-p",
+    "--port",
+    default=8888,
+    type=int,
+)
+def show(port):
+    cmd = "Rscript utils/app.R {stats_path} {port}".format(
+        stats_path=config["path"]["output"] + "/statistics",
+        port=port,
     )
     try:
         subprocess.check_call(cmd, shell=True)
