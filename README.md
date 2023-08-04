@@ -119,7 +119,7 @@ If you are working on a remote server do not forget to **log in with port tunnel
 To do this run:
 
 ```
-ssh -R 8080:localhost:8080 username@server_address
+ssh -R 8888:localhost:8888 username@server_address
 ```
 
 Once the workflow is finished you can inspect the results by running:
@@ -129,9 +129,8 @@ Once the workflow is finished you can inspect the results by running:
 ```
 
 and click on the link that will be provided in the terminal.
-The link should look like `http://127.0.0.1:8080`.
+The link should look like `http://127.0.0.1:8888`.
 This will launch shiny app within your browser.
-To exit the shiny app press `CTRL + C` in the terminal.
 
 ### Workflow config file
 
