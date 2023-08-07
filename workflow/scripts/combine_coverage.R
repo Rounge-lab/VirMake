@@ -6,7 +6,7 @@
 library(tidyverse)
 
 # script ------------------------------------------------------------------
-
+head(snakemake@input[["covstats"]])
 lapply(snakemake@input[["covstats"]], function(covstats) {
   suppressMessages(read_tsv(covstats)) %>% print() %>%
     mutate(filtered_coverage = case_when(

@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 import os
+import yaml
 
 import click
 
@@ -11,6 +12,22 @@ import click
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     "VirMake is a workflow for the analysis of viral metagenomes"
+
+
+# load config file
+try:
+    with open("workflow/config.yaml", "r") as cf:
+        try:
+            config = yaml.safe_load(cf)
+        except yaml.YAMLError as ye:
+            logging.critical(ye)
+            exit(1)
+except FileNotFoundError:
+    logging.critical("Config file not found: workflow/config.yaml")
+    exit(1)
+
+# load virmake path
+virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
 
 
 @cli.command(
@@ -69,8 +86,6 @@ def cli():
 )
 def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
     """Runs the main workflow"""
-    # load virmake path
-    virmake_path = pathlib.Path(__file__).parent
 
     # load needed paths and check if they exist
     if not config_file:
@@ -83,13 +98,14 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
             "generate one by running `python setup.py`"
         )
         exit(1)
+    profile = config["path"]["profile"]
     if profile:
-        profile = f"--profile {pathlib.Path(profile).resolve()} "
+        profile_cmd = f"--profile {pathlib.Path(profile).resolve()} "
         if not profile.exists():
             logging.critical(f"profile not found: {profile}\n")
             exit(1)
     else:
-        profile = ""
+        profile_cmd = ""
     if not working_dir:
         working_dir = virmake_path / "workflow"
     else:
@@ -101,9 +117,9 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         "--conda-frontend mamba "
         "--rerun-incomplete "
         "--configfile '{config_file}' --nolock "
-        "--use-conda --use-singularity {dryrun} "
+        "--use-conda {dryrun} "
         "--until {target_rule} "
-        "{profile}"
+        "{profile_cmd}"
         "-c{threads} -T 3"
     ).format(
         config_file=config_file,
@@ -111,7 +127,7 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         target_rule=workflow.upper(),
         threads=threads,
         working_dir=working_dir,
-        profile=profile,
+        profile_cmd=profile_cmd,
     )
 
     print("Starting workflow...")
@@ -123,35 +139,39 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         exit(1)
 
 
-# # Prepare VirMake for offline use
-# @cli.command(
-#     "prep",
-#     context_settings=dict(ignore_unknown_options=True),
-#     short_help="Downloads and creates all enviorments needed to run the workflow offline.",
-# )
-# @click.option(
-#     "--threads",
-#     default=24,
-#     type=int,
-#     help="number of threads to use per multi-threaded job",
-# )
-# def run_prep_offline(threads):
-#     """Downloads and creates all enviorments needed to run the workflow offline."""
-
-#     cmd = (
-#         "snakemake --snakefile {snakefile}"
-#         "--rerun-incomplete "
-#         "--conda-frontend mamba"
-#         " --nolock  --use-conda --use-singularity --conda-create-envs-only"
-#         " --show-failed-logs"
-#         " -c{threads}"
-#     ).format(snakefile=get_snakefile(), threads=threads)
-#     try:
-#         subprocess.check_call(cmd, shell=True)
-#     except subprocess.CalledProcessError as e:
-#         # removes the traceback
-#         logging.critical(e)
-#         exit(1)
+# Prepare VirMake for offline use
+@cli.command(
+    "prep",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads and creates all enviorments needed to run the workflow offline.",
+)
+@click.option(
+    "-c",
+    "--threads",
+    default=24,
+    type=int,
+    help="number of threads to use per multi-threaded job",
+)
+def run_prep_offline(threads):
+    """Downloads and creates all enviorments needed to run the workflow offline."""
+    cmd = (
+        "snakemake --snakefile {snakefile} "
+        "--conda-frontend mamba --configfile {config} "
+        "--nolock  --use-conda --conda-create-envs-only "
+        "--show-failed-logs --directory {working_dir} "
+        "-c{threads}"
+    ).format(
+        snakefile=virmake_path / "workflow" / "Snakefile",
+        threads=threads,
+        config=virmake_path / "workflow" / "config.yaml",
+        working_dir=virmake_path / "workflow",
+    )
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
 
 
 # Download sample data
@@ -190,17 +210,9 @@ def run_get(database, accession, output_dir):
         # removes the traceback
         logging.critical(e)
         exit(1)
-    cmd = "gzip {output_dir}/*".format(output_dir=output_dir)
+    cmd = f"gzip {output_dir}/*"
     try:
         print("Compressing files...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    cmd = "for i in $(ls); do mv $i ${i/_[aA-zZ]/_}; done"
-    try:
-        print("Renaming files...")
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
@@ -225,7 +237,6 @@ def run_get(database, accession, output_dir):
 )
 def clean(target, y):
     """clean virmake directory."""
-    virmake_path = pathlib.Path(__file__).parent
     if not y:
         click.confirm(
             f"are you sure you want to delete {target}?",
@@ -262,6 +273,30 @@ def clean(target, y):
             os.remove(virmake_path / "workflow" / "config.yaml")
     else:
         logging.critical(f"unknown target: {target}")
+        exit(1)
+
+
+@cli.command(
+    "inspect",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Show VirMake Results.",
+)
+@click.option(
+    "-p",
+    "--port",
+    default=8888,
+    type=int,
+)
+def show(port):
+    cmd = "Rscript utils/app.R {stats_path} {port}".format(
+        stats_path=config["path"]["output"] + "/statistics",
+        port=port,
+    )
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
         exit(1)
 
 

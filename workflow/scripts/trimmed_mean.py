@@ -88,11 +88,10 @@ outfile = snakemake.output.trimmed_mean
 contig_summary_file = snakemake.input.covstats
 trim_perc = snakemake.params.trim_perc
 
-for f, o, c in zip(filename, outfile, contig_summary_file):
-    trimmed_contig_coverage = get_trimmed_mean(
-        filename=f,
-        contig_summary_file=c,
-        trim_perc=trim_perc,
-    )
+trimmed_contig_coverage = get_trimmed_mean(
+    filename=filename,
+    contig_summary_file=contig_summary_file,
+    trim_perc=trim_perc,
+)
 
-    write_coverage_to_file(trimmed_contig_coverage, o)
+write_coverage_to_file(trimmed_contig_coverage, outfile)

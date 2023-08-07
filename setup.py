@@ -128,9 +128,6 @@ def setup_db(logger, virmake_path):
         setup_db = input(
             "\nDo you want to setup databases automatically? [Y/n]\n"
         )
-        logger.info(
-            f"> {setup_db}",
-        )
     else:
         if sys.argv[1].lower() == "-y":
             setup_db = "y"
@@ -139,22 +136,28 @@ def setup_db(logger, virmake_path):
             logger.info("\nSetting up databases...\n")
             os.makedirs(virmake_path / "databases", exist_ok=True)
             db_files = os.listdir(virmake_path / "databases")
-            if db_files != []:
-                logger.info("Some files were found in databases directory.")
+            if db_files == [
+                "checkv",
+                "vibrant",
+                "INPHARED",
+                "DRAM",
+                "virsorter2",
+                "vcontact2",
+                "RefSeq",
+            ]:
+                logger.info(
+                    "Old database files were found in databases directory."
+                )
                 overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
                 if overwrite_db.lower() in ["y", ""]:
                     shutil.rmtree(virmake_path / "databases")
                     os.makedirs(virmake_path / "databases", exist_ok=True)
-                elif overwrite_db.lower() == "n":
-                    logger.info("\nSkipping database setup...\n")
-                    break
-                else:
-                    pass
+            logger.info("\nWorking...\n")
             cmd = (
                 "conda run -n virmake --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
                 f"--configfile {virmake_path / 'workflow' / 'config.yaml'} "
-                f"--use-conda --nolock "
+                f"--use-conda --nolock --rerun-incomplete "
                 f"--directory {virmake_path / 'workflow'}"
             )
             db_workflow = subprocess.run(cmd.split(), capture_output=True)
@@ -164,7 +167,6 @@ def setup_db(logger, virmake_path):
                 )
                 logger.critical(strip_stdout(db_workflow.stderr))
                 exit(1)
-
             break
         elif setup_db.lower() == "n":
             logger.info("\nSkipping database setup...\n")
@@ -175,7 +177,7 @@ def setup_db(logger, virmake_path):
 
 def prep_script(logger, virmake_path):
     """prepare main script"""
-    logger.info(f"Preparing main script at {virmake_path / 'virmake'}\n")
+    logger.info(f"\nPreparing main script at {virmake_path / 'virmake'}\n")
     cmd = "conda run -n virmake which python"
     virmake_python_path = subprocess.run(cmd.split(), capture_output=True)
     virmake_python_path = strip_stdout(virmake_python_path.stdout)

@@ -21,9 +21,10 @@ def make_config(virmake_path):
         "benchmark": str(virmake_path / "working_dir" / "benchmark"),
         "temp": str(virmake_path / "working_dir" / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
+        "profile": "",
         "database": {
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
-            "checkv": str(db_path / "checkv" / "checkv-db-v1.5"),
+            "checkv": str(db_path / "checkv"),
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
@@ -43,12 +44,14 @@ def make_config(virmake_path):
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }
-    config["vibrant"] = {"is_virome": "no", "cutoff_length": 1000}
+    config["vibrant"] = {
+        "is_virome": "no",
+    }
     config["cd-hit-est"] = {
         "identity_threshold": 0.95,
         "coverage": 0.85,
     }
-    config["quality_threshold"] = "low"
+    config["quality_threshold"] = "medium"
     config["threads"] = 24
     config["job_type"] = {
         "small": "normal",
