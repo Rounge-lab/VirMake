@@ -288,8 +288,8 @@ def clean(target, y):
     type=int,
 )
 def show(port):
-    cmd = "Rscript utils/app.R {stats_path} {port}".format(
-        stats_path=config["path"]["output"] + "/statistics",
+    cmd = "Rscript utils/app.R {output_path} {port}".format(
+        output_path=config["path"]["output"],
         port=port,
     )
     try:

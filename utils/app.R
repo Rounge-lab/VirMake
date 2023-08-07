@@ -9,8 +9,9 @@ require("reshape2")
 
 
 args = commandArgs(trailingOnly=TRUE)
-stats.path <- args[1]
+output.path <- args[1]
 port <- args[2]
+stats.path <- paste(output.path, "statistics", sep = "/")
 combined.sample.stats <- read.table(paste(stats.path, "Combined_Sample_stats.tsv", sep = "/"), header = TRUE, sep = "\t")
 sample.stats.vibrant <- read.table(paste(stats.path, "Sample_stats_vibrant.tsv", sep = "/"), header = TRUE, sep = "\t")
 sample.stats.virsorter2 <- read.table(paste(stats.path, "Sample_stats_virsorter2.tsv", sep = "/"), header = TRUE, sep = "\t")
@@ -107,6 +108,12 @@ UI <- fluidPage(theme = shinytheme("cerulean"),
                 plotOutput("type.plot", height = "1000px"),
                 plotOutput("provirus.plot", height = "1000px"),
             )
+        ),
+        navbarMenu("Advanced",
+            tabPanel("DRAMv",
+                titlePanel("DRAMv results"),
+                includeHTML(paste(output.path, "DRAMv", "distilled", "product.html", sep = "/"))
+            ),
         )
     )
 )
@@ -135,7 +142,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
     quality.counts <- table(vOTU.stats.combined$checkv_quality)
@@ -150,7 +156,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(quality.counts) %>% filter(Var1 %in% sel.quality())
             data.frame(df) %>%
@@ -161,10 +166,8 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
-
     # Assembly
     sel.sample.assembly1 <- reactive({input$sel.sample.assembly1})
     output$assembly1.plot <- renderPlot({
@@ -176,7 +179,6 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- combined.sample.stats %>% filter(Sample %in% sel.sample.assembly1())
             melt(df) %>%
@@ -186,10 +188,8 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
-
     # Taxonomy
     family.counts <- table(vOTU.stats.combined$Family)
     sel.family <- reactive({input$sel.family})
@@ -204,7 +204,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(family.counts) %>% filter(Var1 %in% sel.family())
             data.frame(df) %>%
@@ -216,7 +215,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
     subfamily.counts <- table(vOTU.stats.combined$Subfamily)
@@ -232,7 +230,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(subfamily.counts) %>% filter(Var1 %in% sel.subfamily())
             data.frame(df) %>%
@@ -244,7 +241,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
     genus.counts <- table(vOTU.stats.combined$Genus)
@@ -260,7 +256,6 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(genus.counts) %>% filter(Var1 %in% sel.genus())
             data.frame(df) %>%
@@ -272,10 +267,8 @@ server <- function(input, output, session) {
             theme(axis.text.x=element_text(angle=45, vjust=0.9, hjust=1)) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
-
     # Functional analysis
     type.counts <- table(vOTU.stats.combined$Type)
     sel.type <- reactive({input$sel.type})
@@ -289,7 +282,6 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(type.counts) %>% filter(Var1 %in% sel.type())
             data.frame(df) %>%
@@ -300,7 +292,6 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
     provirus.counts <- table(vOTU.stats.combined$provirus)
@@ -315,7 +306,6 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         } else {
             df <- data.frame(provirus.counts) %>% filter(Var1 %in% sel.provirus())
             data.frame(df) %>%
@@ -326,7 +316,6 @@ server <- function(input, output, session) {
             theme_bw(base_size = 20) +
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
-
         }
     })
     session$onSessionEnded(function() {
