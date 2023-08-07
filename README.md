@@ -119,7 +119,7 @@ If you are working on a remote server do not forget to **log in with port tunnel
 To do this run:
 
 ```
-ssh -R 8888:localhost:8888 username@server_address
+ssh -L 8888:localhost:8888 username@server_address
 ```
 
 Once the workflow is finished you can inspect the results by running:

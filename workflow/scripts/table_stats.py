@@ -1,5 +1,6 @@
 """
-script to calculate the aggregated results and statistics for the pipeline """
+script to calculate the aggregated results and statistics for the pipeline
+"""
 import pandas as pd
 import os
 import numpy as np
