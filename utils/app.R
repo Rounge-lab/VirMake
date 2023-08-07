@@ -318,6 +318,7 @@ server <- function(input, output, session) {
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
         }
     })
+    # Stop app
     session$onSessionEnded(function() {
         stopApp()
     })
