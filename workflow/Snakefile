@@ -1439,6 +1439,8 @@ rule STATS:
         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
         config["path"]["output"] + "/statistics/",
+        config["path"]["temp"] + "/html_files.txt",
+        config["path"]["output"] + "/complete_output.zip",
     output:
         config["path"]["temp"] + "/finished_STATS",
     threads: 1
@@ -1476,3 +1478,31 @@ rule get_stats:
     threads: config["threads"]
     script:
         config["path"]["scripts"] + "/table_stats.py"
+
+
+rule find_html_files:
+    """
+    Finds all html files in the output directory
+    """
+    output:
+        config["path"]["temp"] + "/html_files.txt",
+    params:
+        all_output_path=config["path"]["output"],
+    shell:
+        """
+        find {params.all_output_path} -name *.html > {output}
+        """
+
+
+rule zip_output:
+    """
+    Copies all html files to the statistics directory
+    """
+    input:
+        html_files=rules.find_html_files.output,
+    output:
+        config["path"]["output"] + "/complete_output.zip",
+    params:
+        temp=config["path"]["temp"],
+    script:
+        config["path"]["scripts"] + "/zip_output.py"
