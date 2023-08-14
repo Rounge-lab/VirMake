@@ -979,6 +979,10 @@ rule MAPPING:
             config["path"]["output"] + "/mapping/SAM/{sample}.map.sam", sample=SAMPLE
         ),
         expand(
+            config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
+            sample=SAMPLE,
+        ),
+        expand(
             config["path"]["output"]
             + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
             sample=SAMPLE,
@@ -1004,6 +1008,11 @@ rule MAPPING:
             sample=SAMPLE,
         ),
         config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
+        expand(
+            config["path"]["output"] + "/instrain/{sample}",
+            sample=SAMPLE,
+        ),
+        config["path"]["output"] + "/instrain/compared_samples",
     output:
         config["path"]["temp"] + "/finished_MAPPING",
     threads: 1
@@ -1155,6 +1164,88 @@ rule combine_coverage:
         "[combine_coverage] Combining coverage statistics..."
     script:
         config["path"]["scripts"] + "/combine_coverage.R"
+
+
+rule sam_to_bam:
+    """
+    Converts SAM to BAM
+    """
+    input:
+        rules.read_mapping.output,
+    output:
+        config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
+    conda:
+        config["path"]["envs"] + "/bowtie2.yaml"
+    log:
+        config["path"]["log"] + "/sam_to_bam/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/sam_to_bam/{sample}.txt"
+    message:
+        "[sam_to_bam] Converting SAM to BAM..."
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
+    shell:
+        """
+        samtools view -bS {input} > {output}
+        """
+
+
+rule instrain_profile:
+    """
+    Create inStrain profiles
+    """
+    input:
+        genome=rules.transform_vOTUs.output.vOTU,
+        mapping=rules.sam_to_bam.output,
+    output:
+        directory(config["path"]["output"] + "/instrain/{sample}/"),
+    conda:
+        config["path"]["envs"] + "/instrain.yaml"
+    log:
+        config["path"]["log"] + "/instrain/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/instrain/{sample}.txt"
+    message:
+        "[instrain_profile] Creating inStrain profiles..."
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
+    shell:
+        """
+        inStrain profile {input.mapping} {input.genome} -o {output}
+        """
+
+
+rule instrain_compare:
+    """
+    Compare inStrain profiles
+    """
+    input:
+        expand(
+            config["path"]["output"] + "/instrain/{sample}/",
+            sample=SAMPLE,
+        ),
+    output:
+        directory(config["path"]["output"] + "/instrain/compared_samples"),
+    conda:
+        config["path"]["envs"] + "/instrain.yaml"
+    log:
+        config["path"]["log"] + "/instrain/compare.log",
+    benchmark:
+        config["path"]["benchmark"] + "/instrain/compare.txt"
+    message:
+        "[instrain_compare] Comparing inStrain profiles..."
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
+    shell:
+        """
+        inStrain compare -i {input} -o {output}
+        """
 
 
 # TAXONOMIC ANALYSIS
@@ -1441,6 +1532,7 @@ rule STATS:
         config["path"]["output"] + "/statistics/",
         config["path"]["temp"] + "/html_files.txt",
         config["path"]["output"] + "/complete_output.zip",
+        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
     output:
         config["path"]["temp"] + "/finished_STATS",
     threads: 1
@@ -1462,6 +1554,7 @@ rule get_stats:
         transposed_report=rules.metaQUAST.output.transposed_report,
         abundance_table=rules.combine_coverage.output.abundance_table,
     output:
+        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
@@ -1480,7 +1573,7 @@ rule get_stats:
         config["path"]["scripts"] + "/table_stats.py"
 
 
-rule find_html_files:
+rule find_report_files:
     """
     Finds all html files in the output directory
     """
@@ -1491,6 +1584,7 @@ rule find_html_files:
     shell:
         """
         find {params.all_output_path} -name *.html > {output}
+        find {params.all_output_path} -name *.pdf >> {output}
         """
 
 
@@ -1499,7 +1593,7 @@ rule zip_output:
     Copies all html files to the statistics directory
     """
     input:
-        html_files=rules.find_html_files.output,
+        html_files=rules.find_report_files.output,
     output:
         config["path"]["output"] + "/complete_output.zip",
     params:
