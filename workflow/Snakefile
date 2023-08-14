@@ -1532,6 +1532,7 @@ rule STATS:
         config["path"]["output"] + "/statistics/",
         config["path"]["temp"] + "/html_files.txt",
         config["path"]["output"] + "/complete_output.zip",
+        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
     output:
         config["path"]["temp"] + "/finished_STATS",
     threads: 1
@@ -1553,6 +1554,7 @@ rule get_stats:
         transposed_report=rules.metaQUAST.output.transposed_report,
         abundance_table=rules.combine_coverage.output.abundance_table,
     output:
+        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
@@ -1571,7 +1573,7 @@ rule get_stats:
         config["path"]["scripts"] + "/table_stats.py"
 
 
-rule find_html_files:
+rule find_report_files:
     """
     Finds all html files in the output directory
     """
@@ -1591,7 +1593,7 @@ rule zip_output:
     Copies all html files to the statistics directory
     """
     input:
-        html_files=rules.find_html_files.output,
+        html_files=rules.find_report_files.output,
     output:
         config["path"]["output"] + "/complete_output.zip",
     params:

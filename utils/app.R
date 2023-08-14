@@ -21,6 +21,8 @@ vOTU.relative.abundance <- read.table(paste(stats.path, "vOTU_Relative_Abundance
 vOTU.stats.combined <- read.table(paste(stats.path, "vOTU_stats_combined.tsv", sep = "/"), header = TRUE, sep = "\t")
 vOTU.stats.vibrant <- read.table(paste(stats.path, "vOTU_Stats_vibrant.tsv", sep = "/"), header = TRUE, sep = "\t")
 vOTU.stats.virsorter2 <- read.table(paste(stats.path, "vOTU_Stats_virsorter2.tsv", sep = "/"), header = TRUE, sep = "\t")
+compared.samples <- read.table(paste(stats.path, "compared_samples_comparisonsTable.tsv",
+                               sep="/"), sep="\t", header=TRUE)
 
 UI <- fluidPage(theme = shinytheme("cerulean"),
     navbarPage(
@@ -114,6 +116,18 @@ UI <- fluidPage(theme = shinytheme("cerulean"),
                 titlePanel("DRAMv results"),
                 includeHTML(paste(output.path, "DRAMv", "distilled", "product.html", sep = "/"))
             ),
+            tabPanel("inStrain compare",
+                titlePanel("inStrain compare results"),
+                mainPanel(
+                    plotOutput("instrain.hist", height = "1000px"),
+                    plotOutput("mean.cov.overlap", height = "1000px"),
+                    plotOutput("mean.bases.count", height = "1000px"),
+                    plotOutput("percent.genome.compared", height = "1000px"),
+                    plotOutput("mean.length", height = "1000px"),
+                    plotOutput("mean.consensus.SNPs", height = "1000px"),
+                    plotOutput("mean.pop.SNPs", height = "1000px"),
+                )
+            )
         )
     )
 )
@@ -317,6 +331,122 @@ server <- function(input, output, session) {
             theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
             axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2))
         }
+    })
+    # inStrain
+    compared.samples$scaffold <- as.integer(str_replace(compared.samples$scaffold, "vOTU_", ""))
+    compared.samples <- compared.samples %>% arrange(scaffold)
+    compared.samples$name1 <- str_replace(compared.samples$name1, ".map.sorted.bam", "")
+    compared.samples$name2 <- str_replace(compared.samples$name2, ".map.sorted.bam", "")
+    compared.samples$vs <- paste(compared.samples$name1, compared.samples$name2, sep=" vs ")
+    compared.samples.counts <- compared.samples %>% count(vs)
+    compared.samples.means <- compared.samples %>%
+    group_by(vs) %>%
+    summarise_at(vars(coverage_overlap,
+                        compared_bases_count,
+                        percent_genome_compared,
+                        length, consensus_SNPs,
+                        population_SNPs),
+                list(mean=mean, sd=sd))
+    output$instrain.hist <- renderPlot({
+        compared.samples %>%
+        ggplot(aes(x=scaffold, fill=vs)) +
+        geom_histogram() +
+        geom_rug() +
+        theme_bw(base_size = 20) +
+        theme(plot.margin = margin(2,2,2,2, "cm"),
+        axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+        labs(x="vOTU", y="Count") +
+        guides(fill=guide_legend(title="Compared samples"))
+    })
+    output$mean.cov.overlap <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=coverage_overlap_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=coverage_overlap_mean - coverage_overlap_sd / sqrt(compared.samples.counts$n),
+                            ymax=coverage_overlap_mean + coverage_overlap_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=coverage_overlap),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean coverage overlap") +
+            coord_flip()
+    })
+    output$mean.bases.count <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=compared_bases_count_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=compared_bases_count_mean - compared_bases_count_sd / sqrt(compared.samples.counts$n),
+                            ymax=compared_bases_count_mean + compared_bases_count_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=compared_bases_count),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean bases count") +
+            coord_flip()
+    })
+    output$percent.genome.compared <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=percent_genome_compared_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=percent_genome_compared_mean - percent_genome_compared_sd / sqrt(compared.samples.counts$n),
+                            ymax=percent_genome_compared_mean + percent_genome_compared_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=percent_genome_compared),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean % genome compared") +
+            coord_flip()
+    })
+    output$mean.length <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=length_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=length_mean - length_sd / sqrt(compared.samples.counts$n),
+                            ymax=length_mean + length_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=length),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean length") +
+            coord_flip()
+    })
+    output$mean.consensus.SNPs <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=consensus_SNPs_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=consensus_SNPs_mean - consensus_SNPs_sd / sqrt(compared.samples.counts$n),
+                            ymax=consensus_SNPs_mean + consensus_SNPs_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=consensus_SNPs),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean consensus SNPs") +
+            coord_flip()
+    })
+    output$mean.pop.SNPs <- renderPlot({
+        compared.samples.means %>%
+        ggplot(aes(x=vs, y=population_SNPs_mean)) +
+            geom_col() +
+            geom_errorbar(aes(ymin=population_SNPs_mean - population_SNPs_sd / sqrt(compared.samples.counts$n),
+                            ymax=population_SNPs_mean + population_SNPs_sd / sqrt(compared.samples.counts$n)),
+                        width=0.2) +
+            geom_jitter(data=compared.samples, aes(x=vs, y=population_SNPs),
+                        width=0.1, alpha=0.3, col="blue") +
+            theme_bw(base_size = 20) +
+            theme(plot.margin = margin(2,2,2,2, "cm"), legend.position = "bottom",
+            axis.title.x = element_text(vjust=-2), axis.title.y = element_text(vjust=2)) +
+            labs(x="Compared samples", y="Mean population SNPs") +
+            coord_flip()
     })
     # Stop app
     session$onSessionEnded(function() {

@@ -635,6 +635,19 @@ def gather_lytic():
     )
 
 
+def copy_instrain_compare_output():
+    """
+    Function that copies the instrain compare output to the statistics folder
+    """
+    os.system(
+        "cp "
+        + output_path
+        + "/instrain/compared_samples/output/compared_samples_comparisonsTable.tsv "
+        + output_path
+        + "/statistics/compared_samples_comparisonsTable.tsv "
+    )
+
+
 if not os.path.exists(st_dir):
     print("Missing output directory, creating now ....")
     os.makedirs(st_dir)
@@ -650,3 +663,4 @@ create_relative_Abundance()
 combine_sample_stats()
 vOTU_to_reads_mapping()
 gather_lytic()
+copy_instrain_compare_output()
