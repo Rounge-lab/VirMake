@@ -271,12 +271,12 @@ rule metaSpades:
         config["path"]["benchmark"] + "/metaSpades/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["big"],
+        mem_gb=config["memory"]["metaspades"],
+        runtime=config["time"]["metaspades"],
     shell:
         """
         metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads} &> {log}
+        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
         """
 
 
@@ -1573,10 +1573,18 @@ rule get_stats:
         config["path"]["scripts"] + "/table_stats.py"
 
 
+# to fix: trigger at the end of the workflow
 rule find_report_files:
     """
     Finds all html files in the output directory
     """
+    input:
+        config["path"]["temp"] + "/finished_QC",
+        config["path"]["temp"] + "/finished_ASSEMBLY",
+        config["path"]["temp"] + "/finished_IDENTIFICATION",
+        config["path"]["temp"] + "/finished_MAPPING",
+        config["path"]["temp"] + "/finished_TAXONOMY",
+        config["path"]["temp"] + "/finished_FUNCTION",
     output:
         config["path"]["temp"] + "/html_files.txt",
     params:
@@ -1588,6 +1596,7 @@ rule find_report_files:
         """
 
 
+# to fix: trigger at the end of the workflow
 rule zip_output:
     """
     Copies all html files to the statistics directory
