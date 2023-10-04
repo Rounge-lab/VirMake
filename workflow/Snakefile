@@ -251,16 +251,16 @@ elif config["assembler"].lower() == "megahit":
 
     rule ASSEMBLY:
         input:
+            expand(
+                config["path"]["output"] + "/megahit/{sample}/",
+                sample=SAMPLE,
+            ),
             # expand(
-            #     config["path"]["output"] + "/megaHit/{sample}/",
+            #     config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
             #     sample=SAMPLE,
             # ),
             # expand(
-            #     config["path"]["output"] + "/megaHit/{sample}/contigs.fasta",
-            #     sample=SAMPLE,
-            # ),
-            # expand(
-            #     config["path"]["output"] + "/megaHit/{sample}/scaffolds.fasta",
+            #     config["path"]["output"] + "/megahit/{sample}/scaffolds.fasta",
             #     sample=SAMPLE,
             # ),
             config["path"]["output"] + "/metaQUAST/report.html",
@@ -310,35 +310,38 @@ rule metaSpades:
         --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
         """
 
-rule megaHit:
+
+rule megahit:
     """
-    Assembles all sequences with megaHit
+    Assembles all sequences with megahit
     """
     input:
         R1=rules.fastp_pe.output.R1,
         R2=rules.fastp_pe.output.R2,
     output:
         dir=directory(
-            config["path"]["output"] + "/metaSpades/{sample}/",
+            config["path"]["output"] + "/megahit/{sample}/",
         ),
-        contigs=config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-        scaffolds=config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+        contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
+        scaffolds=config["path"]["output"] + "/megahit/{sample}/scaffolds.fasta",
     params:
-        temp_dir=config["path"]["temp"] + "/megaHit/",
+        temp_dir=config["path"]["temp"] + "/megahit/",
     message:
-        "[megaHit] Performing assembly of paired end reads..."
+        "[megahit] Performing assembly of paired end reads..."
     conda:
-        config["path"]["envs"] + "/megaHit.yaml"
+        config["path"]["envs"] + "/megahit.yaml"
     log:
-        config["path"]["log"] + "/megaHit/{sample}.log",
+        config["path"]["log"] + "/megahit/{sample}.log",
     benchmark:
-        config["path"]["benchmark"] + "/megaHit/{sample}.txt"
+        config["path"]["benchmark"] + "/megahit/{sample}.txt"
     threads: config["threads"]
     resources:
         mem_gb=config["memory"]["megahit"],
         runtime=config["time"]["megahit"],
     shell:
         """
+        megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
+        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
         """
 
 
