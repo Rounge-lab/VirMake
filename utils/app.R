@@ -455,5 +455,4 @@ server <- function(input, output, session) {
 }
 
 app <- shinyApp(ui = UI, server = server)
-stopApp(app)
 runApp(app, port=as.integer(port))
