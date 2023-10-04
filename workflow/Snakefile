@@ -218,32 +218,63 @@ rule fastqc_qc:
 
 # ASSEMBLY #
 
+if config["assembler"].lower() == "metaspades":
 
-rule ASSEMBLY:
-    input:
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
-            sample=SAMPLE,
-        ),
-        config["path"]["output"] + "/metaQUAST/report.html",
-        config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
-    output:
-        config["path"]["temp"] + "/finished_ASSEMBLY",
-    threads: 1
-    message:
-        "[ASSEMBLY] Assembly of all samples finished"
-    shell:
-        """
-        touch {output}
-        """
+    rule ASSEMBLY:
+        input:
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/",
+                sample=SAMPLE,
+            ),
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+                sample=SAMPLE,
+            ),
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+                sample=SAMPLE,
+            ),
+            config["path"]["output"] + "/metaQUAST/report.html",
+            config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        output:
+            config["path"]["temp"] + "/finished_ASSEMBLY",
+        threads: 1
+        message:
+            "[ASSEMBLY] Assembly of all samples finished"
+        shell:
+            """
+            touch {output}
+            """
+
+elif config["assembler"].lower() == "megahit":
+
+    rule ASSEMBLY:
+        input:
+            # expand(
+            #     config["path"]["output"] + "/megaHit/{sample}/",
+            #     sample=SAMPLE,
+            # ),
+            # expand(
+            #     config["path"]["output"] + "/megaHit/{sample}/contigs.fasta",
+            #     sample=SAMPLE,
+            # ),
+            # expand(
+            #     config["path"]["output"] + "/megaHit/{sample}/scaffolds.fasta",
+            #     sample=SAMPLE,
+            # ),
+            config["path"]["output"] + "/metaQUAST/report.html",
+            config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        output:
+            config["path"]["temp"] + "/finished_ASSEMBLY",
+        threads: 1
+        message:
+            "[ASSEMBLY] Assembly of all samples finished"
+        shell:
+            """
+            touch {output}
+            """
 
 
 rule metaSpades:
@@ -277,6 +308,37 @@ rule metaSpades:
         """
         metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
         --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
+        """
+
+rule megaHit:
+    """
+    Assembles all sequences with megaHit
+    """
+    input:
+        R1=rules.fastp_pe.output.R1,
+        R2=rules.fastp_pe.output.R2,
+    output:
+        dir=directory(
+            config["path"]["output"] + "/metaSpades/{sample}/",
+        ),
+        contigs=config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        scaffolds=config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+    params:
+        temp_dir=config["path"]["temp"] + "/megaHit/",
+    message:
+        "[megaHit] Performing assembly of paired end reads..."
+    conda:
+        config["path"]["envs"] + "/megaHit.yaml"
+    log:
+        config["path"]["log"] + "/megaHit/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/megaHit/{sample}.txt"
+    threads: config["threads"]
+    resources:
+        mem_gb=config["memory"]["megahit"],
+        runtime=config["time"]["megahit"],
+    shell:
+        """
         """
 
 
@@ -1573,7 +1635,6 @@ rule get_stats:
         config["path"]["scripts"] + "/table_stats.py"
 
 
-# to fix: trigger at the end of the workflow
 rule find_report_files:
     """
     Finds all html files in the output directory
