@@ -8,7 +8,7 @@ def make_config(virmake_path):
     config = {}
     db_path = virmake_path / "databases"
 
-    config["assembler"] = "metaSpades"
+    config["assembler"] = "metaspades"
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
@@ -65,6 +65,7 @@ def make_config(virmake_path):
         "big": 32000,
         "vcontact2": 63000,
         "metaquast": 63000,
+        "megahit": 250000000000,
     }
     config["time"] = {
         "tiny": "30 m",
@@ -73,6 +74,7 @@ def make_config(virmake_path):
         "big": "13 h",
         "vcontact2": "24 h",
         "metaquast": "24 h",
+        "megahit": "24 h",
     }
 
     return config
