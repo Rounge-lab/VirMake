@@ -218,64 +218,6 @@ rule fastqc_qc:
 
 # ASSEMBLY #
 
-if config["assembler"].lower() == "metaspades":
-
-    rule ASSEMBLY:
-        input:
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/",
-                sample=SAMPLE,
-            ),
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-                sample=SAMPLE,
-            ),
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
-                sample=SAMPLE,
-            ),
-            config["path"]["output"] + "/metaQUAST/report.html",
-            config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        output:
-            config["path"]["temp"] + "/finished_ASSEMBLY",
-        threads: 1
-        message:
-            "[ASSEMBLY] Assembly of all samples finished"
-        shell:
-            """
-            touch {output}
-            """
-
-elif config["assembler"].lower() == "megahit":
-
-    rule ASSEMBLY:
-        input:
-            expand(
-                config["path"]["output"] + "/megahit/{sample}/",
-                sample=SAMPLE,
-            ),
-            # expand(
-            #     config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
-            #     sample=SAMPLE,
-            # ),
-            # expand(
-            #     config["path"]["output"] + "/megahit/{sample}/scaffolds.fasta",
-            #     sample=SAMPLE,
-            # ),
-            config["path"]["output"] + "/metaQUAST/report.html",
-            config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        output:
-            config["path"]["temp"] + "/finished_ASSEMBLY",
-        threads: 1
-        message:
-            "[ASSEMBLY] Assembly of all samples finished"
-        shell:
-            """
-            touch {output}
-            """
-
 
 rule metaSpades:
     """
@@ -323,7 +265,6 @@ rule megahit:
             config["path"]["output"] + "/megahit/{sample}/",
         ),
         contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
-        scaffolds=config["path"]["output"] + "/megahit/{sample}/scaffolds.fasta",
     params:
         temp_dir=config["path"]["temp"] + "/megahit/",
     message:
@@ -336,50 +277,149 @@ rule megahit:
         config["path"]["benchmark"] + "/megahit/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_gb=config["memory"]["megahit"],
+        mem_b=config["memory"]["megahit"],
         runtime=config["time"]["megahit"],
     shell:
-        """
-        megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
-        """
-
-
-rule metaQUAST:
-    """
-    Performes quality control on all assembled contigs
-    with the reference database RefSeq Viral
-    """
-    params:
-        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
-    input:
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-            sample=SAMPLE,
-        ),
-    output:
-        dir=directory(config["path"]["output"] + "/metaQUAST/"),
-        report=config["path"]["output"] + "/metaQUAST/report.html",
-        transposed_report=config["path"]["output"]
-        + "/metaQUAST/combined_reference/transposed_report.tsv",
-    message:
-        "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
-    conda:
-        config["path"]["envs"] + "/metaQUAST.yaml"
-    log:
-        config["path"]["log"] + "/metaQUAST.log",
-    benchmark:
-        config["path"]["benchmark"] + "/metaQUAST.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["metaquast"],
-        runtime=config["time"]["metaquast"],
-    shell:
+        # mkdir and subsequent rm make sure to create output/megahit dir
+        # WITHOUT {sample} directory
         """
         mkdir -p {output.dir}
-        metaquast.py {input} -o {output.dir}\
-        -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
+        rm -r {output.dir}
+        megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
+        -t {threads} -m {resources.mem_b} &> {log}
+        mv {output.dir}/final.contigs.fa {output.contigs}
         """
+
+
+if config["assembler"].lower() == "metaspades":
+
+    rule ASSEMBLY:
+        input:
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/",
+                sample=SAMPLE,
+            ),
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+                sample=SAMPLE,
+            ),
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+                sample=SAMPLE,
+            ),
+            config["path"]["output"] + "/metaQUAST/report.html",
+            config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        output:
+            config["path"]["temp"] + "/finished_ASSEMBLY",
+        threads: 1
+        message:
+            "[ASSEMBLY] Assembly of all samples finished"
+        shell:
+            """
+            touch {output}
+            """
+
+    rule metaQUAST:
+        """
+        Performes quality control on all assembled contigs
+        with the reference database RefSeq Viral
+        """
+        params:
+            reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        input:
+            expand(
+                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+                sample=SAMPLE,
+            ),
+        output:
+            dir=directory(config["path"]["output"] + "/metaQUAST/"),
+            report=config["path"]["output"] + "/metaQUAST/report.html",
+            transposed_report=config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        message:
+            "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
+        conda:
+            config["path"]["envs"] + "/metaQUAST.yaml"
+        log:
+            config["path"]["log"] + "/metaQUAST.log",
+        benchmark:
+            config["path"]["benchmark"] + "/metaQUAST.txt"
+        threads: config["threads"]
+        resources:
+            mem_mb=config["memory"]["metaquast"],
+            runtime=config["time"]["metaquast"],
+        shell:
+            """
+            mkdir -p {output.dir}
+            metaquast.py {input} -o {output.dir}\
+            -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
+            """
+
+    assembly_output = rules.metaSpades.output.contigs
+
+elif config["assembler"].lower() == "megahit":
+
+    rule ASSEMBLY:
+        input:
+            expand(
+                config["path"]["output"] + "/megahit/{sample}/",
+                sample=SAMPLE,
+            ),
+            expand(
+                config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
+                sample=SAMPLE,
+            ),
+            config["path"]["output"] + "/metaQUAST/report.html",
+            config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        output:
+            config["path"]["temp"] + "/finished_ASSEMBLY",
+        threads: 1
+        message:
+            "[ASSEMBLY] Assembly of all samples finished"
+        shell:
+            """
+            touch {output}
+            """
+
+    rule metaQUAST:
+        """
+        Performes quality control on all assembled contigs
+        with the reference database RefSeq Viral
+        """
+        params:
+            reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+        input:
+            expand(
+                config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
+                sample=SAMPLE,
+            ),
+        output:
+            dir=directory(config["path"]["output"] + "/metaQUAST/"),
+            report=config["path"]["output"] + "/metaQUAST/report.html",
+            transposed_report=config["path"]["output"]
+            + "/metaQUAST/combined_reference/transposed_report.tsv",
+        message:
+            "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
+        conda:
+            config["path"]["envs"] + "/metaQUAST.yaml"
+        log:
+            config["path"]["log"] + "/metaQUAST.log",
+        benchmark:
+            config["path"]["benchmark"] + "/metaQUAST.txt"
+        threads: config["threads"]
+        resources:
+            mem_mb=config["memory"]["metaquast"],
+            runtime=config["time"]["metaquast"],
+        shell:
+            """
+            mkdir -p {output.dir}
+            metaquast.py {input} -o {output.dir}\
+            -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
+            """
+
+    assembly_output = rules.megahit.output.contigs
 
 
 # VIRAL IDENTIFICATION #
@@ -494,7 +534,7 @@ rule virsorter2_pass1:
     Performes the first pass of viral identification with virsorter2
     """
     input:
-        rules.metaSpades.output.contigs,
+        assembly_output,
     params:
         cutoff_length=config["virsorter2"]["pass1"]["min_lenght"],
         cutoff_score=config["virsorter2"]["pass1"]["min_score"],
@@ -533,7 +573,7 @@ rule vibrant_pass1:
     Performes the first pass of viral identification with VIBRANT
     """
     input:
-        rules.metaSpades.output.contigs,
+        assembly_output,
     output:
         dir=directory(config["path"]["output"] + "/vibrant_pass1/{sample}/"),
         finished=config["path"]["output"] + "/vibrant_pass1/{sample}/finished",

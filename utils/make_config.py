@@ -65,7 +65,7 @@ def make_config(virmake_path):
         "big": 32000,
         "vcontact2": 63000,
         "metaquast": 63000,
-        "megahit": 0.8,
+        "megahit": 250000000000,
     }
     config["time"] = {
         "tiny": "30 m",
