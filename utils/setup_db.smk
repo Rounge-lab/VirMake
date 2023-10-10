@@ -102,3 +102,16 @@ rule virsorter2:
         """
         virsorter setup -d {output}
         """
+
+
+rule genomad:
+    output:
+        directory(config["path"]["database"]["genomad_db"]),
+    conda:
+        config["path"]["envs"] + "/genomad.yaml"
+    threads: 24
+    shell:
+        """
+        mkdir -p {output}
+        genomad download-database {output}/.
+        """

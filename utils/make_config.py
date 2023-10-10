@@ -23,6 +23,7 @@ def make_config(virmake_path):
         "scripts": str(virmake_path / "workflow" / "scripts"),
         "profile": "",
         "database": {
+            "genomad": str(db_path / "genomad"),
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
             "checkv": str(db_path / "checkv"),
             "virsorter2": str(db_path / "virsorter2/db"),
