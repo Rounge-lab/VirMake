@@ -448,6 +448,14 @@ rule IDENTIFICATION:
             sample=SAMPLE,
         ),
         expand(
+            config["path"]["output"] + "/genomad_pass1/{sample}/",
+            sample=SAMPLE,
+        ),
+        expand(
+            config["path"]["output"] + "/genomad_pass1/{sample}/finished",
+            sample=SAMPLE,
+        ),
+        expand(
             config["path"]["output"]
             + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
             sample=SAMPLE,
@@ -468,6 +476,15 @@ rule IDENTIFICATION:
         ),
         expand(
             config["path"]["output"] + "/checkv/vibrant_pass1/{sample}/combined.fna",
+            sample=SAMPLE,
+        ),
+        expand(
+            config["path"]["output"]
+            + "/checkv/genomad_pass1/{sample}/quality_summary.tsv",
+            sample=SAMPLE,
+        ),
+        expand(
+            config["path"]["output"] + "/checkv/genomad_pass1/{sample}/combined.fna",
             sample=SAMPLE,
         ),
         expand(
@@ -514,10 +531,14 @@ rule IDENTIFICATION:
         config["path"]["output"]
         + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/",
         config["path"]["output"] + "/vibrant_pass2/finished",
+        config["path"]["output"] + "/genomad_pass2/",
+        config["path"]["output"] + "/genomad_pass2/finished",
         config["path"]["output"] + "/checkv/virsorter2_pass2/",
         config["path"]["output"] + "/checkv/virsorter2_pass2/quality_summary.tsv",
         config["path"]["output"] + "/checkv/vibrant_pass2/",
         config["path"]["output"] + "/checkv/vibrant_pass2/quality_summary.tsv",
+        config["path"]["output"] + "/checkv/genomad_pass2/",
+        config["path"]["output"] + "/checkv/genomad_pass2/quality_summary.tsv",
     output:
         config["path"]["temp"] + "/finished_IDENTIFICATION",
     threads: 1
@@ -606,6 +627,36 @@ rule vibrant_pass1:
         """
 
 
+rule genomad_pass1:
+    """
+    Performes the first pass of viral identification with geNomad
+    """
+    input:
+        assembly_output,
+    output:
+        dir=directory(config["path"]["output"] + "/genomad_pass1/{sample}/"),
+        finished=config["path"]["output"] + "/genomad_pass1/{sample}/finished",
+    params:
+        db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
+    conda:
+        config["path"]["envs"] + "/genomad.yaml"
+    message:
+        "[genomad_pass1] Executing viral identification..."
+    log:
+        config["path"]["log"] + "/genomad_pass1/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/genomad_pass1/{sample}.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
+    shell:
+        """
+        genomad end-to-end {input} {output.dir} {params.db_dir}
+        touch {output.finished}
+        """
+
+
 rule checkv_virsorter2:
     """
     Performes Quality control on identified viral sequences
@@ -685,6 +736,46 @@ rule checkv_vibrant:
         """
 
 
+rule checkv_genomad:
+    """
+    Performes Quality control on identified viral sequences
+    """
+    input:
+        rules.genomad_pass1.output.finished,
+        dir=rules.genomad_pass1.output.dir,
+    output:
+        dir=directory(
+            config["path"]["output"] + "/checkv/genomad_pass1/{sample}/",
+        ),
+        summary=config["path"]["output"]
+        + "/checkv/genomad_pass1/{sample}/quality_summary.tsv",
+        combined=config["path"]["output"]
+        + "/checkv/genomad_pass1/{sample}/combined.fna",
+    params:
+        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+    conda:
+        config["path"]["envs"] + "/checkv.yaml"
+    message:
+        "[checkv_genomad_pass1] Executing quality control on identified sequences..."
+    log:
+        config["path"]["log"] + "/checkv_genomad_pass1/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/checkv_genomad_pass1/{sample}.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["small"],
+    shell:
+        """
+        mkdir -p {output.dir}
+        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+            --db {params.db_dir}/genome_db/checkv_reps &> {log}
+        checkv end_to_end {input.dir}/contigs_summary/contigs_virus.fna\
+        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+        cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
+        """
+
+
 rule filter_contigs_virsorter2:
     """
     Gathers only relevant sequences with above threshold score
@@ -747,6 +838,43 @@ rule filter_contigs_vibrant:
         config["path"]["benchmark"] + "/filter_contigs_vibrant/{sample}.txt"
     log:
         config["path"]["log"] + "/filter_contigs_vibrant/{sample}.log",
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["small"],
+    shell:
+        """
+        mkdir -p {output.dir}
+        awk -F '\t' '{params.criteria}  {{print $1}}' {input.summary} > {output.filtered_contigs_ID}
+        seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
+        """
+
+
+rule filter_contigs_genomad:
+    """
+    Gathers only relevant sequences with above threshold score
+    """
+    params:
+        criteria=get_min_quality(config["quality_threshold"]),
+    input:
+        summary=rules.checkv_genomad.output.summary,
+        combined=rules.checkv_genomad.output.combined,
+    output:
+        dir=directory(
+            config["path"]["output"] + "/filtered_genomad/{sample}/",
+        ),
+        filtered_contigs_viruses=config["path"]["output"]
+        + "/filtered_genomad/{sample}/filtered_combined.fna",
+        filtered_contigs_ID=config["path"]["output"]
+        + "/filtered_genomad/{sample}/filtered_contigs",
+    conda:
+        config["path"]["envs"] + "/seqtk.yaml"
+    message:
+        "[filter_contigs_genomad] Filtering contigs with respect to quality scores (quality threshold: {params.criteria})..."
+    benchmark:
+        config["path"]["benchmark"] + "/filter_contigs_genomad/{sample}.txt"
+    log:
+        config["path"]["log"] + "/filter_contigs_genomad/{sample}.log",
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["small"],
@@ -824,6 +952,38 @@ rule combine_results_vibrant:
         """
 
 
+rule combine_results_genomad:
+    """
+    Combine all results from virus identifiaction of all samples with genomad
+    """
+    input:
+        expand(
+            config["path"]["output"]
+            + "/filtered_genomad/{sample}/filtered_combined.fna",
+            sample=SAMPLE,
+        ),
+    output:
+        dir=directory(config["path"]["output"] + "/combined_genomad/"),
+        combined=config["path"]["output"] + "/combined_genomad/combined_genomad.tsv",
+    conda:
+        config["path"]["envs"] + "/cdhit.yaml"
+    message:
+        "[combine_results_genomad] Combining results from all samples..."
+    log:
+        config["path"]["log"] + "/combine_results_genomad.log",
+    benchmark:
+        config["path"]["benchmark"] + "/combine_results_genomad.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["small"],
+    shell:
+        """
+        mkdir -p {output.dir}
+        cat {input} > {output.combined}
+        """
+
+
 rule combine_all_results:
     """
     Combine all results from both virus identifiaction tools
@@ -831,6 +991,7 @@ rule combine_all_results:
     input:
         vibrant=rules.combine_results_vibrant.output.combined,
         virsorter2=rules.combine_results_virsorter2.output.combined,
+        genomad=rules.combine_results_genomad.output.combined,
     output:
         dir=directory(
             config["path"]["output"] + "/combined_all/",
@@ -850,7 +1011,7 @@ rule combine_all_results:
         runtime=config["time"]["tiny"],
     shell:
         """
-        cat {input.vibrant} {input.virsorter2} > {output.combined}
+        cat {input.vibrant} {input.virsorter2} {input.genomad} > {output.combined}
         """
 
 
@@ -1005,6 +1166,36 @@ rule vibrant_pass2:
         """
 
 
+rule genomad_pass2:
+    """
+    Runs genomad on the vOTUs
+    """
+    input:
+        rules.transform_vOTUs.output.vOTU,
+    output:
+        dir=directory(config["path"]["output"] + "/genomad_pass2/"),
+        finished=config["path"]["output"] + "/genomad_pass2/finished",
+    params:
+        db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
+    conda:
+        config["path"]["envs"] + "/genomad.yaml"
+    message:
+        "[genomad_pass2] Running genomad on the vOTUs..."
+    log:
+        config["path"]["log"] + "/genomad_pass2.log",
+    benchmark:
+        config["path"]["benchmark"] + "/genomad_pass2.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
+    shell:
+        """
+        genomad end-to-end {input} {output.dir} {params.db_dir}
+        touch {output.finished}
+        """
+
+
 rule checkv_vOTU_virsorter2:
     """
     Runs Quality control on the vOTUs after virsorter2
@@ -1070,6 +1261,40 @@ rule checkv_vOTU_vibrant:
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
         --db {params.db_dir}/genome_db/checkv_reps &>{log}
         checkv end_to_end {input.combined}/vOTU_derep95_combined.phages_combined.fna\
+        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+        """
+
+
+rule checkv_vOTU_genomad:
+    """
+    Runs Quality control on the vOTUs after genomad
+    """
+    params:
+        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+    input:
+        dir=rules.genomad_pass2.output.dir,
+        finished=rules.genomad_pass2.output.finished,
+    output:
+        dir=directory(config["path"]["output"] + "/checkv/genomad_pass2/"),
+        summary=config["path"]["output"] + "/checkv/genomad_pass2/quality_summary.tsv",
+    conda:
+        config["path"]["envs"] + "/checkv.yaml"
+    message:
+        "[checkv_vOTU_genomad] Running checkv on the vOTUs after genomad..."
+    log:
+        config["path"]["log"] + "/checkv_genomad_pass2.log",
+    benchmark:
+        config["path"]["benchmark"] + "/checkv_genomad_pass2.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["small"],
+    shell:
+        """
+        mkdir -p {output.dir}
+        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+        --db {params.db_dir}/genome_db/checkv_reps &> {log}
+        checkv end_to_end {input.dir}/vOTU_derep95_combined_summary/vOTU_derep95_combined_virus.fna\
         {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         """
 
@@ -1700,7 +1925,6 @@ rule find_report_files:
         """
 
 
-# to fix: trigger at the end of the workflow
 rule zip_output:
     """
     Copies all html files to the statistics directory
