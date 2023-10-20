@@ -84,7 +84,17 @@ virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
     type=int,
     help="maximum number of threads used on multithreaded jobs",
 )
-def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
+@click.option(
+    "-s",
+    "--slurm",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="use slurm cluster to run parallel jobs",
+)
+def run_workflow(
+    workflow, dryrun, working_dir, profile, config_file, threads, slurm
+):
     """Runs the main workflow"""
 
     # load needed paths and check if they exist
@@ -119,8 +129,9 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         "--configfile '{config_file}' --nolock "
         "--use-conda {dryrun} "
         "--until {target_rule} "
-        "{profile_cmd}"
-        "-c{threads} -T 3"
+        "{profile_cmd} "
+        "-c{threads} -T 3 "
+        "{slurm} -j{threads}"
     ).format(
         config_file=config_file,
         dryrun="-n" if dryrun else "",
@@ -128,6 +139,9 @@ def run_workflow(workflow, dryrun, working_dir, profile, config_file, threads):
         threads=threads,
         working_dir=working_dir,
         profile_cmd=profile_cmd,
+        slurm=f"--slurm --default-resources slurm_account={config['slurm_account']}"
+        if slurm
+        else "",
     )
 
     print("Starting workflow...")

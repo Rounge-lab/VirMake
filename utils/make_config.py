@@ -8,6 +8,7 @@ def make_config(virmake_path):
     config = {}
     db_path = virmake_path / "databases"
 
+    config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
