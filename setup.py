@@ -57,45 +57,13 @@ def check_conda(logger):
         exit(1)
 
 
-def install_check_mamba(logger):
-    """
-    check if mamba is installed and if not, install it,
-    then check if mamba is initialized
-    """
-    # check if mamba is installed in base
-    try:
-        cmd = "mamba --version"
-        mamba_ver = subprocess.run(cmd.split(), capture_output=True)
-    except FileNotFoundError:
-        # if not install it using conda
-        logger.info("Installing mamba...\n")
-        cmd = "conda install -y -c conda-forge mamba"
-        subprocess.run(cmd.split())
-        logger.info("Mamba installed successfully.\n")
-        cmd = "mamba --version"
-        mamba_ver = subprocess.run(cmd.split(), capture_output=True)
-    logger.info(f"Using {strip_stdout(mamba_ver.stdout.splitlines()[0])}")
-
-    # check if mamba is initialized
-    cmd = "mamba activate base"
-    mamba_activate_base = subprocess.run(
-        cmd.split(), capture_output=True, shell=True
-    )
-    if mamba_activate_base.returncode != 0:
-        logger.error(
-            "Mamba not initialized! See setup.log for full traceback.\n"
-        )
-        logger.critical(strip_stdout(mamba_activate_base.stderr))
-        exit(1)
-
-
 def create_venv(logger, virmake_path):
     """create virmake environment"""
-    cmd = "mamba env list"
+    cmd = "conda env list"
     venv_list = subprocess.run(cmd.split(), capture_output=True)
     if "virmake" not in strip_stdout(venv_list.stdout):
         logger.info("\nPreparing VirMake virtual environment...\n")
-        cmd = f"mamba env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
+        cmd = f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
         subprocess.run(cmd.split())
 
 
@@ -201,7 +169,6 @@ def main():
 
     # run all steps
     check_conda(logger)
-    install_check_mamba(logger)
     create_venv(logger, virmake_path)
     create_config(logger, virmake_path)
     create_working_dir(logger, virmake_path)
