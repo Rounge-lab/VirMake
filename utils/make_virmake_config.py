@@ -8,6 +8,7 @@ def make_config(virmake_path):
     config = {}
     db_path = virmake_path / "databases"
 
+    config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
@@ -21,7 +22,6 @@ def make_config(virmake_path):
         "benchmark": str(virmake_path / "working_dir" / "benchmark"),
         "temp": str(virmake_path / "working_dir" / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
-        "profile": "",
         "database": {
             "genomad": str(db_path / "genomad"),
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
@@ -66,7 +66,8 @@ def make_config(virmake_path):
         "big": 32000,
         "vcontact2": 63000,
         "metaquast": 63000,
-        "megahit": 250000000000,
+        "megahit": 20000,
+        "metaspades": 20000,
     }
     config["time"] = {
         "tiny": "30 m",
@@ -76,6 +77,7 @@ def make_config(virmake_path):
         "vcontact2": "24 h",
         "metaquast": "24 h",
         "megahit": "24 h",
+        "metaspades": "2 h",
     }
 
     return config
@@ -84,7 +86,7 @@ def make_config(virmake_path):
 def main():
     """Saves the config to a file."""
     virmake_path = pathlib.Path(sys.argv[1])
-    config_path = virmake_path / "workflow" / "config.yaml"
+    config_path = virmake_path / "workflow" / "config" / "virmake.yaml"
     config = make_config(virmake_path)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")

@@ -67,6 +67,10 @@ rule ALL:
         config["path"]["temp"] + "/finished_STATS",
     params:
         temp=config["path"]["temp"],
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         rm -rdf {params.temp}
@@ -107,6 +111,9 @@ rule QC:
     output:
         config["path"]["temp"] + "/finished_QC",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     message:
         "[QC] Finished QC."
     shell:
@@ -244,12 +251,12 @@ rule metaSpades:
         config["path"]["benchmark"] + "/metaSpades/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_gb=config["memory"]["metaspades"],
+        mem_mb=config["memory"]["metaspades"],
         runtime=config["time"]["metaspades"],
     shell:
         """
         metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
+        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_mb} &> {log}
         """
 
 
@@ -286,7 +293,7 @@ rule megahit:
         mkdir -p {output.dir}
         rm -r {output.dir}
         megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        -t {threads} -m {resources.mem_b} &> {log}
+        -t {threads} -m {resources.mem_mb_b} &> {log}
         mv {output.dir}/final.contigs.fa {output.contigs}
         """
 
@@ -313,6 +320,9 @@ if config["assembler"].lower() == "metaspades":
         output:
             config["path"]["temp"] + "/finished_ASSEMBLY",
         threads: 1
+        resources:
+            mem_mb=config["memory"]["small"],
+            runtime=config["time"]["tiny"],
         message:
             "[ASSEMBLY] Assembly of all samples finished"
         shell:
@@ -376,6 +386,9 @@ elif config["assembler"].lower() == "megahit":
         output:
             config["path"]["temp"] + "/finished_ASSEMBLY",
         threads: 1
+        resources:
+            mem_mb=config["memory"]["small"],
+            runtime=config["time"]["tiny"],
         message:
             "[ASSEMBLY] Assembly of all samples finished"
         shell:
@@ -542,6 +555,9 @@ rule IDENTIFICATION:
     output:
         config["path"]["temp"] + "/finished_IDENTIFICATION",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     message:
         "[IDENTIFICATION] Finished identification of viral contigs"
     shell:
@@ -1064,6 +1080,7 @@ rule transform_vOTUs:
     output:
         dir=directory(config["path"]["output"] + "/vOTU/"),
         vOTU=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+    threads: 1
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
@@ -1346,6 +1363,9 @@ rule MAPPING:
     output:
         config["path"]["temp"] + "/finished_MAPPING",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     message:
         "[MAPPING] Mapping finished..."
     shell:
@@ -1462,6 +1482,10 @@ rule get_trimmed_coverage:
         + "/contig_stats/{sample}/trimmed_mean_coverage.tsv",
     params:
         trim_perc=config["trim_percentage"],
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     log:
         config["path"]["log"] + "/trimmed_mean/{sample}.log",
     benchmark:
@@ -1488,6 +1512,10 @@ rule combine_coverage:
         + "/contig_stats/raw_coverage_table.tsv",
     params:
         min_coverage=config["min_coverage"],
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
     message:
@@ -1593,6 +1621,9 @@ rule TAXONOMY:
     output:
         config["path"]["temp"] + "/finished_TAXONOMY",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         touch {output}
@@ -1712,7 +1743,6 @@ rule vcontact2:
     resources:
         mem_mb=config["memory"]["vcontact2"],
         runtime=config["time"]["vcontact2"],
-        partition=config["job_type"]["normal"],
     threads: config["threads"]
     shell:
         """
@@ -1742,6 +1772,9 @@ rule FUNCTION:
     output:
         config["path"]["temp"] + "/finished_FUNCTION",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         touch {output}
@@ -1866,6 +1899,9 @@ rule STATS:
     output:
         config["path"]["temp"] + "/finished_STATS",
     threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         touch {output}
@@ -1899,6 +1935,9 @@ rule get_stats:
     benchmark:
         config["path"]["benchmark"] + "/get_stats.txt"
     threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
     script:
         config["path"]["scripts"] + "/table_stats.py"
 
@@ -1918,6 +1957,10 @@ rule find_report_files:
         config["path"]["temp"] + "/html_files.txt",
     params:
         all_output_path=config["path"]["output"],
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         find {params.all_output_path} -name *.html > {output}
@@ -1935,5 +1978,9 @@ rule zip_output:
         config["path"]["output"] + "/complete_output.zip",
     params:
         temp=config["path"]["temp"],
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     script:
         config["path"]["scripts"] + "/zip_output.py"
