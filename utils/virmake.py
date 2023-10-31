@@ -16,7 +16,7 @@ def cli():
 
 # load config file
 try:
-    with open("workflow/config.yaml", "r") as cf:
+    with open("workflow/config/virmake.yaml", "r") as cf:
         try:
             config = yaml.safe_load(cf)
         except yaml.YAMLError as ye:
@@ -99,7 +99,7 @@ def run_workflow(
 
     # load needed paths and check if they exist
     if not config_file:
-        config_file = virmake_path / "workflow" / "config.yaml"
+        config_file = virmake_path / "workflow" / "config" / "virmake.yaml"
     else:
         config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():
@@ -108,14 +108,10 @@ def run_workflow(
             "generate one by running `python setup.py`"
         )
         exit(1)
-    profile = config["path"]["profile"]
-    if profile:
-        profile_cmd = f"--profile {pathlib.Path(profile).resolve()} "
-        if not profile.exists():
-            logging.critical(f"profile not found: {profile}\n")
-            exit(1)
+    if not profile:
+        profile = virmake_path / "workflow" / "config"
     else:
-        profile_cmd = ""
+        profile = pathlib.Path(profile).resolve()
     if not working_dir:
         working_dir = virmake_path / "workflow"
     else:
@@ -123,25 +119,21 @@ def run_workflow(
 
     cmd = (
         "time "
-        "snakemake --directory {working_dir} "
-        "--conda-frontend mamba "
-        "--rerun-incomplete "
-        "--configfile '{config_file}' --nolock "
-        "--use-conda {dryrun} "
+        "snakemake --directory '{working_dir}' "
+        "--configfile '{config_file}' "
         "--until {target_rule} "
-        "{profile_cmd} "
         "-c{threads} -T 3 "
-        "{slurm} -j{threads}"
+        "{slurm} -j{threads} "
+        "{dryrun} "
     ).format(
+        working_dir=working_dir,
         config_file=config_file,
         dryrun="-n" if dryrun else "",
         target_rule=workflow.upper(),
         threads=threads,
-        working_dir=working_dir,
-        profile_cmd=profile_cmd,
-        slurm=f"--slurm --default-resources slurm_account={config['slurm_account']}"
+        slurm=f"--profile {profile} --slurm --default-resources slurm_account={config['slurm_account']}"
         if slurm
-        else "",
+        else "--use-conda --rerun-incomplete --nolock --conda-frontend mamba",
     )
 
     print("Starting workflow...")

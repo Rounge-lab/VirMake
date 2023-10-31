@@ -10,6 +10,7 @@ slurm*
 __pycache__/
 config.yaml
 samples.tsv
+config
 /Test_set/
 /slurm_output/
 ./finished_assembly

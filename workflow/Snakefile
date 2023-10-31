@@ -251,12 +251,12 @@ rule metaSpades:
         config["path"]["benchmark"] + "/metaSpades/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_gb=config["memory"]["metaspades"],
+        mem_mb=config["memory"]["metaspades"],
         runtime=config["time"]["metaspades"],
     shell:
         """
         metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_gb} &> {log}
+        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_mb} &> {log}
         """
 
 
@@ -293,7 +293,7 @@ rule megahit:
         mkdir -p {output.dir}
         rm -r {output.dir}
         megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        -t {threads} -m {resources.mem_b} &> {log}
+        -t {threads} -m {resources.mem_mb_b} &> {log}
         mv {output.dir}/final.contigs.fa {output.contigs}
         """
 
