@@ -17,13 +17,13 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 
 ### Prerequisites:
 - Git
-- Conda (Miniconda or Anaconda)
+- Conda (Miniconda or Anaconda) installation with write permissions
 - At least 125 GB of RAM and 180 GB of free disk space. *Additional disk
 space **will be needed** for the output files depending on the size and number of your samples!*
 
 ### To install VirMake follow these steps:
 
-1. Clone the repository using `git clone https://github.com/uio-bmi/VirMake.git`
+1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
 2. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
    installation of all necessary dependencies. If you want to install the dependencies yourself, you can omit the flag. Also, **if you encounter any errors** during the installation, please run the setup script again without the flag. We recommend using `screen` to run the setup script. Visit
    [this link](https://linuxize.com/post/how-to-use-linux-screen/) for more information on how to use `screen`.
@@ -47,7 +47,9 @@ VirMake
 ├── utils
 ├── workflow
 │   ├── .snakemake
-│   └── scripts
+│   ├── config
+│   ├── scripts
+│   └── Snakefile
 └── working_dir
     └── input
 ```

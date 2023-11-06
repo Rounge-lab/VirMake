@@ -3,7 +3,7 @@ import pathlib
 import sys
 
 
-def make_config(virmake_path):
+def make_config():
     """Creates a default config structure."""
     config = {}
     config["snakefile"] = "Snakefile"
@@ -39,7 +39,7 @@ def main():
     """Saves the config to a file."""
     virmake_path = pathlib.Path(sys.argv[1])
     config_path = virmake_path / "workflow" / "config" / "config.yaml"
-    config = make_config(virmake_path)
+    config = make_config()
     if config_path.exists():
         print(f"Config file {config_path} already exists.")
         print("Skipping...")

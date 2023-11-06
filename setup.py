@@ -63,7 +63,7 @@ def create_venv(logger, virmake_path):
     venv_list = subprocess.run(cmd.split(), capture_output=True)
     if "virmake" not in strip_stdout(venv_list.stdout):
         logger.info("\nPreparing VirMake virtual environment...\n")
-        cmd = f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
+        cmd = f"conda env create -f {virmake_path / 'envs' / 'params.yaml'}"
         subprocess.run(cmd.split())
 
 
@@ -78,7 +78,7 @@ def create_virmake_config(logger, virmake_path):
 
 def create_slurm_profile(logger, virmake_path):
     """create config.yaml"""
-    logger.info(f"\nCreating configuration file...\n")
+    logger.info(f"\nCreating SLURM profile...\n")
     cmd = f"conda run -n virmake python utils/make_slurm_profile.py {virmake_path}"
     subprocess.run(cmd.split())
 
@@ -133,7 +133,7 @@ def setup_db(logger, virmake_path):
             cmd = (
                 "conda run -n virmake --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
-                f"--configfile {virmake_path / 'workflow' / 'config.yaml'} "
+                f"--configfile {virmake_path / 'workflow' / 'config' / 'params.yaml'} "
                 f"--use-conda --nolock --rerun-incomplete "
                 f"--directory {virmake_path / 'workflow'}"
             )
@@ -177,13 +177,13 @@ def main():
     logger.info(f"\nVirMake setup started at {virmake_path}\n")
 
     # run all steps
-    # check_conda(logger)
-    # create_venv(logger, virmake_path)
+    check_conda(logger)
+    create_venv(logger, virmake_path)
     create_virmake_config(logger, virmake_path)
     create_slurm_profile(logger, virmake_path)
-    # create_working_dir(logger, virmake_path)
-    # setup_db(logger, virmake_path)
-    # prep_script(logger, virmake_path)
+    create_working_dir(logger, virmake_path)
+    setup_db(logger, virmake_path)
+    prep_script(logger, virmake_path)
 
     # remove setup.log on success
     logger.info("Success!\n")
