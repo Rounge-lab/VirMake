@@ -106,7 +106,7 @@ rule virsorter2:
 
 rule genomad:
     output:
-        directory(config["path"]["database"]["genomad_db"]),
+        directory(config["path"]["database"]["genomad"]),
     conda:
         config["path"]["envs"] + "/genomad.yaml"
     threads: 24

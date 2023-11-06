@@ -16,14 +16,14 @@ def cli():
 
 # load config file
 try:
-    with open("workflow/config/virmake.yaml", "r") as cf:
+    with open("workflow/config/params.yaml", "r") as cf:
         try:
             config = yaml.safe_load(cf)
         except yaml.YAMLError as ye:
             logging.critical(ye)
             exit(1)
 except FileNotFoundError:
-    logging.critical("Config file not found: workflow/config.yaml")
+    logging.critical("Config file not found: workflow/config/params.yaml")
     exit(1)
 
 # load virmake path
@@ -99,7 +99,7 @@ def run_workflow(
 
     # load needed paths and check if they exist
     if not config_file:
-        config_file = virmake_path / "workflow" / "config" / "virmake.yaml"
+        config_file = virmake_path / "workflow" / "config" / "params.yaml"
     else:
         config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():

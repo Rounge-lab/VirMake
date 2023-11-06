@@ -86,7 +86,7 @@ def make_config(virmake_path):
 def main():
     """Saves the config to a file."""
     virmake_path = pathlib.Path(sys.argv[1])
-    config_path = virmake_path / "workflow" / "config" / "virmake.yaml"
+    config_path = virmake_path / "workflow" / "config" / "params.yaml"
     config = make_config(virmake_path)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")
