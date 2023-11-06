@@ -134,9 +134,9 @@ and click on the link that will be provided in the terminal.
 The link should look like `http://127.0.0.1:8888`.
 This will launch shiny app within your browser.
 
-### Workflow config file
+### Workflow params file
 
-To adjust the workflow settings edit the `config.yaml` file. The file is located in `VirMake/workflow/config.yaml`.
+To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/workflow/config/params.yaml`.
 The file contains the following adjustable settings (default values are provided in square brackets):
 
 ```
@@ -213,8 +213,7 @@ virsorter2:
 
 ### HPC profile file
 
-You can adjust the HPC profile file to suit your needs. To do this create a new profile file and
-copy its absolute path to config.yaml under `path:profile:` key. This key is empty by default.
+You can adjust the HPC profile file to suit your needs. The file is located in `VirMake/workflow/config/config.yaml`
 
 The profile file should look like this:
 
