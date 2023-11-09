@@ -2,7 +2,7 @@ import shutil
 import pathlib
 
 
-with open(str(snakemake.input), "r") as f:
+with open(str(snakemake.input.html_files), "r") as f:
     paths = f.readlines()
 
 for p in paths:
@@ -17,6 +17,8 @@ for p in paths:
     shutil.copy(ori, dst)
 
 complete_output = str(snakemake.params.temp) + "/complete_output"
+shutil.copytree(
+    str(snakemake.input.tables), pathlib.Path(complete_output) / "tables"
+)
 archive_name = str(snakemake.output).split(".")[0]
-
 shutil.make_archive(archive_name, "zip", complete_output)
