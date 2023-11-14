@@ -63,7 +63,7 @@ def create_venv(logger, virmake_path):
     venv_list = subprocess.run(cmd.split(), capture_output=True)
     if "virmake" not in strip_stdout(venv_list.stdout):
         logger.info("\nPreparing VirMake virtual environment...\n")
-        cmd = f"conda env create -f {virmake_path / 'envs' / 'params.yaml'}"
+        cmd = f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
         subprocess.run(cmd.split())
 
 
