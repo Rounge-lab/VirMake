@@ -1926,6 +1926,7 @@ rule get_stats:
         config["path"]["output"] + "/statistics/vOTU_Stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/vOTU_Stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
+        directory(config["path"]["output"] + "/tables/"),
         dir=directory(config["path"]["output"] + "/statistics/"),
     params:
         samples=SAMPLE,
@@ -1968,12 +1969,31 @@ rule find_report_files:
         """
 
 
+rule gather_tables:
+    output:
+        tables_dir=directory(config["path"]["temp"] + "/tables/"),
+    params:
+        output_dir=config["path"]["output"],
+        extensions=config["table_extensions"],
+    shell:
+        """
+        mkdir -p {output.tables_dir}
+        EXT="{params.extensions}"
+        for ext in $EXT; do
+            for path in $(find {params.output_dir} -name "*.$ext"); do
+                cp $path {output.tables_dir}/.
+            done
+        done
+        """
+
+
 rule zip_output:
     """
     Copies all html files to the statistics directory
     """
     input:
         html_files=rules.find_report_files.output,
+        tables=rules.gather_tables.output,
     output:
         config["path"]["output"] + "/complete_output.zip",
     params:

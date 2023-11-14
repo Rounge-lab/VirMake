@@ -79,6 +79,7 @@ def make_config(virmake_path):
         "megahit": "24 h",
         "metaspades": "2 h",
     }
+    config["table_extensions"] = ["tsv", "csv", "xlsx"]
 
     return config
 
