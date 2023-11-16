@@ -20,4 +20,4 @@ config
 virmake
 working_dir
 *.log
-*fasterq*
+*fasterq*/

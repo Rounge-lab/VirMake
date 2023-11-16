@@ -1,9 +1,34 @@
 name: metaSpades
 channels:
-  - defaults
-  - conda-forge
   - bioconda
+  - conda-forge
+  - defaults
 dependencies:
-  - python=3.6
+  - _libgcc_mutex=0.1
+  - _openmp_mutex=4.5
+  - _sysroot_linux-64_curr_repodata_hack=3
+  - bzip2=1.0.8
+  - ca-certificates=2023.05.30
+  - certifi=2021.5.30
+  - kernel-headers_linux-64=3.10.0
+  - ld_impl_linux-64=2.38
+  - libffi=3.3
+  - libgcc-ng=12.3.0
+  - libgomp=12.3.0
+  - libstdcxx-ng=13.1.0
+  - libzlib=1.2.13
+  - llvm-openmp=8.0.1
+  - ncurses=6.4
+  - openmp=8.0.1
+  - openssl=1.1.1u
+  - pip=21.2.2
+  - python=3.6.13
+  - readline=8.2
+  - setuptools=58.0.4
   - spades=3.15.5
-  - libgcc-ng=12
+  - sqlite=3.41.2
+  - sysroot_linux-64=2.17
+  - tk=8.6.12
+  - wheel=0.37.1
+  - xz=5.4.2
+  - zlib=1.2.13
