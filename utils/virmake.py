@@ -254,8 +254,8 @@ def clean(target, y):
             shutil.rmtree(virmake_path / "working_dir")
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")
-        if (virmake_path / "workflow" / "config.yaml").exists():
-            os.remove(virmake_path / "workflow" / "config.yaml")
+        if (virmake_path / "workflow" / "config").exists():
+            shutil.rmtree(virmake_path / "workflow" / "config")
     elif target == "databases":
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")

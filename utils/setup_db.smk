@@ -9,6 +9,7 @@ rule all:
         config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
         config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
         config["path"]["database"]["virsorter2"],
+        config["path"]["database"]["genomad"],
 
 
 rule Vcontact2:
@@ -73,6 +74,7 @@ rule checkv:
 
 rule inphared:
     output:
+        dir=directory(config["path"]["database"]["INPHARED"]),
         g2g=config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
         prot=config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
         exclref=config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
@@ -81,13 +83,13 @@ rule inphared:
         version="1May2023",
     shell:
         """
-        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_vConTACT2_gene_to_genome.csv.gz' -nH
-        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_vConTACT2_proteins.faa.gz' -nH
-        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_data_excluding_refseq.tsv.gz' -nH
-        gunzip *.gz
-        mv {params.version}_vConTACT2_gene_to_genome.csv {output.g2g}
-        mv {params.version}_vConTACT2_proteins.faa {output.prot}
-        mv {params.version}_data_excluding_refseq.tsv {output.exclref}
+        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_vConTACT2_gene_to_genome.csv.gz' \
+            -O {output.g2g}.gz -nH
+        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_vConTACT2_proteins.faa.gz' \
+            -O {output.prot}.gz -nH
+        wget 'https://millardlab-inphared.s3.climb.ac.uk/{params.version}_data_excluding_refseq.tsv.gz' \
+            -O {output.exclref}.gz -nH
+        gunzip {output.dir}/*.gz
         echo "INPHARED VERSION: {params.version}" > {output.version}
         """
 
@@ -106,12 +108,12 @@ rule virsorter2:
 
 rule genomad:
     output:
-        directory(config["path"]["database"]["genomad"]),
+        dir=directory(config["path"]["database"]["genomad"]),
+        version=config["path"]["database"]["genomad"] + "/genomad_db/version.txt",
     conda:
         config["path"]["envs"] + "/genomad.yaml"
     threads: 24
     shell:
         """
-        mkdir -p {output}
-        genomad download-database {output}/.
+        genomad download-database {output.dir}/.
         """
