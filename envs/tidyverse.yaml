@@ -1,7 +1,7 @@
 name: tidyverse
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
@@ -67,6 +67,7 @@ dependencies:
   - libwebp-base=1.2.0
   - libxcb=1.14
   - libxml2=2.9.12
+  - libzlib=1.2.11
   - lz4-c=1.9.3
   - make=4.3
   - ncurses=6.2

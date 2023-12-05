@@ -239,7 +239,10 @@ def run_get(database, accession, output_dir):
 )
 @click.option(
     "-y",
+    "--yes",
     default=False,
+    is_flag=True,
+    help="Skip confirmation",
 )
 def clean(target, y):
     """clean virmake directory."""
@@ -254,8 +257,8 @@ def clean(target, y):
             shutil.rmtree(virmake_path / "working_dir")
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")
-        if (virmake_path / "workflow" / "config.yaml").exists():
-            os.remove(virmake_path / "workflow" / "config.yaml")
+        if (virmake_path / "workflow" / "config").exists():
+            shutil.rmtree(virmake_path / "workflow" / "config")
     elif target == "databases":
         if (virmake_path / "databases").exists():
             shutil.rmtree(virmake_path / "databases")
