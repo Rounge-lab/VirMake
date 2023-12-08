@@ -58,8 +58,8 @@ virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
     help="snakemake profile e.g. for cluster execution.",
 )
 @click.option(
-    "-W",
-    "--working-dir",
+    "-d",
+    "--workflow-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
     help="location to run virmake.",
 )
@@ -92,8 +92,22 @@ virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
     show_default=True,
     help="use slurm cluster to run parallel jobs",
 )
+@click.option(
+    "-T",
+    "--jobs_at_once",
+    default=3,
+    type=int,
+    help="number of jobs to add to queue at once",
+)
 def run_workflow(
-    workflow, dryrun, working_dir, profile, config_file, threads, slurm
+    workflow,
+    dryrun,
+    workflow_dir,
+    profile,
+    config_file,
+    threads,
+    slurm,
+    jobs_at_once,
 ):
     """Runs the main workflow"""
 
@@ -112,21 +126,21 @@ def run_workflow(
         profile = virmake_path / "workflow" / "config"
     else:
         profile = pathlib.Path(profile).resolve()
-    if not working_dir:
-        working_dir = virmake_path / "workflow"
+    if not workflow_dir:
+        workflow_dir = virmake_path / "workflow"
     else:
-        working_dir = pathlib.Path(working_dir).resolve()
+        workflow_dir = pathlib.Path(workflow_dir).resolve()
 
     cmd = (
         "time "
-        "snakemake --directory '{working_dir}' "
+        "snakemake --directory '{workflow_dir}' "
         "--configfile '{config_file}' "
         "--until {target_rule} "
-        "-c{threads} -T 3 "
+        "-c{threads} -T {jobs_at_once} "
         "{slurm} -j{threads} "
         "{dryrun} "
     ).format(
-        working_dir=working_dir,
+        workflow_dir=workflow_dir,
         config_file=config_file,
         dryrun="-n" if dryrun else "",
         target_rule=workflow.upper(),
@@ -134,6 +148,7 @@ def run_workflow(
         slurm=f"--profile {profile} --slurm --default-resources slurm_account={config['slurm_account']}"
         if slurm
         else "--use-conda --rerun-incomplete --nolock --conda-frontend mamba",
+        jobs_at_once=jobs_at_once,
     )
 
     print("Starting workflow...")
@@ -169,7 +184,7 @@ def run_prep_offline(threads):
     ).format(
         snakefile=virmake_path / "workflow" / "Snakefile",
         threads=threads,
-        config=virmake_path / "workflow" / "config.yaml",
+        config=virmake_path / "workflow" / "config" / "params.yaml",
         working_dir=virmake_path / "workflow",
     )
     try:
