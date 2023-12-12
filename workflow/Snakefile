@@ -1710,6 +1710,10 @@ rule STATS:
         config["path"]["temp"] + "/html_files.txt",
         config["path"]["output"] + "/complete_output.zip",
         config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
+        config["path"]["benchmark"] + "/_summary/",
+        config["path"]["benchmark"] + "/_summary/merged_benchmarks.csv",
+        config["path"]["benchmark"] + "/_summary/REPORT.txt",
+        config["path"]["benchmark"] + "/_summary/plots",
     output:
         config["path"]["temp"] + "/finished_STATS",
     threads: 1
@@ -1824,3 +1828,31 @@ rule zip_output:
         runtime=config["time"]["tiny"],
     script:
         config["path"]["scripts"] + "/zip_output.py"
+
+
+rule gather_benchmarks:
+    input:
+        config["path"]["benchmark"],
+    output:
+        dir=directory(config["path"]["benchmark"] + "/_summary/"),
+        merged=config["path"]["benchmark"] + "/_summary/merged_benchmarks.csv",
+        report=config["path"]["benchmark"] + "/_summary/REPORT.txt",
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
+    script:
+        config["path"]["scripts"] + "/gather_benchmarks.py"
+
+
+rule create_benchmark_plots:
+    input:
+        rules.gather_benchmarks.output.merged,
+    output:
+        directory(config["path"]["benchmark"] + "/_summary/plots"),
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
+    script:
+        config["path"]["scripts"] + "/create_benchmark_plots.R"

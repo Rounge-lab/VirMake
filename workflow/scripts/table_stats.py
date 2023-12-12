@@ -3,9 +3,7 @@ script to calculate the aggregated results and statistics for the pipeline
 """
 import pandas as pd
 import os
-import numpy as np
 import re
-import pathlib
 
 
 output_path = snakemake.params.output_path
