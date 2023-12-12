@@ -132,7 +132,8 @@ def run_workflow(
         workflow_dir = pathlib.Path(workflow_dir).resolve()
 
     cmd = (
-        "time "
+        "mkdir '{benchmark}' && "
+        "/usr/bin/time -p -o '{benchmark}/total_time.txt' "
         "snakemake --directory '{workflow_dir}' "
         "--configfile '{config_file}' "
         "--until {target_rule} "
@@ -140,6 +141,7 @@ def run_workflow(
         "{slurm} -j{threads} "
         "{dryrun} "
     ).format(
+        benchmark=pathlib.Path(config["path"]["benchmark"]),
         workflow_dir=workflow_dir,
         config_file=config_file,
         dryrun="-n" if dryrun else "",

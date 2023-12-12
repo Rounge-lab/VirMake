@@ -3,9 +3,7 @@ script to calculate the aggregated results and statistics for the pipeline
 """
 import pandas as pd
 import os
-import numpy as np
 import re
-import pathlib
 
 
 output_path = snakemake.params.output_path
@@ -48,7 +46,9 @@ def create_sample_stats_virsorter2():
         "_contigs", ""
     )
     metaQuast_reads = dict(
-        zip(metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"])
+        zip(
+            metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"]
+        )
     )
 
     for x in samples:
@@ -74,7 +74,10 @@ def create_sample_stats_virsorter2():
         except KeyError:
             row[3] = metaQuast_reads["contigs"]
         row[4] = getMetaSpades(
-            output_path + "/filtered_virsorter2/" + x + "/filtered_combined.fna"
+            output_path
+            + "/filtered_virsorter2/"
+            + x
+            + "/filtered_combined.fna"
         )
         # checkv Score
         row[5] = checkV["Complete"]
@@ -131,16 +134,18 @@ def create_sample_stats_vibrant():
         "_contigs", ""
     )
     metaQuast_reads = dict(
-        zip(metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"])
+        zip(
+            metaQuast_reads["Assembly"], metaQuast_reads["# contigs (>= 0 bp)"]
+        )
     )
 
     for x in samples:
         checkV = getcheckv(
-            output_path + "/checkv/vibrant_pass1/" + x + "/quality_summary.tsv"
+            output_path + "/checkv/vibrant/" + x + "/quality_summary.tsv"
         )
         vibrant = get_vibrant_quality(
             output_path
-            + "/vibrant_pass1/"
+            + "/vibrant/"
             + x
             + "/VIBRANT_contigs/VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv"
         )
@@ -342,61 +347,6 @@ def get_DRAMv(input):
     )
 
 
-def stats_vOTUs_virsorter2():
-    """
-    Function that creates the stats table of the vOTUs based on virsorter2 rerun.
-    """
-    column_names = [
-        "vOTU_ID",
-        "provirus",
-        "Checkv_quality",
-        "Accession",
-        "Status",
-        "Host",
-        "Subfamily",
-        "Genus",
-    ]
-    standard = ["NaN"] * len(column_names)
-    vOTU_stats = pd.DataFrame(columns=column_names)
-    gA_df = get_graphAnalyzer()
-    cV_df = pd.read_table(
-        output_path + "/checkv/virsorter2_pass2/quality_summary.tsv",
-        sep="\t",
-        usecols=["contig_id", "provirus", "checkv_quality"],
-    )
-    cV_df = cV_df.rename(columns={"contig_id": "Scaffold"})
-    result = pd.merge(gA_df, cV_df, on="Scaffold", how="outer")
-    result.to_csv(
-        output_path + "/statistics/vOTU_Stats_virsorter2.tsv", sep="\t"
-    )
-
-
-def stats_vOTUs_vibrant():
-    """
-    Function that creates the stats table of the vOTUs based on vibrant rerun.
-    """
-    column_names = [
-        "vOTU_ID",
-        "provirus",
-        "Checkv_quality",
-        "Accession",
-        "Status" "Host",
-        "Subfamily",
-        "Genus",
-    ]
-    standard = ["NaN"] * len(column_names)
-    vOTU_stats = pd.DataFrame(columns=column_names)
-    gA_df = get_graphAnalyzer()
-    cV_df = pd.read_table(
-        output_path + "/checkv/vibrant_pass2/quality_summary.tsv",
-        sep="\t",
-        usecols=["contig_id", "provirus", "checkv_quality"],
-    )
-    cV_df = cV_df.rename(columns={"contig_id": "Scaffold"})
-    result = pd.merge(gA_df, cV_df, on="Scaffold", how="outer")
-    result.to_csv(output_path + "/statistics/vOTU_Stats_vibrant.tsv", sep="\t")
-
-
 def vOTU_AMG_stats():
     """
     Function that creates the  AMG table and aggregates the functional annotation
@@ -404,25 +354,11 @@ def vOTU_AMG_stats():
     """
     column_names = ["protein/gene", "scaffold", "ID", "Description"]
     df = pd.DataFrame(columns=column_names)
-    vibrant_amgs = pd.read_table(
-        output_path
-        + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_AMG_individuals_vOTU_derep95_combined.tsv",
-        sep="\t",
-        usecols=["protein", "scaffold", "AMG KO", "AMG KO name"],
-    )
     dramv_amgs = pd.read_table(
         output_path + "/DRAMv/distilled/amg_summary.tsv",
         sep="\t",
         usecols=["gene", "scaffold", "gene_id", "gene_description"],
     )
-    for index, x in vibrant_amgs.iterrows():
-        row = {"protein/gene": "", "scaffold": "", "ID": "", "Description": ""}
-
-        row["protein/gene"] = x["protein"]
-        row["scaffold"] = x["scaffold"]
-        row["ID"] = x["AMG KO"]
-        row["Description"] = x["AMG KO name"]
-        df = df.append(row, ignore_index=True)
     for index, x in dramv_amgs.iterrows():
         row = {"protein/gene": "", "scaffold": "", "ID": "", "Description": ""}
 
@@ -433,27 +369,6 @@ def vOTU_AMG_stats():
         df = df.append(row, ignore_index=True)
 
     df.to_csv(output_path + "/statistics/vOTU_AMGs.tsv", sep="\t")
-
-
-def combine_vOTU_stats():
-    """
-    Function that creates the stats table of the vOTUs based on
-    both virsorter2 rerun and VIBRANT.
-    """
-    df_v = pd.read_table(
-        output_path + "/statistics/vOTU_Stats_virsorter2.tsv", sep="\t"
-    )
-    df_vs2 = pd.read_table(
-        output_path + "/statistics/vOTU_Stats_vibrant.tsv", sep="\t"
-    )
-    df = df_v.set_index("Scaffold").combine_first(df_vs2.set_index("Scaffold"))
-    df.drop(df.filter(regex="Unnamed"), axis=1, inplace=True)
-    df.sort_values(
-        by="Scaffold",
-        inplace=True,
-        key=lambda x: x.str.extract("(\d+)").squeeze().astype(int),
-    )
-    df.to_csv(output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t")
 
 
 def create_relative_Abundance():
@@ -480,7 +395,9 @@ def combine_sample_stats():
     Function that creates the Combined stats table. Combines results gathered from the
     stats tables of virsorter2 and VIBRANT
     """
-    df1 = pd.read_table(output_path + "/statistics/Sample_stats_virsorter2.tsv")
+    df1 = pd.read_table(
+        output_path + "/statistics/Sample_stats_virsorter2.tsv"
+    )
     df2 = pd.read_table(output_path + "/statistics/Sample_stats_vibrant.tsv")
 
     my_df1 = []
@@ -560,7 +477,7 @@ def vOTU_to_reads_mapping():
     cV_combined_vibrant = pd.DataFrame(columns=["contig_id", "provirus"])
     for x in samples:
         cV_df = pd.read_table(
-            output_path + "/checkv/vibrant_pass1/" + x + "/quality_summary.tsv",
+            output_path + "/checkv/vibrant/" + x + "/quality_summary.tsv",
             sep="\t",
         )
         cV_combined_vibrant = pd.concat([cV_combined_vibrant, cV_df])
@@ -603,38 +520,6 @@ def vOTU_to_reads_mapping():
     )
 
 
-def gather_lytic():
-    """
-    Function that updates the vOTU stats table to include lytic/lysogenic classification
-    """
-    provirus_df = pd.read_table(
-        output_path + "/statistics/vOTU_mapped_to_reads.tsv", sep="\t"
-    )
-    combined_df = pd.read_table(
-        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
-    )
-    lysogenic_df = pd.read_table(
-        output_path
-        + "/vibrant_pass2/VIBRANT_vOTU_derep95_combined/VIBRANT_results_vOTU_derep95_combined/VIBRANT_genome_quality_vOTU_derep95_combined.tsv",
-        sep="\t",
-    )
-    combined_df["provirus"] = provirus_df["Provirus"]
-    for index, row in combined_df.iterrows():
-        lysogenic = lysogenic_df.loc[
-            lysogenic_df["scaffold"] == str(row["Scaffold"])
-        ]
-        if lysogenic.empty:
-            combined_df.at[index, "Type"] = "n.a."
-        else:
-            if len(lysogenic) > 1:
-                combined_df.at[index, "Type"] = str(lysogenic.iloc[0]["type"])
-            else:
-                combined_df.at[index, "Type"] = str(lysogenic["type"].item())
-    combined_df.to_csv(
-        output_path + "/statistics/vOTU_stats_combined.tsv", sep="\t"
-    )
-
-
 def copy_instrain_compare_output():
     """
     Function that copies the instrain compare output to the statistics folder
@@ -653,14 +538,11 @@ if not os.path.exists(st_dir):
     os.makedirs(st_dir)
 
 # Runs all small functions to create statistics and tables.
-create_sample_stats_virsorter2()
-create_sample_stats_vibrant()
-stats_vOTUs_virsorter2()
-stats_vOTUs_vibrant()
-combine_vOTU_stats()
-vOTU_AMG_stats()
-create_relative_Abundance()
-combine_sample_stats()
-vOTU_to_reads_mapping()
-gather_lytic()
-copy_instrain_compare_output()
+if __name__ == "__main__":
+    create_sample_stats_virsorter2()
+    create_sample_stats_vibrant()
+    vOTU_AMG_stats()
+    create_relative_Abundance()
+    combine_sample_stats()
+    vOTU_to_reads_mapping()
+    copy_instrain_compare_output()
