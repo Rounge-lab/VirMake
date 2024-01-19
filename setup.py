@@ -59,12 +59,11 @@ def check_conda(logger):
 
 def create_venv(logger, virmake_path):
     """create virmake environment"""
-    cmd = "conda env list"
-    venv_list = subprocess.run(cmd.split(), capture_output=True)
-    if "virmake" not in strip_stdout(venv_list.stdout):
-        logger.info("\nPreparing VirMake virtual environment...\n")
-        cmd = f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'}"
-        subprocess.run(cmd.split())
+    logger.info("\nPreparing VirMake virtual environment...\n")
+    cmd = (
+        f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
+    )
+    subprocess.run(cmd.split())
 
 
 def create_virmake_config(logger, virmake_path):
@@ -72,14 +71,16 @@ def create_virmake_config(logger, virmake_path):
     logger.info(f"\nCreating configuration file...\n")
     cmd = f"mkdir {virmake_path}/workflow/config"
     subprocess.run(cmd.split())
-    cmd = f"conda run -n virmake python utils/make_virmake_config.py {virmake_path}"
+    cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path}"
     subprocess.run(cmd.split())
 
 
 def create_slurm_profile(logger, virmake_path):
     """create config.yaml"""
     logger.info(f"\nCreating SLURM profile...\n")
-    cmd = f"conda run -n virmake python utils/make_slurm_profile.py {virmake_path}"
+    cmd = (
+        f"conda run -p venv/ python utils/make_slurm_profile.py {virmake_path}"
+    )
     subprocess.run(cmd.split())
 
 
@@ -131,7 +132,7 @@ def setup_db(logger, virmake_path):
                     os.makedirs(virmake_path / "databases", exist_ok=True)
             logger.info("\nWorking...\n")
             cmd = (
-                "conda run -n virmake --no-capture-output "
+                "conda run -p venv/ --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
                 f"--configfile {virmake_path / 'workflow' / 'config' / 'params.yaml'} "
                 f"--use-conda --nolock --rerun-incomplete "
@@ -155,7 +156,7 @@ def setup_db(logger, virmake_path):
 def prep_script(logger, virmake_path):
     """prepare main script"""
     logger.info(f"\nPreparing main script at {virmake_path / 'virmake'}\n")
-    cmd = "conda run -n virmake which python"
+    cmd = "conda run -p venv/ which python"
     virmake_python_path = subprocess.run(cmd.split(), capture_output=True)
     virmake_python_path = strip_stdout(virmake_python_path.stdout)
     if (virmake_path / "virmake").exists():

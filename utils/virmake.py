@@ -27,7 +27,7 @@ except FileNotFoundError:
     exit(1)
 
 # load virmake path
-virmake_path = pathlib.Path(config["path"]["virmake"]).resolve()
+virmake_path = pathlib.Path(__file__).parent.absolute()
 
 
 @cli.command(
@@ -132,7 +132,7 @@ def run_workflow(
         workflow_dir = pathlib.Path(workflow_dir).resolve()
 
     cmd = (
-        "mkdir '{benchmark}' && "
+        "mkdir -p '{benchmark}' && "
         "/usr/bin/time -p -o '{benchmark}/total_time.txt' "
         "snakemake --directory '{workflow_dir}' "
         "--configfile '{config_file}' "
@@ -261,9 +261,9 @@ def run_get(database, accession, output_dir):
     is_flag=True,
     help="Skip confirmation",
 )
-def clean(target, y):
+def clean(target, yes):
     """clean virmake directory."""
-    if not y:
+    if not yes:
         click.confirm(
             f"are you sure you want to delete {target}?",
             abort=True,
@@ -295,8 +295,8 @@ def clean(target, y):
             for d in dirs:
                 shutil.rmtree(virmake_path / "working_dir" / d)
     elif target == "config":
-        if (virmake_path / "workflow" / "config.yaml").exists():
-            os.remove(virmake_path / "workflow" / "config.yaml")
+        if (virmake_path / "workflow" / "config").exists():
+            shutil.rmtree(virmake_path / "workflow" / "config")
     else:
         logging.critical(f"unknown target: {target}")
         exit(1)

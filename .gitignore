@@ -21,3 +21,4 @@ virmake
 working_dir
 *.log
 *fasterq*/
+venv/

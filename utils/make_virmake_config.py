@@ -79,7 +79,20 @@ def make_config(virmake_path):
         "megahit": "24 h",
         "metaspades": "2 h",
     }
-    config["table_extensions"] = ["tsv", "csv", "xlsx"]
+    config["include_tables"] = [
+        "raw_coverage_table.tsv",
+        "trimmed_mean_coverage.tsv",
+        "amg_summary.tsv",
+        "quality_summary.tsv",
+        "quality_summary.tsv",
+        "quality_summary.tsv",
+        "contig_plasmid_summary",
+        "results_vcontact2",
+        "compared_samples_comparisonsTable.tsv",
+        "transposed_report.tsv",
+        "viral_genomes_combined.csv",
+        "derep95_combined.fasta.clstr",
+    ]
 
     return config
 
