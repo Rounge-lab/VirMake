@@ -1796,6 +1796,7 @@ rule find_tables:
         config["path"]["temp"] + "/tables.txt",
     params:
         table_list=config["include_tables"],
+        all_output_path=config["path"]["output"],
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
@@ -1803,7 +1804,7 @@ rule find_tables:
         """
         echo "" > {output}
         for table in {params.table_list}; do
-            find {input} -name $table >> {output}
+            find {params.all_output_path} -name $table >> {output}
         done
         """
 
