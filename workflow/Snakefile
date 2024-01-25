@@ -1802,7 +1802,7 @@ rule find_tables:
         runtime=config["time"]["tiny"],
     shell:
         """
-        echo "" > {output}
+        rm -f {output}
         for table in {params.table_list}; do
             find {params.all_output_path} -name $table >> {output}
         done
