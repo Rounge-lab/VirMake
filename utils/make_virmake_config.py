@@ -67,14 +67,14 @@ def make_config(virmake_path):
         "vcontact2": 63000,
         "metaquast": 63000,
         "megahit": 20000,
-        "metaspades": 20000,
+        "metaspades": 63000,
     }
     config["time"] = {
         "tiny": "30 m",
         "small": "1 h",
         "normal": "6 h",
         "big": "13 h",
-        "vcontact2": "24 h",
+        "vcontact2": "72 h",
         "metaquast": "24 h",
         "megahit": "24 h",
         "metaspades": "2 h",
