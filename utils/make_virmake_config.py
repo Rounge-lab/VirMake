@@ -1,18 +1,52 @@
 import yaml
 import pathlib
 import sys
+import logging
+import click
 
 
-def make_config(virmake_path):
+# CLI command tool to choose the viral identifier
+
+def make_config():
     """Creates a default config structure."""
     config = {}
     db_path = virmake_path / "databases"
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
+    config["identifier"] = "virsorter2"
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
+
+    logging.info("Viral identifier chosen is "
+                 + config["identifier"]
+                 + "vibrant, applying appropriate config settings")
+
+    if config["identifier"] == 'vibrant':
+           config["vibrant"] = {
+            "is_virome": "no",
+            }  
+           
+           config["path"]["database"] = { "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1") }
+
+    elif config["identifier"] == 'genomad':
+           config["path"]["database"] = { "genomad": str(db_path / "genomad") }
+    else:
+        config["virsorter2"] = {
+            "pass1": {
+                "min_lenght": 3000,
+                "min_score": 0.5,
+                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
+            },
+            "pass2": {
+                "min_lenght": 1000,
+                "min_score": 0.5,
+                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
+            },
+        }
+ 
+
     config["path"] = {
         "virmake": str(virmake_path),
         "envs": str(virmake_path / "envs"),
@@ -23,31 +57,16 @@ def make_config(virmake_path):
         "temp": str(virmake_path / "working_dir" / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
         "database": {
-            "genomad": str(db_path / "genomad"),
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
             "checkv": str(db_path / "checkv"),
             "virsorter2": str(db_path / "virsorter2/db"),
             "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
             "vcontact2": str(db_path / "vcontact2"),
-            "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1"),
         },
     }
-    config["virsorter2"] = {
-        "pass1": {
-            "min_lenght": 3000,
-            "min_score": 0.5,
-            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-        },
-        "pass2": {
-            "min_lenght": 1000,
-            "min_score": 0.5,
-            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-        },
-    }
-    config["vibrant"] = {
-        "is_virome": "no",
-    }
+
+
     config["cd-hit-est"] = {
         "identity_threshold": 0.95,
         "coverage": 0.85,
@@ -66,7 +85,6 @@ def make_config(virmake_path):
         "big": 32000,
         "vcontact2": 63000,
         "metaquast": 63000,
-        "megahit": 20000,
         "metaspades": 63000,
     }
     config["time"] = {
@@ -76,7 +94,6 @@ def make_config(virmake_path):
         "big": "13 h",
         "vcontact2": "72 h",
         "metaquast": "24 h",
-        "megahit": "24 h",
         "metaspades": "2 h",
     }
     config["include_tables"] = [

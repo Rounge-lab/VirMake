@@ -22,6 +22,8 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 space **will be needed** for the output files depending on the size and number of your samples!*
 
 ### To install VirMake follow these steps:
+If you are using Virmake on a HPC, activate your base conda environment by using: 
+'module load Miniconda3/<version number avaliable>' 
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
 2. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
@@ -62,6 +64,12 @@ VirMake
 conda activate virmake
 ```
 
+**For HPC users, activate the conda environment by the following:**
+
+```
+conda activate cluster/project/{projectid}/{userid}/Virmake/venv
+```
+
 **Also make sure to run all commands from the root directory of the repository.**
 
 Please note that `virmake` has inbuilt help that can be accessed by running:
@@ -69,6 +77,14 @@ Please note that `virmake` has inbuilt help that can be accessed by running:
 ```
 ./virmake -h
 ```
+
+**To run a dry-run of the pipeline run the following command**
+
+```
+./virmake run -n
+```
+
+**This should produce a snakemake output with the steps to run**
 
 ### Environments preparation
 
@@ -106,6 +122,8 @@ You can get example files from [1] by running:
 [1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)
 
 ### Running the workflow
+
+**Before running the workflow, add all your samples to the working_dir under the input folder**
 
 To run the workflow use:
 

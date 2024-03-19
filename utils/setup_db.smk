@@ -1,16 +1,15 @@
+identifier = config["identifier"]
+
 rule all:
     input:
         config["path"]["database"]["vcontact2"] + "/vcontact2_setup_done.txt",
         config["path"]["database"]["DRAM"],
-        config["path"]["database"]["vibrant"],
+        config["path"]["database"][identifier],
         config["path"]["database"]["checkv"],
         config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
         config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
         config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
-        config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
-        config["path"]["database"]["virsorter2"],
-        config["path"]["database"]["genomad"],
-
+        config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna"
 
 rule Vcontact2:
     conda:
@@ -51,17 +50,28 @@ rule DRAMv:
         ";"
         "DRAM-setup.py export_config --output_file {output}/DRAM.config"
 
-
-rule vibrant:
-    conda:
-        config["path"]["envs"] + "/vibrant.yaml"
-    output:
-        directory(config["path"]["database"]["vibrant"]),
-    shell:
-        """
-        download-db.sh {output}
-        """
-
+if identifier == 'vibrant':
+    rule vibrant:
+        conda:
+            config["path"]["envs"] + "/vibrant.yaml"
+        output:
+            directory(config["path"]["database"]["vibrant"]),
+        shell:
+            """
+            download-db.sh {output}
+            """
+elif identifier == "gnomad":
+    rule genomad:
+        output:
+            dir=directory(config["path"]["database"]["genomad"]),
+            version=config["path"]["database"]["genomad"] + "/genomad_db/version.txt",
+        conda:
+            config["path"]["envs"] + "/genomad.yaml"
+        threads: 24
+        shell:
+            """
+            genomad download-database {output.dir}/.
+            """
 
 rule checkv:
     conda:
@@ -70,7 +80,6 @@ rule checkv:
         directory(config["path"]["database"]["checkv"]),
     shell:
         "checkv download_database {output}"
-
 
 rule inphared:
     output:
@@ -93,7 +102,6 @@ rule inphared:
         echo "INPHARED VERSION: {params.version}" > {output.version}
         """
 
-
 rule virsorter2:
     output:
         directory(config["path"]["database"]["virsorter2"]),
@@ -103,17 +111,4 @@ rule virsorter2:
     shell:
         """
         virsorter setup -d {output}
-        """
-
-
-rule genomad:
-    output:
-        dir=directory(config["path"]["database"]["genomad"]),
-        version=config["path"]["database"]["genomad"] + "/genomad_db/version.txt",
-    conda:
-        config["path"]["envs"] + "/genomad.yaml"
-    threads: 24
-    shell:
-        """
-        genomad download-database {output.dir}/.
         """

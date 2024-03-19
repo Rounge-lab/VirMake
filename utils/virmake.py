@@ -8,6 +8,8 @@ import yaml
 import click
 
 
+
+
 # Inspired by ATLAS Metagenome
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
@@ -99,6 +101,8 @@ virmake_path = pathlib.Path(__file__).parent.absolute()
     type=int,
     help="number of jobs to add to queue at once",
 )
+
+#add cli command for the pipeline argument in make_virmake.py
 def run_workflow(
     workflow,
     dryrun,

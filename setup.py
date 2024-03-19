@@ -56,10 +56,10 @@ def check_conda(logger):
         logger.critical(strip_stdout(conda_activate_base.stderr))
         exit(1)
 
-
+# Change os that virmake env is created, activated, and a venv built based off that, using venv
 def create_venv(logger, virmake_path):
     """create virmake environment"""
-    logger.info("\nPreparing VirMake virtual environment...\n")
+    logger.info("\nPreparing VirMake conda env...\n")
     cmd = (
         f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
     )
@@ -90,6 +90,8 @@ def create_working_dir(logger, virmake_path):
     os.makedirs(virmake_path / "working_dir", exist_ok=True)
     os.makedirs(virmake_path / "working_dir" / "input", exist_ok=True)
 
+
+# Change to add in logic where if vibrant is use, the database  is used
 
 def setup_db(logger, virmake_path):
     """setup databases"""

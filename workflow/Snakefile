@@ -1,6 +1,3 @@
-# PREAMBLE
-
-# set glob wildcards
 (
     SAMPLE,
     FRAC,
@@ -13,7 +10,7 @@ FRAC = sorted(list(set(FRAC)))
 
 onstart:
     touch(config["path"]["temp"])
-    touch(config["path"]["log"])
+    touch(config["path"]["log"])           
     print("Samples: " + ", ".join(SAMPLE))
 
 
@@ -26,8 +23,6 @@ onerror:
 
 
 # GLOBAL FUNCTIONS #
-
-
 def get_min_quality(threshold):
     """
     Gets the threshold for checkv wuality control.
@@ -45,7 +40,6 @@ def get_min_quality(threshold):
     else:
         return "$8~/(Medium-quality|High-quality|Complete)/"
 
-
 def vibrant_virome(is_virome):
     """
     Gathers if the input is virome.
@@ -55,6 +49,9 @@ def vibrant_virome(is_virome):
     else:
         return ""
 
+# addition of rule to create master expand command for the different viral identifier
+# functionalizes the ASSEMBLY rule for the different viral identifers, to be done
+# def get_output_dirs(pipeline: str) -> list:
 
 rule ALL:
     input:
@@ -76,10 +73,7 @@ rule ALL:
         rm -rdf {params.temp}
         """
 
-
 # QUALITY CONTROL #
-
-
 rule QC:
     input:
         expand(
@@ -121,7 +115,6 @@ rule QC:
         touch {output}
         """
 
-
 rule fastqc_raw:
     input:
         expand(
@@ -153,7 +146,6 @@ rule fastqc_raw:
         fastqc {input} -o {output.dir} -t {threads} &> {log}
         """
 
-
 rule fastp_pe:
     """
     Performes quality control/pre-processing of the raw reads
@@ -183,7 +175,6 @@ rule fastp_pe:
         fastp -i {input.R1} -I {input.R2} -o {output.R1} -O {output.R2}\
         -h {output.html} -j {output.json} &> {log}
         """
-
 
 rule fastqc_qc:
     """
@@ -224,8 +215,6 @@ rule fastqc_qc:
 
 
 # ASSEMBLY #
-
-
 rule metaSpades:
     """
     Assembles all sequences with metaSpades
@@ -260,275 +249,115 @@ rule metaSpades:
         """
 
 
-rule megahit:
-    """
-    Assembles all sequences with megahit
-    """
+rule ASSEMBLY:
     input:
-        R1=rules.fastp_pe.output.R1,
-        R2=rules.fastp_pe.output.R2,
-    output:
-        dir=directory(
-            config["path"]["output"] + "/megahit/{sample}/",
+        expand(
+            config["path"]["output"] + "/metaSpades/{sample}/",
+            sample=SAMPLE,
         ),
-        contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
-    params:
-        temp_dir=config["path"]["temp"] + "/megahit/",
+        expand(
+            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+            sample=SAMPLE,
+        ),
+        expand(
+            config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
+            sample=SAMPLE,
+        ),
+        config["path"]["output"] + "/metaQUAST/report.html",
+        config["path"]["output"]
+        + "/metaQUAST/combined_reference/transposed_report.tsv",
+    output:
+        config["path"]["temp"] + "/finished_ASSEMBLY",
+    threads: 1
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     message:
-        "[megahit] Performing assembly of paired end reads..."
+        "[ASSEMBLY] Assembly of all samples finished"
+    shell:
+        """
+        touch {output}
+        """
+
+rule metaQUAST:
+    """
+    Performes quality control on all assembled contigs
+    with the reference database RefSeq Viral
+    """
+    params:
+        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
+    input:
+        expand(
+            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+            sample=SAMPLE,
+        ),
+    output:
+        dir=directory(config["path"]["output"] + "/metaQUAST/"),
+        report=config["path"]["output"] + "/metaQUAST/report.html",
+        transposed_report=config["path"]["output"]
+        + "/metaQUAST/combined_reference/transposed_report.tsv",
+    message:
+        "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
     conda:
-        config["path"]["envs"] + "/megahit.yaml"
+        config["path"]["envs"] + "/metaQUAST.yaml"
     log:
-        config["path"]["log"] + "/megahit/{sample}.log",
+        config["path"]["log"] + "/metaQUAST.log",
     benchmark:
-        config["path"]["benchmark"] + "/megahit/{sample}.txt"
+        config["path"]["benchmark"] + "/metaQUAST.txt"
     threads: config["threads"]
     resources:
-        mem_b=config["memory"]["megahit"],
-        runtime=config["time"]["megahit"],
+        mem_mb=config["memory"]["metaquast"],
+        runtime=config["time"]["metaquast"],
     shell:
-        # mkdir and subsequent rm make sure to create output/megahit dir
-        # WITHOUT {sample} directory
         """
         mkdir -p {output.dir}
-        rm -r {output.dir}
-        megahit -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        -t {threads} -m {resources.mem_mb_b} &> {log}
-        mv {output.dir}/final.contigs.fa {output.contigs}
+        metaquast.py {input} -o {output.dir}\
+        -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
         """
 
-
-if config["assembler"].lower() == "metaspades":
-
-    rule ASSEMBLY:
-        input:
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/",
-                sample=SAMPLE,
-            ),
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-                sample=SAMPLE,
-            ),
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
-                sample=SAMPLE,
-            ),
-            config["path"]["output"] + "/metaQUAST/report.html",
-            config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        output:
-            config["path"]["temp"] + "/finished_ASSEMBLY",
-        threads: 1
-        resources:
-            mem_mb=config["memory"]["small"],
-            runtime=config["time"]["tiny"],
-        message:
-            "[ASSEMBLY] Assembly of all samples finished"
-        shell:
-            """
-            touch {output}
-            """
-
-    rule metaQUAST:
-        """
-        Performes quality control on all assembled contigs
-        with the reference database RefSeq Viral
-        """
-        params:
-            reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
-        input:
-            expand(
-                config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-                sample=SAMPLE,
-            ),
-        output:
-            dir=directory(config["path"]["output"] + "/metaQUAST/"),
-            report=config["path"]["output"] + "/metaQUAST/report.html",
-            transposed_report=config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        message:
-            "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
-        conda:
-            config["path"]["envs"] + "/metaQUAST.yaml"
-        log:
-            config["path"]["log"] + "/metaQUAST.log",
-        benchmark:
-            config["path"]["benchmark"] + "/metaQUAST.txt"
-        threads: config["threads"]
-        resources:
-            mem_mb=config["memory"]["metaquast"],
-            runtime=config["time"]["metaquast"],
-        shell:
-            """
-            mkdir -p {output.dir}
-            metaquast.py {input} -o {output.dir}\
-            -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
-            """
-
-    assembly_output = rules.metaSpades.output.contigs
-
-elif config["assembler"].lower() == "megahit":
-
-    rule ASSEMBLY:
-        input:
-            expand(
-                config["path"]["output"] + "/megahit/{sample}/",
-                sample=SAMPLE,
-            ),
-            expand(
-                config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
-                sample=SAMPLE,
-            ),
-            config["path"]["output"] + "/metaQUAST/report.html",
-            config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        output:
-            config["path"]["temp"] + "/finished_ASSEMBLY",
-        threads: 1
-        resources:
-            mem_mb=config["memory"]["small"],
-            runtime=config["time"]["tiny"],
-        message:
-            "[ASSEMBLY] Assembly of all samples finished"
-        shell:
-            """
-            touch {output}
-            """
-
-    rule metaQUAST:
-        """
-        Performes quality control on all assembled contigs
-        with the reference database RefSeq Viral
-        """
-        params:
-            reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
-        input:
-            expand(
-                config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
-                sample=SAMPLE,
-            ),
-        output:
-            dir=directory(config["path"]["output"] + "/metaQUAST/"),
-            report=config["path"]["output"] + "/metaQUAST/report.html",
-            transposed_report=config["path"]["output"]
-            + "/metaQUAST/combined_reference/transposed_report.tsv",
-        message:
-            "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
-        conda:
-            config["path"]["envs"] + "/metaQUAST.yaml"
-        log:
-            config["path"]["log"] + "/metaQUAST.log",
-        benchmark:
-            config["path"]["benchmark"] + "/metaQUAST.txt"
-        threads: config["threads"]
-        resources:
-            mem_mb=config["memory"]["metaquast"],
-            runtime=config["time"]["metaquast"],
-        shell:
-            """
-            mkdir -p {output.dir}
-            metaquast.py {input} -o {output.dir}\
-            -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
-            """
-
-    assembly_output = rules.megahit.output.contigs
-
-
+ 
 # VIRAL IDENTIFICATION #
-
 
 rule IDENTIFICATION:
     input:
-        expand(
-            config["path"]["output"] + "/virsorter2_pass1/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
+     	expand(
+	    config["path"]["output"] + "/virsorter2_pass1/{sample}/",
+   	   sample=SAMPLE,
+        ) 
+      	+ expand(
             config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
             sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/vibrant/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/vibrant/{sample}/finished",
-            sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
             sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/genomad/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/genomad/{sample}/finished",
-            sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"]
             + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
             sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"]
             + "/checkv/virsorter2_pass1/{sample}/combined.fna",
             sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/checkv/vibrant/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/checkv/vibrant/{sample}/quality_summary.tsv",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/checkv/vibrant/{sample}/combined.fna",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/checkv/genomad/{sample}/quality_summary.tsv",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/checkv/genomad/{sample}/combined.fna",
-            sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"] + "/filtered_virsorter2/{sample}/",
             sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"]
             + "/filtered_virsorter2/{sample}/filtered_combined.fna",
             sample=SAMPLE,
-        ),
-        expand(
+        )
+      	+ expand(
             config["path"]["output"]
             + "/filtered_virsorter2/{sample}/filtered_contigs",
             sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/filtered_vibrant/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/filtered_vibrant/{sample}/filtered_contigs",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"]
-            + "/filtered_vibrant/{sample}/filtered_combined.fna",
-            sample=SAMPLE,
-        ),
+        ),            
         config["path"]["output"] + "/combined_virsorter2/",
         config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
-        config["path"]["output"] + "/combined_vibrant/",
-        config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
         config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
         config["path"]["output"] + "/cdhit/",
         config["path"]["output"] + "/cdhit/derep95_combined.fasta",
@@ -551,13 +380,12 @@ rule IDENTIFICATION:
         touch {output}
         """
 
-
 rule virsorter2_pass1:
     """
     Performes the first pass of viral identification with virsorter2
     """
     input:
-        assembly_output,
+        assembly_output = rules.metaSpades.output.contigs,
     params:
         cutoff_length=config["virsorter2"]["pass1"]["min_lenght"],
         cutoff_score=config["virsorter2"]["pass1"]["min_score"],
@@ -591,75 +419,6 @@ rule virsorter2_pass1:
             -i {input} &> {log}
         touch {output.finished}
         """
-
-
-rule vibrant:
-    """
-    Performes the first pass of viral identification with VIBRANT
-    """
-    input:
-        assembly_output,
-    output:
-        dir=directory(config["path"]["output"] + "/vibrant/{sample}/"),
-        finished=config["path"]["output"] + "/vibrant/{sample}/finished",
-    params:
-        db_dir=config["path"]["database"]["vibrant"] + "/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/files",
-        virome=vibrant_virome(config["vibrant"]["is_virome"]),
-    conda:
-        config["path"]["envs"] + "/vibrant.yaml"
-    message:
-        "[vibrant] Executing viral identification..."
-    log:
-        config["path"]["log"] + "/vibrant/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/vibrant/{sample}.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
-    shell:
-        """
-        VIBRANT_run.py -i {input}\
-            -t {threads}\
-            -folder {output.dir}\
-            -d {params.db_dir}\
-            -m {params.files_dir}\
-            {params.virome}\
-            &> {log}
-        touch {output.finished}
-        """
-
-
-rule genomad:
-    """
-    Performes the first pass of viral identification with geNomad
-    """
-    input:
-        assembly_output,
-    output:
-        dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
-        finished=config["path"]["output"] + "/genomad/{sample}/finished",
-    params:
-        db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
-    conda:
-        config["path"]["envs"] + "/genomad.yaml"
-    message:
-        "[genomad] Executing viral identification..."
-    log:
-        config["path"]["log"] + "/genomad/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/genomad/{sample}.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
-    shell:
-        """
-        genomad end-to-end {input} {output.dir} {params.db_dir}
-        touch {output.finished}
-        """
-
 
 rule checkv_virsorter2:
     """
@@ -695,84 +454,6 @@ rule checkv_virsorter2:
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
             --db {params.db_dir}/genome_db/checkv_reps &> {log}
         checkv end_to_end {input.final_viral_combined}\
-        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
-        cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
-        """
-
-
-rule checkv_vibrant:
-    """
-    Performes Quality control on identified viral sequences
-    """
-    input:
-        rules.vibrant.output.finished,
-        dir=rules.vibrant.output.dir,
-    output:
-        dir=directory(
-            config["path"]["output"] + "/checkv/vibrant/{sample}/",
-        ),
-        summary=config["path"]["output"]
-        + "/checkv/vibrant/{sample}/quality_summary.tsv",
-        combined=config["path"]["output"] + "/checkv/vibrant/{sample}/combined.fna",
-    params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-    conda:
-        config["path"]["envs"] + "/checkv.yaml"
-    message:
-        "[checkv_vibrant] Executing quality control on identified sequences..."
-    log:
-        config["path"]["log"] + "/checkv_vibrant/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/checkv_vibrant/{sample}.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-            --db {params.db_dir}/genome_db/checkv_reps &> {log}
-        checkv end_to_end {input.dir}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna\
-        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
-        cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
-        """
-
-
-rule checkv_genomad:
-    """
-    Performes Quality control on identified viral sequences
-    """
-    input:
-        rules.genomad.output.finished,
-        dir=rules.genomad.output.dir,
-    output:
-        dir=directory(
-            config["path"]["output"] + "/checkv/genomad/{sample}/",
-        ),
-        summary=config["path"]["output"]
-        + "/checkv/genomad/{sample}/quality_summary.tsv",
-        combined=config["path"]["output"] + "/checkv/genomad/{sample}/combined.fna",
-    params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
-    conda:
-        config["path"]["envs"] + "/checkv.yaml"
-    message:
-        "[checkv_genomad] Executing quality control on identified sequences..."
-    log:
-        config["path"]["log"] + "/checkv_genomad/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/checkv_genomad/{sample}.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-            --db {params.db_dir}/genome_db/checkv_reps &> {log}
-        checkv end_to_end {input.dir}/contigs_summary/contigs_virus.fna\
         {output.dir} -t {threads} -d {params.db_dir} &>> {log}
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
@@ -814,80 +495,212 @@ rule filter_contigs_virsorter2:
         seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
         """
 
+if config["identifier"] == "vibrant":
 
-rule filter_contigs_vibrant:
-    """
-    Gathers only relevant sequences with above threshold score
-    """
-    params:
-        criteria=get_min_quality(config["quality_threshold"]),
-    input:
-        summary=rules.checkv_vibrant.output.summary,
-        combined=rules.checkv_vibrant.output.combined,
-    output:
-        dir=directory(
-            config["path"]["output"] + "/filtered_vibrant/{sample}/",
-        ),
-        filtered_contigs_viruses=config["path"]["output"]
-        + "/filtered_vibrant/{sample}/filtered_combined.fna",
-        filtered_contigs_ID=config["path"]["output"]
-        + "/filtered_vibrant/{sample}/filtered_contigs",
-    conda:
-        config["path"]["envs"] + "/seqtk.yaml"
-    message:
-        "[filter_contigs_vibrant] Filtering contigs with respect to quality scores (quality threshold: {params.criteria})..."
-    benchmark:
-        config["path"]["benchmark"] + "/filter_contigs_vibrant/{sample}.txt"
-    log:
-        config["path"]["log"] + "/filter_contigs_vibrant/{sample}.log",
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        awk -F '\t' '{params.criteria}  {{print $1}}' {input.summary} > {output.filtered_contigs_ID}
-        seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
-        """
+        rule vibrant:
+            """
+            Performes the first pass of viral identification with VIBRANT
+            """
+            input:
+                assembly_output = rules.metaSpades.output.contigs,		
+            output:
+            params:
+                db_dir=config["path"]["database"]["vibrant"] + "/databases",
+                files_dir=config["path"]["database"]["vibrant"] + "/files",
+                virome=vibrant_virome(config["vibrant"]["is_virome"]),
+            conda:
+                config["path"]["envs"] + "/vibrant.yaml"
+            message:
+            log:
+                config["path"]["log"] + "/vibrant/{sample}.log",
+            benchmark:
+                config["path"]["benchmark"] + "/vibrant/{sample}.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["big"],
+                runtime=config["time"]["normal"],
+            shell:
+                """
+                VIBRANT_run.py -i {input}\
+                    -t {threads}\
+                    -folder {output.dir}\
+                    -d {params.db_dir}\
+                    -m {params.files_dir}\
+                    {params.virome}\
+                    &> {log}
+                touch {output.finished}
+            """
+        
 
+        rule checkv_vibrant:
+            """
+            Performes Quality control on identified viral sequences
+            """
+            input:
+                rules.vibrant.output.finished,
+                dir=rules.vibrant.output.dir,
+            output:
+                dir=directory(
+                    config["path"]["output"] + "/checkv/vibrant/{sample}/",
+                ),
+                summary=config["path"]["output"]
+                + "/checkv/vibrant/{sample}/quality_summary.tsv",
+                combined=config["path"]["output"] + "/checkv/vibrant/{sample}/combined.fna",
+            params:
+                db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+            conda:
+                config["path"]["envs"] + "/checkv.yaml"
+            message:
+                "[checkv_vibrant] Executing quality control on identified sequences..."
+            log:
+                config["path"]["log"] + "/checkv_vibrant/{sample}.log",
+            benchmark:
+                config["path"]["benchmark"] + "/checkv_vibrant/{sample}.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["normal"],
+                runtime=config["time"]["small"],
+            shell:
+                """
+                mkdir -p {output.dir}
+                diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+                    --db {params.db_dir}/genome_db/checkv_reps &> {log}
+                checkv end_to_end {input.dir}/VIBRANT_contigs/VIBRANT_phages_contigs/contigs.phages_combined.fna\
+                {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+                cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
+                """
 
-rule filter_contigs_genomad:
-    """
-    Gathers only relevant sequences with above threshold score
-    """
-    params:
-        criteria=get_min_quality(config["quality_threshold"]),
-    input:
-        summary=rules.checkv_genomad.output.summary,
-        combined=rules.checkv_genomad.output.combined,
-    output:
-        dir=directory(
-            config["path"]["output"] + "/filtered_genomad/{sample}/",
-        ),
-        filtered_contigs_viruses=config["path"]["output"]
-        + "/filtered_genomad/{sample}/filtered_combined.fna",
-        filtered_contigs_ID=config["path"]["output"]
-        + "/filtered_genomad/{sample}/filtered_contigs",
-    conda:
-        config["path"]["envs"] + "/seqtk.yaml"
-    message:
-        "[filter_contigs_genomad] Filtering contigs with respect to quality scores (quality threshold: {params.criteria})..."
-    benchmark:
-        config["path"]["benchmark"] + "/filter_contigs_genomad/{sample}.txt"
-    log:
-        config["path"]["log"] + "/filter_contigs_genomad/{sample}.log",
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        awk -F '\t' '{params.criteria}  {{print $1}}' {input.summary} > {output.filtered_contigs_ID}
-        seqtk subseq {input.combined} {output.filtered_contigs_ID} > {output.filtered_contigs_viruses}
-        """
+	
+        rule combine_results_vibrant:
+            """
+            Combine all results from virus identifiaction of all samples with VIBRANT
+            """
+            input:
+                expand(
+                    config["path"]["output"]
+                    + "/filtered_vibrant/{sample}/filtered_combined.fna",
+                    sample=SAMPLE,
+                ),
+            output:
+                dir=directory(config["path"]["output"] + "/combined_vibrant/"),
+                combined=config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
+            conda:
+                config["path"]["envs"] + "/cdhit.yaml"
+            message:
+                "[combine_results_vibrant] Combining results from all samples..."
+            log:
+                config["path"]["log"] + "/combine_results_vibrant.log",
+            benchmark:
+                config["path"]["benchmark"] + "/combine_results_vibrant.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["small"],
+                runtime=config["time"]["small"],
+            shell:
+                """
+                mkdir -p {output.dir}
+                cat {input} > {output.combined}
+                """
 
+elif config["identifier"] == "genomad":
+
+        rule genomad:
+            """
+            Performes the first pass of viral identification with geNomad
+            """
+            input:
+                assembly_output = rules.metaSpades.output.contigs,
+            output:
+                dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
+                finished=config["path"]["output"] + "/genomad/{sample}/finished",
+            params:
+                db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
+            conda:
+                config["path"]["envs"] + "/genomad.yaml"
+            message:
+                "[genomad] Executing viral identification..."
+            log:
+                config["path"]["log"] + "/genomad/{sample}.log",
+            benchmark:
+                config["path"]["benchmark"] + "/genomad/{sample}.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["big"],
+                runtime=config["time"]["normal"],
+            shell:
+                """
+                genomad end-to-end {input} {output.dir} {params.db_dir}
+                touch {output.finished}
+                """
+        
+        rule checkv_genomad:
+            """
+            Performes Quality control on identified viral sequences
+            """
+            input:
+                rules.genomad.output.finished,
+                dir=rules.genomad.output.dir,
+            output:
+                dir=directory(
+                    config["path"]["output"] + "/checkv/genomad/{sample}/",
+                ),
+                summary=config["path"]["output"]
+                + "/checkv/genomad/{sample}/quality_summary.tsv",
+                combined=config["path"]["output"] + "/checkv/genomad/{sample}/combined.fna",
+            params:
+                db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+            conda:
+                config["path"]["envs"] + "/checkv.yaml"
+            message:
+                "[checkv_genomad] Executing quality control on identified sequences..."
+            log:
+                config["path"]["log"] + "/checkv_genomad/{sample}.log",
+            benchmark:
+                config["path"]["benchmark"] + "/checkv_genomad/{sample}.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["normal"],
+                runtime=config["time"]["small"],
+            shell:
+                """
+                mkdir -p {output.dir}
+                diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+                    --db {params.db_dir}/genome_db/checkv_reps &> {log}
+                checkv end_to_end {input.dir}/contigs_summary/contigs_virus.fna\
+                {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+                cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
+                """
+
+        rule combine_results_genomad:
+            """
+            Combine all results from virus identifiaction of all samples with genomad
+            """
+            input:
+                expand(
+                    config["path"]["output"]
+                    + "/filtered_genomad/{sample}/filtered_combined.fna",
+                    sample=SAMPLE,
+                ),
+            output:
+                dir=directory(config["path"]["output"] + "/combined_genomad/"),
+                combined=config["path"]["output"] + "/combined_genomad/combined_genomad.tsv",
+            conda:
+                config["path"]["envs"] + "/cdhit.yaml"
+            message:
+                "[combine_results_genomad] Combining results from all samples..."
+            log:
+                config["path"]["log"] + "/combine_results_genomad.log",
+            benchmark:
+                config["path"]["benchmark"] + "/combine_results_genomad.txt"
+            threads: config["threads"]
+            resources:
+                mem_mb=config["memory"]["small"],
+                runtime=config["time"]["small"],
+            shell:
+                """
+                mkdir -p {output.dir}
+                cat {input} > {output.combined}
+                """
 
 rule combine_results_virsorter2:
     """
@@ -920,71 +733,6 @@ rule combine_results_virsorter2:
         mkdir -p {output.dir}
         cat {input} > {output.combined}
         """
-
-
-rule combine_results_vibrant:
-    """
-    Combine all results from virus identifiaction of all samples with VIBRANT
-    """
-    input:
-        expand(
-            config["path"]["output"]
-            + "/filtered_vibrant/{sample}/filtered_combined.fna",
-            sample=SAMPLE,
-        ),
-    output:
-        dir=directory(config["path"]["output"] + "/combined_vibrant/"),
-        combined=config["path"]["output"] + "/combined_vibrant/combined_vibrant.tsv",
-    conda:
-        config["path"]["envs"] + "/cdhit.yaml"
-    message:
-        "[combine_results_vibrant] Combining results from all samples..."
-    log:
-        config["path"]["log"] + "/combine_results_vibrant.log",
-    benchmark:
-        config["path"]["benchmark"] + "/combine_results_vibrant.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        cat {input} > {output.combined}
-        """
-
-
-rule combine_results_genomad:
-    """
-    Combine all results from virus identifiaction of all samples with genomad
-    """
-    input:
-        expand(
-            config["path"]["output"]
-            + "/filtered_genomad/{sample}/filtered_combined.fna",
-            sample=SAMPLE,
-        ),
-    output:
-        dir=directory(config["path"]["output"] + "/combined_genomad/"),
-        combined=config["path"]["output"] + "/combined_genomad/combined_genomad.tsv",
-    conda:
-        config["path"]["envs"] + "/cdhit.yaml"
-    message:
-        "[combine_results_genomad] Combining results from all samples..."
-    log:
-        config["path"]["log"] + "/combine_results_genomad.log",
-    benchmark:
-        config["path"]["benchmark"] + "/combine_results_genomad.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["small"],
-    shell:
-        """
-        mkdir -p {output.dir}
-        cat {input} > {output.combined}
-        """
-
 
 rule dereplication:
     """
@@ -1024,7 +772,6 @@ rule dereplication:
         -g 1\
         &> {log}
         """
-
 
 rule transform_vOTUs:
     """
@@ -1242,7 +989,6 @@ rule read_mapping:
         bowtie2 -p {threads} -x {input.index_dir}/mapping_index\
         -1 {input.R1} -2 {input.R2} -S {output} &> {log}
         """
-
 
 rule contig_stats:
     """
@@ -1700,7 +1446,6 @@ rule graphanalyzer:
 
 # STATISTICS
 
-
 rule STATS:
     input:
         config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
@@ -1725,7 +1470,6 @@ rule STATS:
         """
         touch {output}
         """
-
 
 rule get_stats:
     """
@@ -1756,7 +1500,6 @@ rule get_stats:
         runtime=config["time"]["normal"],
     script:
         config["path"]["scripts"] + "/table_stats.py"
-
 
 rule find_reports:
     """
@@ -1852,3 +1595,22 @@ rule zip_output:
 #         runtime=config["time"]["tiny"],
 #     script:
 #         config["path"]["scripts"] + "/create_benchmark_plots.R"
+
+#    """
+#    Copies all html files to the statistics directory
+#   """
+#    input:
+#        reports=rules.find_reports.output,
+#        tables=rules.find_tables.output,
+#    output:
+#        config["path"]["output"] + "/complete_output.zip",
+#    params:
+#        temp=config["path"]["temp"],
+#    threads: 1
+#    resources:
+#        mem_mb=config["memory"]["small"],
+#        runtime=config["time"]["tiny"],
+#    script:
+#        config["path"]["scripts"] + "/zip_output.py"
+
+
