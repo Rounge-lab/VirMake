@@ -5,7 +5,7 @@
 1. [About VirMake](#about-virmake)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Output explained](#output-explained)
+
 
 ## About VirMake
 
