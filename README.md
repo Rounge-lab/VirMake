@@ -5,7 +5,7 @@
 1. [About VirMake](#about-virmake)
 2. [InsYtallation](#installation)
 3. [Usage](#usage)
-4. [Output explained](#output-explained)
+
 
 ## About VirMake
 
@@ -279,89 +279,4 @@ default-resources:
   - partition=normal
 ```
 
-## Output explained
 
-The pipeline provides many files and to help navigate these this section will explain what each section provides.
-These are all folders within the `VirMake/working_dir/output` folder.
-
-### cdhit/
-
-The folder contains the cluster file produced by cdhit and the dereplicated file.
-
-### checkv/
-
-This folder contains all the checkV resulst grouped by what they were run on, and which sample it is. This includes `vibrant`, `virsorter2` (pass 1 and 2). The interesting files here are the `quality_summary.tsv` which is the summarized result of checkv for that run.
-
-
-### combined_all/, combined_vibrant/ and combined_virsorter2/
-
-These folders contain the combined `.fasta` files from all paired-end samples.
-
-### contig_stats/
-
-This folder contains the pileup.sh results and coverage statistics. An intersting file that is used in the aggregation is the `trimmed_mean_coverage.tsv`, which is used when generating the relative abundance file for statistics folder.
-
-### DRAMv/
-
-This folder contains the results from DRAMv, both annotate and distill. The most relevant files can be found within the `distilled` folder. The `amg_summary.tsv` contains all the AMG and functional annotation information. The `product.html` file is a heatmap of all AMGs, where they exist, their function and how many there are within the vOTU.
-
-### fastp/
-
-This folder contains the fastp reports on all samples. The most relevant file here is the `<sample_name>.html` which gives an overview of the quality statistics of each sample. This
-folder also contains preprocessed `.fastq` files that are later used in the pipeline.
-
-### fastqc_raw/ and fastqc_qc/
-
-These folders contain the FastQC results on both the RAW reads and the quality controlled reads respectively. The provided html files for each sequence gives an overview of the quality statistics of each sample.
-
-### filtered_vibrant/ and filtered_virsorter2/
-These folders contains two files with only quality controlled contig names within `filtered_contigs` and their fasta sequence in `filtered_combined.fna`
-
-### graphanalyzer/
-
-This folder contains all graphanalyzer results. Most relevant is the folder `single-views_vOTU_results` which contain an interactive plot of the clusters for each vOTU. Another important file is the `results_vcontact2_vOTU_results.csv` which contains the proccessed Vcontact2 output and contains all relevant taxonomic clasification information.
-
-### mapping/
-
-Contains all the index and sam files from bowtie2 building and maping. The `.sam` files can be used for further analysis if the users want it.
-
-### metaQUAST/
-
-This folder contains the quality controlled reports from all assembled contigs within each sample. The `summary` folder contains summaries of all quality control processes and the `combined_reference` folder contains results pertaining to comparisons towards the reference database of RefSeq Viral.
-
-
-### metaSpades/
-
-This folder contains all assembled contigs ordered by sample. The most relevant file here is the assembled contig file `contigs.fasta`
-
-### prodigal/
-
-This folder contains the results from running prodigal and provides the predicted genes and proteins. The pipeline uses a simplified format of these with the file `ORFs.genes.simple.faa`.
-
-### statistics/
-
-This folder contains the aggregated statistics and plots for the pipeline.
-The Taxonomic annotation information can be found in the three files:
-`vOTU_stats_combined.tsv` `vOTU_stats_vibrant.tsv` `vOTU_stats_virsorter2.tsv`. They give insight of the taxonomic classification at Family, Subfamily and Genus level. it also includes the checkv quality score, accession number and if the identified virus is a provirus.
-
-The functional annotation can be found in the file `vOTU_AMGs.tsv`. It provides the protein/gene, origin scaffold, ID and the fucntional description.
-
-Some interesting files for seeing the state of all samples at different stages can be found in: `Sample_stats_vibrant.tsv`, `Sample_stats_virsorter2.tsv` and `Combined_Sample_stats.tsv`.
-
-The file `vOTU_mapped_to_reads.tsv` contains the vOTUs mapped back to their original sequences and if they are lytic or not.
-
-### vcontact2/
-
-This folder contains the VCONTACT2 output. The folder `genes_2_genomes` contains the files used when introducing the INPHARED database to be included in the taxonomic annotation. For further analysis the `c1.clusters` and `c1.ntw` can be used and viewed within [Cytoscape](https://cytoscape.org/).
-
-### vibrant_pass1/ and vibrant_pass2/
-
-These folders contain all VIBRANT results grouped by sample and one for the vOTUs respectively. It can be a bit tricky to navigate these but they contain a lot of interesting files. The folder `VIBRANT_results` contains the several tables produced by VIBRANT. The direct viral sequences used by the pipeline is gathered from the folder `VIBRANT_phages/VIBRANT_contigs/contigs.phages_combined.fna` and `VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna`. The relevant taxonomic information can be found within `VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv` and the different AMG_ files within `VIBRANT_results`
-
-### virsorter2_pass1/ and virsorter2_pass2/
-
-These folders contain all results from virsorter2 (pass 1 and 2 respectively). The most relevant file here is the `final-viral-score.tsv` file, which contains the scorings for each contig and what type of virus it was deemed as.
-
-### vOTU
-
-This folder contains dereplicated combined `.fasta` file in which all headers were renamed to subsequent vOTUs.
