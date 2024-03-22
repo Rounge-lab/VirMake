@@ -3,7 +3,7 @@
 ## Contents
 
 1. [About VirMake](#about-virmake)
-2. [Installation](#installation)
+2. [InsYtallation](#installation)
 3. [Usage](#usage)
 4. [Output explained](#output-explained)
 
@@ -21,9 +21,32 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 - At least 125 GB of RAM and 180 GB of free disk space. *Additional disk
 space **will be needed** for the output files depending on the size and number of your samples!*
 
+### Pre-virmake setup
+
+This workflow uses mamba to set up conda environements while running. Therefore, you need to load mamba into your setup prior to running the workflow. 
+If you are on a HPC, you can check if mamba is avaliable by:
+
+module avail Mamba (or try mamba)
+
+If avaliable load mamba by:
+
+module load mamba
+
+You will also need load conda:
+
+module load Miniconda3 (or miniconda3)
+
+If you are not on an HPC, you can load mamba into your base conda environment by:
+
+conda install -n base -c conda-forge mamba
+
+For other queries, see the mamba documentation:
+
+https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html
+
+ 
 ### To install VirMake follow these steps:
 If you are using Virmake on a HPC, activate your base conda environment by using: 
-'module load Miniconda3/<version number avaliable>' 
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
 2. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
@@ -42,7 +65,6 @@ VirMake
 │   ├── INPHARED
 │   ├── RefSeq
 │   ├── vcontact2
-│   ├── vibrant
 │   └── virsorter2
 ├── envs
 ├── examples
@@ -58,16 +80,13 @@ VirMake
 
 ## Usage
 
-**Before you do anything, make sure that `virmake` conda environment that was created during the installation is activated. You can do this by running:**
+**Before you do anything, make sure that `virmake` .venv is setup by the following:**
+
 
 ```
-conda activate virmake
-```
+source .venv/bin/activate #only run if (venv) is not at beginning of the terminal prompt
 
-**For HPC users, activate the conda environment by the following:**
-
-```
-conda activate cluster/project/{projectid}/{userid}/Virmake/venv
+python ./virmake run -h
 ```
 
 **Also make sure to run all commands from the root directory of the repository.**
@@ -75,13 +94,13 @@ conda activate cluster/project/{projectid}/{userid}/Virmake/venv
 Please note that `virmake` has inbuilt help that can be accessed by running:
 
 ```
-./virmake -h
+python ./virmake -h
 ```
 
 **To run a dry-run of the pipeline run the following command**
 
 ```
-./virmake run -n
+python ./virmake run -n
 ```
 
 **This should produce a snakemake output with the steps to run**
@@ -94,7 +113,7 @@ runs. This takes a substantial amount of time on the first run. If you want to s
 environments before running the workflow use:
 
 ```
-./virmake prep
+python ./virmake prep
 ```
 
 After that you can run the workflow offline.
@@ -108,7 +127,7 @@ need to be in `.fastq.gz` format. The input files should be named in the followi
 You can also download samples from SRA database by using:
 
 ```
-./virmake get SRA <accession_number>
+python ./virmake get SRA <accession_number>
 ```
 
 This command will download the samples from SRA database, place them in `VirMake/working_dir/input/` folder, `gzip` them and rename them accordingly.
@@ -116,7 +135,7 @@ This command will download the samples from SRA database, place them in `VirMake
 You can get example files from [1] by running:
 
 ```
-./virmake get SRA PRJNA524703
+python ./virmake get SRA PRJNA524703
 ```
 
 [1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)
@@ -128,7 +147,7 @@ You can get example files from [1] by running:
 To run the workflow use:
 
 ```
-./virmake run
+python ./virmake run
 ```
 
 To run the workflow with more personalized options please use `./virmake run -h` and read the help page.
@@ -145,7 +164,7 @@ ssh -L 8888:localhost:8888 username@server_address
 Once the workflow is finished you can inspect the results by running:
 
 ```
-./virmake inspect
+python ./virmake inspect
 ```
 
 and click on the link that will be provided in the terminal.

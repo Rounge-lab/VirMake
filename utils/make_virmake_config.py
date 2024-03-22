@@ -7,14 +7,14 @@ import click
 
 # CLI command tool to choose the viral identifier
 
-def make_config():
+def make_config(virmake_path):
     """Creates a default config structure."""
     config = {}
     db_path = virmake_path / "databases"
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
-    config["identifier"] = "virsorter2"
+    config["identifier"] = "virsorter2" #change to vibrant or genomad to use either in the Snakefile
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
