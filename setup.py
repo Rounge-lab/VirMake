@@ -40,15 +40,15 @@ def check_conda(logger):
             "Conda not found! Please install conda and try again.\n"
             "See setup.log for full traceback.\n"
         )
-        logger.critical(strip_stdout(conda_ver.stderr))
-        exit(1)  
+       logger.critical(strip_stdout(conda_ver.stderr))
+       exit(1)  
 
     logger.info(f"Using {strip_stdout(conda_ver.stdout)}\n")
 
-     check if conda is initialized
-     cmd = "conda activate base"
-     conda_activate_base = subprocess.run(
-        cmd.split(), capture_output=True, shell=True
+    # check if conda is initialized
+    cmd = "conda activate base"
+    conda_activate_base = subprocess.run(
+        	cmd.split(), capture_output=True, shell=True
     )
     if conda_activate_base.returncode != 0:
         logger.error(
@@ -58,21 +58,16 @@ def check_conda(logger):
         exit(1)
 
 
-def create_venv(logger, virmake_path):
+def check_venv(logger, virmake_path):
     """create virmake venv environment"""
     try:
-	cmd =  "python -m venv -h"
-	venv_ver = subprocess.run(cmd.split(), capture_output=True)
+      cmd = "ls .venv"
+      venv_ver = subprocess.run(cmd.split(), capture_output=True)
+      logger.info("The virtual env is already created")
     except FileNotFoundError:
-	logger.error("virtualenv is not found, please download by pip install virtualenv")
-	raise SystemExit(100)
-    logger.info("\nPreparing VirMake conda env...\n")
-    cmd = (f"python -m venv .venv")
-    subprocess.run(cmd.split())
-    cmd = f"source .venv/bin/activate"
-    subprocess.run(cmd.split())
-    cmd = f"pip install -r virmake_requirements.txt"
-	
+      logger.error("No .venv directory found, please create by the following the README instructions")
+      raise SystemExit(100)
+
 
 def create_virmake_config(logger, virmake_path):
     """create config.yaml"""
@@ -87,7 +82,7 @@ def create_slurm_profile(logger, virmake_path):
     """create config.yaml"""
     logger.info(f"\nCreating SLURM profile...\n")
     cmd = (
-        f"conda run -p venv/ python utils/make_slurm_profile.py {virmake_path}"
+        f"python utils/make_slurm_profile.py {virmake_path}"
     )
     subprocess.run(cmd.split())
 
@@ -141,7 +136,6 @@ def setup_db(logger, virmake_path):
                     os.makedirs(virmake_path / "databases", exist_ok=True)
             logger.info("\nWorking...\n")
             cmd = (
-                "conda run -p venv/ --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
                 f"--configfile {virmake_path / 'workflow' / 'config' / 'params.yaml'} "
                 f"--use-conda --nolock --rerun-incomplete "
@@ -165,7 +159,7 @@ def setup_db(logger, virmake_path):
 def prep_script(logger, virmake_path):
     """prepare main script"""
     logger.info(f"\nPreparing main script at {virmake_path / 'virmake'}\n")
-    cmd = "conda run -p venv/ which python"
+    cmd = "which python"
     virmake_python_path = subprocess.run(cmd.split(), capture_output=True)
     virmake_python_path = strip_stdout(virmake_python_path.stdout)
     if (virmake_path / "virmake").exists():
@@ -187,8 +181,8 @@ def main():
     logger.info(f"\nVirMake setup started at {virmake_path}\n")
 
     # run all steps
-#    check_conda(logger)
-#    create_venv(logger, virmake_path)
+    check_conda(logger)
+    check_venv(logger, virmake_path)
     create_virmake_config(logger, virmake_path)
     create_slurm_profile(logger, virmake_path)
     create_working_dir(logger, virmake_path)

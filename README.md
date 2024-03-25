@@ -49,11 +49,16 @@ https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html
 If you are using Virmake on a HPC, activate your base conda environment by using: 
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
-2. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
+2. Before running the setup.py script, create the virtual .venv with the following commands:
+		1. `pip install virtual env`
+		2. `python -m venv .venv`
+		3. `source .venv/bin/activate`
+		4. `pip install -r virmake_requirements.txt`
+3. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
    installation of all necessary dependencies. If you want to install the dependencies yourself, you can omit the flag. Also, **if you encounter any errors** during the installation, please run the setup script again without the flag. We recommend using `screen` to run the setup script. Visit
    [this link](https://linuxize.com/post/how-to-use-linux-screen/) for more information on how to use `screen`.
-3. Sit back and relax... The installation will take a while.
-4. Check `setup.log` file for any errors. If there are no errors, you are ready to go!
+4. Sit back and relax... The installation will take a while.
+5. Check `setup.log` file for any errors. If there are no errors, you are ready to go!
 
 An expected directory structure should look like this (files are omitted for readability):
 
@@ -84,8 +89,6 @@ VirMake
 
 
 ```
-source .venv/bin/activate #only run if (venv) is not at beginning of the terminal prompt
-
 python ./virmake run -h
 ```
 
