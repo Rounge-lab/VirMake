@@ -1321,6 +1321,46 @@ rule vcontact2:
         """
 
 
+rule graphanalyzer:
+    """
+    Performs the post-processing of VCONTACT2 results
+    automatically
+    """
+    params:
+        graph=config["path"]["scripts"] + "/graphanalyzer.py",
+        meta=config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
+    input:
+        rules.vcontact2.output.dir,
+    output:
+        dir=directory(config["path"]["output"] + "/graphanalyzer/"),
+        vOTU_results=config["path"]["output"]
+        + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
+    conda:
+        config["path"]["envs"] + "/graphanalyzer.yaml"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
+    log:
+        config["path"]["log"] + "/graphanalyzer.log",
+    benchmark:
+        config["path"]["benchmark"] + "/graphanalyzer.txt"
+    shell:
+        """
+        python3 {params.graph}\
+        --graph {input}/c1.ntw\
+        --csv {input}/genome_by_genome_overview.csv\
+        --metas {params.meta}\
+        --output {output.dir}/\
+        --prefix vOTU\
+        --suffix vOTU_results\
+        --threads {threads}\
+        &> {log}
+        cat {output.vOTU_results}
+        """
+
+
+
 # FUNCTIONAL ANALYSIS
 
 
@@ -1402,45 +1442,6 @@ rule dramv_distill:
         --output_dir {output.dir}\
         &> {log}
         cat {output.amg_summary}
-        """
-
-
-rule graphanalyzer:
-    """
-    Performs the post-processing of VCONTACT2 results
-    automatically
-    """
-    params:
-        graph=config["path"]["scripts"] + "/graphanalyzer.py",
-        meta=config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
-    input:
-        rules.vcontact2.output.dir,
-    output:
-        dir=directory(config["path"]["output"] + "/graphanalyzer/"),
-        vOTU_results=config["path"]["output"]
-        + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
-    conda:
-        config["path"]["envs"] + "/graphanalyzer.yaml"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["normal"],
-    log:
-        config["path"]["log"] + "/graphanalyzer.log",
-    benchmark:
-        config["path"]["benchmark"] + "/graphanalyzer.txt"
-    shell:
-        """
-        python3 {params.graph}\
-        --graph {input}/c1.ntw\
-        --csv {input}/genome_by_genome_overview.csv\
-        --metas {params.meta}\
-        --output {output.dir}/\
-        --prefix vOTU\
-        --suffix vOTU_results\
-        --threads {threads}\
-        &> {log}
-        cat {output.vOTU_results}
         """
 
 
