@@ -7,7 +7,7 @@ import click
 
 # CLI command tool to choose the viral identifier
 
-def make_config():
+def make_config(virmake_path):
     """Creates a default config structure."""
     config = {}
     db_path = virmake_path / "databases"
