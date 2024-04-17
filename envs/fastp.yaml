@@ -4,11 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - _libgcc_mutex=0.1
-  - _openmp_mutex=4.5
   - fastp=0.23.2
-  - isa-l=2.30.0
-  - libdeflate=1.18
-  - libgcc-ng=13.1.0
-  - libgomp=13.1.0
-  - libstdcxx-ng=13.1.0
