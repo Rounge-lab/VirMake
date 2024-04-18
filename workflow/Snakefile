@@ -263,7 +263,7 @@ rule ASSEMBLY:
             config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
             sample=SAMPLE,
         ),
-        config["path"]["output"] + "/metaQUAST/combined/reference/report.html",
+        config["path"]["output"] + "/metaQUAST/combined_reference/report.html",
         config["path"]["output"]
         + "/metaQUAST/combined_reference/transposed_report.tsv",
     output:
