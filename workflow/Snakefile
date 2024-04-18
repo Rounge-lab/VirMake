@@ -10,7 +10,7 @@ FRAC = sorted(list(set(FRAC)))
 
 onstart:
     touch(config["path"]["temp"])
-    touch(config["path"]["log"])           
+    touch(config["path"]["log"])
     print("Samples: " + ", ".join(SAMPLE))
 
 
@@ -315,7 +315,7 @@ rule metaQUAST:
         -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
         """
 
- 
+
 # VIRAL IDENTIFICATION #
 
 rule IDENTIFICATION:
@@ -323,7 +323,7 @@ rule IDENTIFICATION:
      	expand(
 	    config["path"]["output"] + "/virsorter2_pass1/{sample}/",
    	   sample=SAMPLE,
-        ) 
+        )
       	+ expand(
             config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
             sample=SAMPLE,
@@ -355,7 +355,7 @@ rule IDENTIFICATION:
             config["path"]["output"]
             + "/filtered_virsorter2/{sample}/filtered_contigs",
             sample=SAMPLE,
-        ),            
+        ),
         config["path"]["output"] + "/combined_virsorter2/",
         config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
         config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
@@ -505,7 +505,7 @@ if config["identifier"] == "vibrant":
             Performes the first pass of viral identification with VIBRANT
             """
             input:
-                assembly_output = rules.metaSpades.output.contigs,		
+                assembly_output = rules.metaSpades.output.contigs,
             output:
             params:
                 db_dir=config["path"]["database"]["vibrant"] + "/databases",
@@ -533,7 +533,7 @@ if config["identifier"] == "vibrant":
                     &> {log}
                 touch {output.finished}
             """
-        
+
 
         rule checkv_vibrant:
             """
@@ -573,7 +573,7 @@ if config["identifier"] == "vibrant":
                 cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
                 """
 
-	
+
         rule combine_results_vibrant:
             """
             Combine all results from virus identifiaction of all samples with VIBRANT
@@ -635,7 +635,7 @@ elif config["identifier"] == "genomad":
                 genomad end-to-end {input} {output.dir} {params.db_dir}
                 touch {output.finished}
                 """
-        
+
         rule checkv_genomad:
             """
             Performes Quality control on identified viral sequences
@@ -1616,5 +1616,3 @@ rule zip_output:
 #        runtime=config["time"]["tiny"],
 #    script:
 #        config["path"]["scripts"] + "/zip_output.py"
-
-
