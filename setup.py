@@ -100,7 +100,7 @@ def setup_db(logger, virmake_path):
         logger.info(
             "VirMake can automatically download and setup databases for you.\n"
             "Since VirMake uses DRAM, minimum 125GB of RAM is required.\n"
-            "Around 35GB of free disk space is required to store databases.\n"
+            "Around 180GB of free disk space is required to store databases.\n"
             "This is recommended for first time users.\n"
             "If you choose not to setup databases now,\n"
             "you will have to do it manually later!"
@@ -124,6 +124,7 @@ def setup_db(logger, virmake_path):
                 "virsorter2",
                 "vcontact2",
                 "RefSeq",
+                "genomad",
             ]:
                 logger.info(
                     "Old database files were found in databases directory."
