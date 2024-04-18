@@ -5,6 +5,6 @@ channels:
   - defaults
 dependencies:
   - checkv=1.0.1
-  - diamond=2.0.4
-  - hmmer=3.3.2
-  - prodigal-gv=2.6.3
+  - diamond=2.1.9
+  - hmmer=3.4
+  - prodigal-gv=2.11.0
