@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bbmap=39.06
+  - bbmap=39.01
   - bedtools=2.31.0
   - bowtie2=2.5.1
   - samtools=1.17
