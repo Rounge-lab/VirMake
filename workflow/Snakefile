@@ -263,7 +263,7 @@ rule ASSEMBLY:
             config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
             sample=SAMPLE,
         ),
-        config["path"]["output"] + "/metaQUAST/report.html",
+        config["path"]["output"] + "/metaQUAST/combined/reference/report.html",
         config["path"]["output"]
         + "/metaQUAST/combined_reference/transposed_report.tsv",
     output:
@@ -293,7 +293,7 @@ rule metaQUAST:
         ),
     output:
         dir=directory(config["path"]["output"] + "/metaQUAST/"),
-        report=config["path"]["output"] + "/metaQUAST/report.html",
+        report=config["path"]["output"] + "/metaQUAST/combined_reference/report.html",
         transposed_report=config["path"]["output"]
         + "/metaQUAST/combined_reference/transposed_report.tsv",
     message:
@@ -455,6 +455,9 @@ rule checkv_virsorter2:
             --db {params.db_dir}/genome_db/checkv_reps &> {log}
         checkv end_to_end {input.final_viral_combined}\
         {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+        touch {output.dir}/proviruses.fna
+        touch {output.dir}/viruses.fna
+        touch {output.dir}/quality_summary.tsv
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 
