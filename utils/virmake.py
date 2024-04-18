@@ -170,7 +170,7 @@ def run_workflow(
 @cli.command(
     "prep",
     context_settings=dict(ignore_unknown_options=True),
-    short_help="Downloads and creates all enviorments needed to run the workflow offline.",
+    short_help="Downloads and creates all environments needed to run the workflow offline.",
 )
 @click.option(
     "-c",
@@ -180,7 +180,7 @@ def run_workflow(
     help="number of threads to use per multi-threaded job",
 )
 def run_prep_offline(threads):
-    """Downloads and creates all enviorments needed to run the workflow offline."""
+    """Downloads and creates all environments needed to run the workflow offline."""
     cmd = (
         "snakemake --snakefile {snakefile} "
         "--conda-frontend mamba --configfile {config} "
