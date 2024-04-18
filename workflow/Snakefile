@@ -320,38 +320,38 @@ rule metaQUAST:
 
 rule IDENTIFICATION:
     input:
-     	expand(
-	    config["path"]["output"] + "/virsorter2_pass1/{sample}/",
-   	   sample=SAMPLE,
+        expand(
+            config["path"]["output"] + "/virsorter2_pass1/{sample}/",
+            sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"]
             + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"]
             + "/checkv/virsorter2_pass1/{sample}/combined.fna",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"] + "/filtered_virsorter2/{sample}/",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"]
             + "/filtered_virsorter2/{sample}/filtered_combined.fna",
             sample=SAMPLE,
         )
-      	+ expand(
+        + expand(
             config["path"]["output"]
             + "/filtered_virsorter2/{sample}/filtered_contigs",
             sample=SAMPLE,
