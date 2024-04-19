@@ -97,7 +97,7 @@ rule QC:
             sample=SAMPLE,
             frac=FRAC,
         ),
-        # config["path"]["output"]+"/multiqc/multiqc.html"
+        config["path"]["output"] + "/multiqc/multiqc.html",
     output:
         config["path"]["temp"] + "/finished_QC",
     threads: 1
@@ -177,6 +177,8 @@ rule fastqc:
         """
         fastqc {input} -o {output.dir} -t {threads} &> {log}
         """
+
+
 # TODO test multiqc
 rule multiqc_read_qc:
     """
@@ -188,9 +190,8 @@ rule multiqc_read_qc:
             sample=SAMPLE,
             frac=FRAC,
         ),
-        dir=directory(config["path"]["output"] + "/fastqc/"),
     output:
-        report=config["path"]["output"] + "/multiqc/multiqc_report.html",
+        report=config["path"]["output"] + "/multiqc/multiqc.html",
     params:
         read_qc_path=config["path"]["output"] + "/fastqc/",
         out_dir=config["path"]["output"] + "/multiqc/",
