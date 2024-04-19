@@ -77,11 +77,6 @@ rule ALL:
 rule QC:
     input:
         expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-        expand(
             config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
             sample=SAMPLE,
         ),
@@ -113,37 +108,6 @@ rule QC:
     shell:
         """
         touch {output}
-        """
-
-rule fastqc_raw:
-    input:
-        expand(
-            config["path"]["input"] + "/{sample}_{frac}.fastq.gz",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-    output:
-        expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-        dir=directory(config["path"]["output"] + "/fastqc_raw/"),
-    threads: config["threads"]
-    conda:
-        config["path"]["envs"] + "/fastqc.yaml"
-    message:
-        "[fastqc_raw] Executing FASTQC quality control on raw reads..."
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
-    log:
-        config["path"]["log"] + "/fastqc_raw.log",
-    benchmark:
-        config["path"]["benchmark"] + "/fastqc_raw.txt"
-    shell:
-        """
-        fastqc {input} -o {output.dir} -t {threads} &> {log}
         """
 
 rule fastp_pe:
