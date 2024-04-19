@@ -60,10 +60,21 @@ def check_conda(logger):
 def create_venv(logger, virmake_path):
     """create virmake environment"""
     logger.info("\nPreparing VirMake conda env...\n")
-    cmd = (
-        f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
-    )
-    subprocess.run(cmd.split())
+    logger.info("\nAttempting to use mamba...\n")
+    try:
+        cmd = (
+            f"mamba env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
+        )
+        subprocess.run(cmd.split())
+    except FileNotFoundError:
+        logger.error(
+            "Mamba was not available in base environment, using conda.\n"
+        )
+        cmd = (
+            f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
+        )
+        subprocess.run(cmd.split())
+    
 
 
 def create_virmake_config(logger, virmake_path):

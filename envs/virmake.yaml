@@ -8,7 +8,3 @@ dependencies:
   - mamba=1.5.8
   - python=3.12.3
   - snakemake=8.10.7
-  - pip
-  - pip:
-    - pyyaml
-
