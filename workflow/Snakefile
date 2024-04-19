@@ -77,11 +77,6 @@ rule ALL:
 rule QC:
     input:
         expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-        expand(
             config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
             sample=SAMPLE,
         ),
@@ -98,10 +93,11 @@ rule QC:
             sample=SAMPLE,
         ),
         expand(
-            config["path"]["output"] + "/fastqc_qc/{sample}_{frac}_fastqc.html",
+            config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",
             sample=SAMPLE,
             frac=FRAC,
         ),
+        # config["path"]["output"]+"/multiqc/multiqc.html"
     output:
         config["path"]["temp"] + "/finished_QC",
     threads: 1
@@ -115,40 +111,9 @@ rule QC:
         touch {output}
         """
 
-rule fastqc_raw:
-    input:
-        expand(
-            config["path"]["input"] + "/{sample}_{frac}.fastq.gz",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-    output:
-        expand(
-            config["path"]["output"] + "/fastqc_raw/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
-        dir=directory(config["path"]["output"] + "/fastqc_raw/"),
-    threads: config["threads"]
-    conda:
-        config["path"]["envs"] + "/fastqc.yaml"
-    message:
-        "[fastqc_raw] Executing FASTQC quality control on raw reads..."
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
-    log:
-        config["path"]["log"] + "/fastqc_raw.log",
-    benchmark:
-        config["path"]["benchmark"] + "/fastqc_raw.txt"
-    shell:
-        """
-        fastqc {input} -o {output.dir} -t {threads} &> {log}
-        """
-
 rule fastp_pe:
     """
-    Performes quality control/pre-processing of the raw reads
+    performs quality control/pre-processing of the raw reads
     """
     input:
         R1=config["path"]["input"] + "/{sample}_1.fastq.gz",
@@ -176,9 +141,9 @@ rule fastp_pe:
         -h {output.html} -j {output.json} &> {log}
         """
 
-rule fastqc_qc:
+rule fastqc:
     """
-    Performes quality control of processed QC reads
+    performs quality control of processed QC reads
     """
     input:
         expand(
@@ -191,28 +156,61 @@ rule fastqc_qc:
         ),
     output:
         report=expand(
-            config["path"]["output"] + "/fastqc_qc/{sample}_{frac}_fastqc.html",
+            config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",
             sample=SAMPLE,
             frac=FRAC,
         ),
-        dir=directory(config["path"]["output"] + "/fastqc_qc/"),
+        dir=directory(config["path"]["output"] + "/fastqc/"),
     threads: config["threads"]
     conda:
         config["path"]["envs"] + "/fastqc.yaml"
     message:
-        "[fastqc_qc] Executing FASTQC quality control on trimmed reads..."
+        "[fastqc] Executing FASTQC quality control on trimmed reads..."
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
     log:
-        config["path"]["log"] + "/fastqc_qc.log",
+        config["path"]["log"] + "/fastqc.log",
     benchmark:
-        config["path"]["benchmark"] + "/fastqc_qc.txt"
+        config["path"]["benchmark"] + "/fastqc.txt"
     shell:
         """
         fastqc {input} -o {output.dir} -t {threads} &> {log}
         """
-
+# TODO test multiqc
+rule multiqc_read_qc:
+    """
+    Summarize QC after read processing
+    """
+    input:
+        fastqc_output=expand(
+            config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",
+            sample=SAMPLE,
+            frac=FRAC,
+        ),
+        dir=directory(config["path"]["output"] + "/fastqc/"),
+    output:
+        report=config["path"]["output"] + "/multiqc/multiqc_report.html",
+    params:
+        read_qc_path=config["path"]["output"] + "/fastqc/",
+        out_dir=config["path"]["output"] + "/multiqc/",
+        out_name="multiqc"
+    threads: config["threads"]
+    conda:
+        config["path"]["envs"] + "/fastqc.yaml"
+    message:
+        "[multiqc_qc] Executing MULTIQC summary of read quality control..."
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
+    log:
+        config["path"]["log"] + "/multiqc.log",
+    benchmark:
+        config["path"]["benchmark"] + "/multiqc.txt"
+    shell:
+        """
+        multiqc --force -o {params.out_dir} -n {params.out_name} {params.read_qc_path} 2> {log}
+        """
 
 # ASSEMBLY #
 rule metaSpades:
@@ -281,7 +279,7 @@ rule ASSEMBLY:
 
 rule metaQUAST:
     """
-    Performes quality control on all assembled contigs
+    performs quality control on all assembled contigs
     with the reference database RefSeq Viral
     """
     params:
@@ -382,7 +380,7 @@ rule IDENTIFICATION:
 
 rule virsorter2_pass1:
     """
-    Performes the first pass of viral identification with virsorter2
+    performs the first pass of viral identification with virsorter2
     """
     input:
         assembly_output = rules.metaSpades.output.contigs,
@@ -422,7 +420,7 @@ rule virsorter2_pass1:
 
 rule checkv_virsorter2:
     """
-    Performes Quality control on identified viral sequences
+    performs Quality control on identified viral sequences
     """
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
@@ -451,13 +449,11 @@ rule checkv_virsorter2:
     shell:
         """
         mkdir -p {output.dir}
-        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-            --db {params.db_dir}/genome_db/checkv_reps &> {log}
         checkv end_to_end {input.final_viral_combined}\
-        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+            {output.dir} -t {threads} -d {params.db_dir} &> {log}
         touch {output.dir}/proviruses.fna
         touch {output.dir}/viruses.fna
-        touch {output.dir}/quality_summary.tsv
+        touch {output.summary}
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 
@@ -502,7 +498,7 @@ if config["identifier"] == "vibrant":
 
         rule vibrant:
             """
-            Performes the first pass of viral identification with VIBRANT
+            performs the first pass of viral identification with VIBRANT
             """
             input:
                 assembly_output = rules.metaSpades.output.contigs,
@@ -537,7 +533,7 @@ if config["identifier"] == "vibrant":
 
         rule checkv_vibrant:
             """
-            Performes Quality control on identified viral sequences
+            performs Quality control on identified viral sequences
             """
             input:
                 rules.vibrant.output.finished,
@@ -609,7 +605,7 @@ elif config["identifier"] == "genomad":
 
         rule genomad:
             """
-            Performes the first pass of viral identification with geNomad
+            performs the first pass of viral identification with geNomad
             """
             input:
                 assembly_output = rules.metaSpades.output.contigs,
@@ -638,7 +634,7 @@ elif config["identifier"] == "genomad":
 
         rule checkv_genomad:
             """
-            Performes Quality control on identified viral sequences
+            performs Quality control on identified viral sequences
             """
             input:
                 rules.genomad.output.finished,
@@ -969,7 +965,7 @@ rule build_index:
 
 rule read_mapping:
     """
-    Performes read mapping between original sample and vOTUs
+    performs read mapping between original sample and vOTUs
     """
     input:
         R1=rules.fastp_pe.output.R1,
@@ -1197,7 +1193,7 @@ rule TAXONOMY:
 
 rule prodigal:
     """
-    Performes gene prediction on vOTUs
+    performs gene prediction on vOTUs
     """
     input:
         rules.transform_vOTUs.output.vOTU,
@@ -1225,7 +1221,7 @@ rule prodigal:
 
 rule gene2genome:
     """
-    Performes gene2genome setup for VCONTACT2
+    performs gene2genome setup for VCONTACT2
     """
     input:
         rules.prodigal.output.orf,

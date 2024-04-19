@@ -291,9 +291,9 @@ This folder contains the results from DRAMv, both annotate and distill. The most
 This folder contains the fastp reports on all samples. The most relevant file here is the `<sample_name>.html` which gives an overview of the quality statistics of each sample. This
 folder also contains preprocessed `.fastq` files that are later used in the pipeline.
 
-### fastqc_raw/ and fastqc_qc/
+### fastqc/
 
-These folders contain the FastQC results on both the RAW reads and the quality controlled reads respectively. The provided html files for each sequence gives an overview of the quality statistics of each sample.
+This folder contains the FastQC results for the quality controlled reads. The provided html files for each sequence gives an overview of the quality statistics of each sample.
 
 ### filtered_vibrant/ and filtered_virsorter2/
 These folders contains two files with only quality controlled contig names within `filtered_contigs` and their fasta sequence in `filtered_combined.fna`
