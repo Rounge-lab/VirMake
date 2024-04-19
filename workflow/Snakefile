@@ -449,13 +449,11 @@ rule checkv_virsorter2:
     shell:
         """
         mkdir -p {output.dir}
-        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-            --db {params.db_dir}/genome_db/checkv_reps &> {log}
         checkv end_to_end {input.final_viral_combined}\
-        {output.dir} -t {threads} -d {params.db_dir} &>> {log}
+            {output.dir} -t {threads} -d {params.db_dir} &> {log}
         touch {output.dir}/proviruses.fna
         touch {output.dir}/viruses.fna
-        touch {output.dir}/quality_summary.tsv
+        touch {output.summary}
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 

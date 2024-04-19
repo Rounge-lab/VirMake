@@ -74,12 +74,21 @@ elif identifier == "gnomad":
             """
 
 rule checkv:
-    conda:
-        config["path"]["envs"] + "/checkv.yaml"
     output:
         directory(config["path"]["database"]["checkv"]),
+    conda:
+        config["path"]["envs"] + "/checkv.yaml"
+    params:
+        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+    log:
+        config["path"]["log"] + "/checkv_db/checkv_db.log",
     shell:
-        "checkv download_database {output}"
+        """
+        checkv download_database {output}
+        
+        diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
+            --db {params.db_dir}/genome_db/checkv_reps &> {log}
+        """
 
 rule inphared:
     output:
