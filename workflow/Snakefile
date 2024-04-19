@@ -112,7 +112,7 @@ rule QC:
 
 rule fastp_pe:
     """
-    Performes quality control/pre-processing of the raw reads
+    performs quality control/pre-processing of the raw reads
     """
     input:
         R1=config["path"]["input"] + "/{sample}_1.fastq.gz",
@@ -142,7 +142,7 @@ rule fastp_pe:
 
 rule fastqc_qc:
     """
-    Performes quality control of processed QC reads
+    performs quality control of processed QC reads
     """
     input:
         expand(
@@ -245,7 +245,7 @@ rule ASSEMBLY:
 
 rule metaQUAST:
     """
-    Performes quality control on all assembled contigs
+    performs quality control on all assembled contigs
     with the reference database RefSeq Viral
     """
     params:
@@ -346,7 +346,7 @@ rule IDENTIFICATION:
 
 rule virsorter2_pass1:
     """
-    Performes the first pass of viral identification with virsorter2
+    performs the first pass of viral identification with virsorter2
     """
     input:
         assembly_output = rules.metaSpades.output.contigs,
@@ -386,7 +386,7 @@ rule virsorter2_pass1:
 
 rule checkv_virsorter2:
     """
-    Performes Quality control on identified viral sequences
+    performs Quality control on identified viral sequences
     """
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
@@ -466,7 +466,7 @@ if config["identifier"] == "vibrant":
 
         rule vibrant:
             """
-            Performes the first pass of viral identification with VIBRANT
+            performs the first pass of viral identification with VIBRANT
             """
             input:
                 assembly_output = rules.metaSpades.output.contigs,
@@ -501,7 +501,7 @@ if config["identifier"] == "vibrant":
 
         rule checkv_vibrant:
             """
-            Performes Quality control on identified viral sequences
+            performs Quality control on identified viral sequences
             """
             input:
                 rules.vibrant.output.finished,
@@ -573,7 +573,7 @@ elif config["identifier"] == "genomad":
 
         rule genomad:
             """
-            Performes the first pass of viral identification with geNomad
+            performs the first pass of viral identification with geNomad
             """
             input:
                 assembly_output = rules.metaSpades.output.contigs,
@@ -602,7 +602,7 @@ elif config["identifier"] == "genomad":
 
         rule checkv_genomad:
             """
-            Performes Quality control on identified viral sequences
+            performs Quality control on identified viral sequences
             """
             input:
                 rules.genomad.output.finished,
@@ -933,7 +933,7 @@ rule build_index:
 
 rule read_mapping:
     """
-    Performes read mapping between original sample and vOTUs
+    performs read mapping between original sample and vOTUs
     """
     input:
         R1=rules.fastp_pe.output.R1,
@@ -1161,7 +1161,7 @@ rule TAXONOMY:
 
 rule prodigal:
     """
-    Performes gene prediction on vOTUs
+    performs gene prediction on vOTUs
     """
     input:
         rules.transform_vOTUs.output.vOTU,
@@ -1189,7 +1189,7 @@ rule prodigal:
 
 rule gene2genome:
     """
-    Performes gene2genome setup for VCONTACT2
+    performs gene2genome setup for VCONTACT2
     """
     input:
         rules.prodigal.output.orf,
