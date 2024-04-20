@@ -217,9 +217,11 @@ def getcheckv(input):
 
     for x in index:
         try:
-            df["counts"][x] = counts[x]
+#            df["counts"][x] = counts[x]
+            df.loc[x, "counts"] = counts[x]
         except:
-            df["counts"][x] = 0
+#            df["counts"][x] = 0
+            df.loc[x, "counts"] = 0
 
     featurescheckv = {
         "Not-determined": df["counts"]["Not-determined"],
@@ -383,7 +385,8 @@ def create_relative_Abundance():
         total_instances = df[column].sum(axis=0)
         for index_r, v in enumerate(df[column]):
             relative_abundance = (v / total_instances) * 100
-            ra_df[column][index_r] = round(relative_abundance, 2)
+#            ra_df[column][index_r] = round(relative_abundance, 2)
+            ra_df.loc[index_r, column] = round(relative_abundance, 2)
     ra_df = ra_df.set_index("ID")
     ra_df.to_csv(
         output_path + "/statistics/vOTU_Relative_Abundance.tsv", sep="\t"
@@ -474,13 +477,13 @@ def vOTU_to_reads_mapping():
     combined_df["vOTU_ID"] = vOTU_ID
     combined_df["Contig_ID"] = contig_ID
 
-    cV_combined_vibrant = pd.DataFrame(columns=["contig_id", "provirus"])
-    for x in samples:
-        cV_df = pd.read_table(
-            output_path + "/checkv/vibrant/" + x + "/quality_summary.tsv",
-            sep="\t",
-        )
-        cV_combined_vibrant = pd.concat([cV_combined_vibrant, cV_df])
+#    cV_combined_vibrant = pd.DataFrame(columns=["contig_id", "provirus"])
+#    for x in samples:
+#        cV_df = pd.read_table(
+#            output_path + "/checkv/vibrant/" + x + "/quality_summary.tsv",
+#            sep="\t",
+#        )
+#        cV_combined_vibrant = pd.concat([cV_combined_vibrant, cV_df])
 
     cV_combined_virsorter2 = pd.DataFrame(columns=["contig_id", "provirus"])
     for x in samples:
@@ -495,12 +498,14 @@ def vOTU_to_reads_mapping():
 
     cV_provirus = pd.concat(
         [
-            cV_combined_vibrant.loc[cV_combined_vibrant["provirus"] == "Yes"],
+#            cV_combined_vibrant.loc[cV_combined_vibrant["provirus"] == "Yes"],
             cV_combined_virsorter2.loc[
                 cV_combined_virsorter2["provirus"] == "Yes"
             ],
         ]
     )
+
+# table_stats.py:511: SyntaxWarning: invalid escape sequence '\|'
 
     outer = re.compile("/(\|\|.+|_fragment.+)/gm")
 
@@ -540,9 +545,9 @@ if not os.path.exists(st_dir):
 # Runs all small functions to create statistics and tables.
 if __name__ == "__main__":
     create_sample_stats_virsorter2()
-    create_sample_stats_vibrant()
+#    create_sample_stats_vibrant()
     vOTU_AMG_stats()
     create_relative_Abundance()
-    combine_sample_stats()
+#    combine_sample_stats()
     vOTU_to_reads_mapping()
     copy_instrain_compare_output()
