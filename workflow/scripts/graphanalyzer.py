@@ -1602,7 +1602,8 @@ if __name__ == "__main__":
         )
 
     # Deleting old temporary objects...
-    del arrows, csv, csv_edit, df_results, metas, neigh, useful_nodes
+#    del arrows, csv, csv_edit, df_results, metas, neigh, useful_nodes
+    del arrows, csv, csv_edit, df_results, metas, useful_nodes
     import gc
 
     gc.collect()
