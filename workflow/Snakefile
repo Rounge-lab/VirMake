@@ -1356,7 +1356,7 @@ rule graphanalyzer:
         --suffix vOTU_results\
         --threads {threads}\
         &> {log}
-        cat {output.vOTU_results}
+        # cat {output.vOTU_results}
         """
 
 
