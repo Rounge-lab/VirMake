@@ -629,7 +629,7 @@ elif config["identifier"] == "genomad":
                 runtime=config["time"]["normal"],
             shell:
                 """
-                genomad end-to-end {input} {output.dir} {params.db_dir}
+                genomad end-to-end {input} {output.dir} {params.db_dir} &> {log}
                 touch {output.finished}
                 """
 
@@ -1108,7 +1108,7 @@ rule instrain_profile:
         runtime=config["time"]["normal"],
     shell:
         """
-        inStrain profile {input.mapping} {input.genome} -o {output}
+        inStrain profile {input.mapping} {input.genome} -o {output} &> {log}
         """
 
 
@@ -1137,7 +1137,7 @@ rule instrain_compare:
         runtime=config["time"]["normal"],
     shell:
         """
-        inStrain compare -i {input} -o {output}
+        inStrain compare -i {input} -o {output} &> {log}
         """
 
 
