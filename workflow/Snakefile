@@ -886,9 +886,6 @@ rule MAPPING:
     input:
         config["path"]["output"] + "/mapping/index",
         expand(
-            config["path"]["output"] + "/mapping/SAM/{sample}.map.sam", sample=SAMPLE
-        ),
-        expand(
             config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
             sample=SAMPLE,
         ),
@@ -973,11 +970,12 @@ rule read_mapping:
         R2=rules.fastp_pe.output.R2,
         index_dir=rules.build_index.output.index_dir,
     output:
-        config["path"]["output"] + "/mapping/SAM/{sample}.map.sam",
+        config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
     conda:
         config["path"]["envs"] + "/bowtie2.yaml"
     log:
-        config["path"]["log"] + "/bowtie2_mapping/{sample}.log",
+        bowtie2=config["path"]["log"] + "/bowtie2_mapping/{sample}.log",
+        samtools=config["path"]["log"] + "/sam_to_bam/{sample}.log",
     benchmark:
         config["path"]["benchmark"] + "/bowtie2_mapping/{sample}.txt"
     threads: config["threads"]
@@ -986,8 +984,9 @@ rule read_mapping:
         runtime=config["time"]["tiny"],
     shell:
         """
-        bowtie2 -p {threads} -x {input.index_dir}/mapping_index\
-        -1 {input.R1} -2 {input.R2} -S {output} &> {log}
+        bowtie2 -p {threads} -x {input.index_dir}/mapping_index \
+        -1 {input.R1} -2 {input.R2} 2> {log.bowtie2} | \
+        samtools view -b -o {output} - &> {log.samtools}
         """
 
 rule contig_stats:
@@ -996,7 +995,7 @@ rule contig_stats:
     """
     input:
         genomes=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
-        sam=rules.read_mapping.output,
+        bam=rules.read_mapping.output,
     output:
         basecov=config["path"]["output"]
         + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
@@ -1020,7 +1019,7 @@ rule contig_stats:
         runtime=config["time"]["tiny"],
     shell:
         """
-        pileup.sh ref={input.genomes} in={input.sam} \
+        pileup.sh ref={input.genomes} in={input.bam} \
             threads={threads} \
             -Xmx{resources.mem_mb}m \
             covstats={output.covstats} \
@@ -1086,39 +1085,13 @@ rule combine_coverage:
         config["path"]["scripts"] + "/combine_coverage.R"
 
 
-rule sam_to_bam:
-    """
-    Converts SAM to BAM
-    """
-    input:
-        rules.read_mapping.output,
-    output:
-        config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
-    conda:
-        config["path"]["envs"] + "/bowtie2.yaml"
-    log:
-        config["path"]["log"] + "/sam_to_bam/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/sam_to_bam/{sample}.txt"
-    message:
-        "[sam_to_bam] Converting SAM to BAM..."
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
-    shell:
-        """
-        samtools view -bS {input} > {output}
-        """
-
-
 rule instrain_profile:
     """
     Create inStrain profiles
     """
     input:
         genome=rules.transform_vOTUs.output.vOTU,
-        mapping=rules.sam_to_bam.output,
+        mapping=rules.read_mapping.output,
     output:
         directory(config["path"]["output"] + "/instrain/{sample}/"),
     conda:
