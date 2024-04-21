@@ -505,10 +505,6 @@ def vOTU_to_reads_mapping():
         ]
     )
 
-# table_stats.py:511: SyntaxWarning: invalid escape sequence '\|'
-
-    outer = re.compile("/(\|\|.+|_fragment.+)/gm")
-
     cV_provirus = cV_provirus["contig_id"].to_list()
     cV_provirus = list(
         map(lambda s: re.sub(r"(\|\|.+|_fragment.+)", "", s), cV_provirus)
