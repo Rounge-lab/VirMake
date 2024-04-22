@@ -217,10 +217,8 @@ def getcheckv(input):
 
     for x in index:
         try:
-#            df["counts"][x] = counts[x]
             df.loc[x, "counts"] = counts[x]
         except:
-#            df["counts"][x] = 0
             df.loc[x, "counts"] = 0
 
     featurescheckv = {
@@ -385,7 +383,6 @@ def create_relative_Abundance():
         total_instances = df[column].sum(axis=0)
         for index_r, v in enumerate(df[column]):
             relative_abundance = (v / total_instances) * 100
-#            ra_df[column][index_r] = round(relative_abundance, 2)
             ra_df.loc[index_r, column] = round(relative_abundance, 2)
     ra_df = ra_df.set_index("ID")
     ra_df.to_csv(

@@ -9,7 +9,7 @@
 
 ## About VirMake
 
-VirMake is a Snakemake based pipeline that offers viral metagenic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution.
+VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution. It has been tested with x86_64-based Linux.
 
 <!-- ![Flowchart](img/flowchart.png) -->
 
@@ -17,19 +17,14 @@ VirMake is a Snakemake based pipeline that offers viral metagenic data analysis 
 
 ### Prerequisites:
 - Git
-- Conda (Miniconda or Anaconda) installation with write permissions
-- At least 125 GB of RAM and 180 GB of free disk space. *Additional disk
-space **will be needed** for the output files depending on the size and number of your samples!*
+- Conda (Miniconda or Anaconda) installation with write permissions. Conda must be activated with its base environment.
+- At least 125 GB of RAM and 180 GB of free disk space. Additional disk space will be needed for the output files depending on the size and number of your samples!
 
 ### To install VirMake follow these steps:
-If you are using Virmake on a HPC, activate your base conda environment by using: 
-'module load Miniconda3/<version number avaliable>' 
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
-2. Run VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger
-   installation of all necessary dependencies. If you want to install the dependencies yourself, you can omit the flag. Also, **if you encounter any errors** during the installation, please run the setup script again without the flag. We recommend using `screen` to run the setup script. Visit
-   [this link](https://linuxize.com/post/how-to-use-linux-screen/) for more information on how to use `screen`.
-3. Sit back and relax... The installation will take a while.
+2. Run the VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger installation of the databases. If you want to install the databases yourself, you can omit the flag. Also, **if you encounter any errors** during the installation, please run the setup script again without the flag. We recommend using `screen` or `tmux`to run the setup script.
+3. Sit back and relax... The installation will take a while, especially if setting up databases.
 4. Check `setup.log` file for any errors. If there are no errors, you are ready to go!
 
 An expected directory structure should look like this (files are omitted for readability):
@@ -39,14 +34,16 @@ VirMake
 ├── databases
 │   ├── checkv
 │   ├── DRAM
+│   ├── genomad
 │   ├── INPHARED
 │   ├── RefSeq
 │   ├── vcontact2
 │   ├── vibrant
 │   └── virsorter2
 ├── envs
-├── examples
+├── img
 ├── utils
+├── venv
 ├── workflow
 │   ├── .snakemake
 │   ├── config
@@ -58,19 +55,13 @@ VirMake
 
 ## Usage
 
-**Before you do anything, make sure that `virmake` conda environment that was created during the installation is activated. You can do this by running:**
+Before you do anything, make sure that `virmake` conda environment that was created during the installation is activated. You can do this by running:
 
 ```
-conda activate virmake
+conda activate ./venv
 ```
 
-**For HPC users, activate the conda environment by the following:**
-
-```
-conda activate cluster/project/{projectid}/{userid}/Virmake/venv
-```
-
-**Also make sure to run all commands from the root directory of the repository.**
+Also make sure to run all commands from the root directory of the repository.
 
 Please note that `virmake` has inbuilt help that can be accessed by running:
 
@@ -78,20 +69,17 @@ Please note that `virmake` has inbuilt help that can be accessed by running:
 ./virmake -h
 ```
 
-**To run a dry-run of the pipeline run the following command**
+To run a dry-run of the pipeline run the following command:
 
 ```
 ./virmake run -n
 ```
 
-**This should produce a snakemake output with the steps to run**
+This should produce a snakemake output with the steps to run.
 
 ### Environments preparation
 
-VirMake uses conda environments to run separate rules. These environments will be set up
-on the first run and will be stored in `VirMake/workflow/.snakemake/` folder for subsequent
-runs. This takes a substantial amount of time on the first run. If you want to set up the
-environments before running the workflow use:
+VirMake uses conda environments to run separate rules. These environments will be set up on the first run and will be stored in `./workflow/.snakemake/` folder for subsequent runs. This takes a substantial amount of time on the first run. If you want to set up the environments before running the workflow use:
 
 ```
 ./virmake prep
@@ -101,10 +89,8 @@ After that you can run the workflow offline.
 
 ### Getting samples
 
-To run the workflow you will need to provide
-input files. The input files should be placed in `VirMake/working_dir/input/` folder. These
-need to be in `.fastq.gz` format. The input files should be named in the following format:
-`<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz` (VirMake only works for paired-end reads).
+To run the workflow you will need to provide input files. The input files should be placed in `./working_dir/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
+
 You can also download samples from SRA database by using:
 
 ```
@@ -123,7 +109,7 @@ You can get example files from [1] by running:
 
 ### Running the workflow
 
-**Before running the workflow, add all your samples to the working_dir under the input folder**
+**Before running the workflow, add all your samples to the working_dir under the input folder.**
 
 To run the workflow use:
 
@@ -135,7 +121,7 @@ To run the workflow with more personalized options please use `./virmake run -h`
 
 ### Inspecting results
 
-If you are working on a remote server do not forget to **log in with port tunneling enabled**.
+If you are working on a remote server do not forget to **log in with port tunnelling enabled**.
 To do this run:
 
 ```
@@ -231,7 +217,7 @@ virsorter2:
 
 ### HPC profile file
 
-You can adjust the HPC profile file to suit your needs. The file is located in `VirMake/workflow/config/config.yaml`
+You can adjust the HPC profile file to suit your needs. The file is located in `./workflow/config/config.yaml`
 
 The profile file should look like this:
 
@@ -263,83 +249,81 @@ default-resources:
 ## Output explained
 
 The pipeline provides many files and to help navigate these this section will explain what each section provides.
-These are all folders within the `VirMake/working_dir/output` folder.
+These are all folders within the `./working_dir/output` folder.
 
-### cdhit/
+### cdhit
 
 The folder contains the cluster file produced by cdhit and the dereplicated file.
 
-### checkv/
+### checkv
 
 This folder contains all the checkV resulst grouped by what they were run on, and which sample it is. This includes `vibrant`, `virsorter2` (pass 1 and 2). The interesting files here are the `quality_summary.tsv` which is the summarized result of checkv for that run.
 
 
-### combined_all/, combined_vibrant/ and combined_virsorter2/
+### combined_all, combined_vibrant and combined_virsorter2
 
 These folders contain the combined `.fasta` files from all paired-end samples.
 
-### contig_stats/
+### contig_stats
 
-This folder contains the pileup.sh results and coverage statistics. An intersting file that is used in the aggregation is the `trimmed_mean_coverage.tsv`, which is used when generating the relative abundance file for statistics folder.
+This folder contains the pileup.sh results and coverage statistics. An interesting file that is used in the aggregation is the `trimmed_mean_coverage.tsv`, which is used when generating the relative abundance file for statistics folder.
 
-### DRAMv/
+### DRAMv
 
 This folder contains the results from DRAMv, both annotate and distill. The most relevant files can be found within the `distilled` folder. The `amg_summary.tsv` contains all the AMG and functional annotation information. The `product.html` file is a heatmap of all AMGs, where they exist, their function and how many there are within the vOTU.
 
-### fastp/
+### fastp
 
-This folder contains the fastp reports on all samples. The most relevant file here is the `<sample_name>.html` which gives an overview of the quality statistics of each sample. This
-folder also contains preprocessed `.fastq` files that are later used in the pipeline.
+This folder contains the fastp reports on all samples. The most relevant file here is the `<sample_name>.html` which gives an overview of the quality statistics of each sample. This folder also contains preprocessed `.fastq` files that are later used in the pipeline.
 
-### fastqc/
+### fastqc
 
-This folder contains the FastQC results for the quality controlled reads. The provided html files for each sequence gives an overview of the quality statistics of each sample.
+This folder contains the FastQC results for the quality-controlled reads. The provided html files for each sequence gives an overview of the quality statistics of each sample.
 
 ### filtered_vibrant/ and filtered_virsorter2/
-These folders contains two files with only quality controlled contig names within `filtered_contigs` and their fasta sequence in `filtered_combined.fna`
+These folders contain two files with only quality controlled contig names within `filtered_contigs` and their fasta sequence in `filtered_combined.fna`
 
-### graphanalyzer/
+### graphanalyzer
 
-This folder contains all graphanalyzer results. Most relevant is the folder `single-views_vOTU_results` which contain an interactive plot of the clusters for each vOTU. Another important file is the `results_vcontact2_vOTU_results.csv` which contains the proccessed Vcontact2 output and contains all relevant taxonomic clasification information.
+This folder contains all graphanalyzer results. Most relevant is the folder `single-views_vOTU_results` which contain an interactive plot of the clusters for each vOTU. Another important file is the `results_vcontact2_vOTU_results.csv` which contains the processed Vcontact2 output and contains all relevant taxonomic classification information.
 
-### mapping/
+### mapping
 
-Contains all the index and sam files from bowtie2 building and maping. The `.sam` files can be used for further analysis if the users want it.
+Contains all the index and sam files from bowtie2 building and mapping. The `.sam` files can be used for further analysis if the users want it.
 
-### metaQUAST/
+### metaQUAST
 
-This folder contains the quality controlled reports from all assembled contigs within each sample. The `summary` folder contains summaries of all quality control processes and the `combined_reference` folder contains results pertaining to comparisons towards the reference database of RefSeq Viral.
+This folder contains the quality-controlled reports from all assembled contigs within each sample. The `summary` folder contains summaries of all quality control processes and the `combined_reference` folder contains results pertaining to comparisons towards the reference database of RefSeq Viral.
 
-
-### metaSpades/
+### metaSpades
 
 This folder contains all assembled contigs ordered by sample. The most relevant file here is the assembled contig file `contigs.fasta`
 
-### prodigal/
+### prodigal
 
 This folder contains the results from running prodigal and provides the predicted genes and proteins. The pipeline uses a simplified format of these with the file `ORFs.genes.simple.faa`.
 
-### statistics/
+### statistics
 
 This folder contains the aggregated statistics and plots for the pipeline.
 The Taxonomic annotation information can be found in the three files:
-`vOTU_stats_combined.tsv` `vOTU_stats_vibrant.tsv` `vOTU_stats_virsorter2.tsv`. They give insight of the taxonomic classification at Family, Subfamily and Genus level. it also includes the checkv quality score, accession number and if the identified virus is a provirus.
+`vOTU_stats_combined.tsv` `vOTU_stats_vibrant.tsv` `vOTU_stats_virsorter2.tsv`. They give insight of the taxonomic classification at Family, Subfamily and Genus level. It also includes the checkv quality score, accession number and if the identified virus is a provirus.
 
-The functional annotation can be found in the file `vOTU_AMGs.tsv`. It provides the protein/gene, origin scaffold, ID and the fucntional description.
+The functional annotation can be found in the file `vOTU_AMGs.tsv`. It provides the protein/gene, origin scaffold, ID and the functional description.
 
 Some interesting files for seeing the state of all samples at different stages can be found in: `Sample_stats_vibrant.tsv`, `Sample_stats_virsorter2.tsv` and `Combined_Sample_stats.tsv`.
 
 The file `vOTU_mapped_to_reads.tsv` contains the vOTUs mapped back to their original sequences and if they are lytic or not.
 
-### vcontact2/
+### vcontact2
 
 This folder contains the VCONTACT2 output. The folder `genes_2_genomes` contains the files used when introducing the INPHARED database to be included in the taxonomic annotation. For further analysis the `c1.clusters` and `c1.ntw` can be used and viewed within [Cytoscape](https://cytoscape.org/).
 
-### vibrant_pass1/ and vibrant_pass2/
+### vibrant_pass1 and vibrant_pass2
 
-These folders contain all VIBRANT results grouped by sample and one for the vOTUs respectively. It can be a bit tricky to navigate these but they contain a lot of interesting files. The folder `VIBRANT_results` contains the several tables produced by VIBRANT. The direct viral sequences used by the pipeline is gathered from the folder `VIBRANT_phages/VIBRANT_contigs/contigs.phages_combined.fna` and `VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna`. The relevant taxonomic information can be found within `VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv` and the different AMG_ files within `VIBRANT_results`
+These folders contain all VIBRANT results grouped by sample and one for the vOTUs respectively. It can be a bit tricky to navigate these, but they contain a lot of interesting files. The folder `VIBRANT_results` contains the several tables produced by VIBRANT. The direct viral sequences used by the pipeline is gathered from the folder `VIBRANT_phages/VIBRANT_contigs/contigs.phages_combined.fna` and `VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna`. The relevant taxonomic information can be found within `VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv` and the different AMG_ files within `VIBRANT_results`
 
-### virsorter2_pass1/ and virsorter2_pass2/
+### virsorter2_pass1 and virsorter2_pass2
 
 These folders contain all results from virsorter2 (pass 1 and 2 respectively). The most relevant file here is the `final-viral-score.tsv` file, which contains the scorings for each contig and what type of virus it was deemed as.
 
