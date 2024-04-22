@@ -5,3 +5,5 @@ channels:
   - defaults
 dependencies:
   - instrain=1.7.6
+  - python=3.8.17
+  - samtools=1.17
