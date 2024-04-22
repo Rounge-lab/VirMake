@@ -48,9 +48,18 @@ rule DRAMv:
         dram_dir=directory(config["path"]["database"]["DRAM"]),
     threads: 24
     shell:
-        "DRAM-setup.py prepare_databases --output_dir {params.dram_dir} --verbose --skip_uniref --threads {threads}"
-        ";"
-        "DRAM-setup.py export_config --output_file {output.dram_config}"
+        """
+        # Temporary fix for vogdb
+        # Use vogdb version 221 instead of incompatible version 222 (latest)
+        mkdir -p {params.dram_dir}/vogdb
+        wget -nv "https://fileshare.lisc.univie.ac.at/vog/vog221/vog.hmm.tar.gz"
+        mv vog.hmm.tar.gz {params.dram_dir}/vogdb
+
+        DRAM-setup.py prepare_databases --output_dir {params.dram_dir} \
+            --verbose --skip_uniref --threads {threads} \
+            --vogdb_loc {params.dram_dir}/vogdb/vog.hmm.tar.gz
+        DRAM-setup.py export_config --output_file {output.dram_config}
+        """
 
 if identifier == 'vibrant':
     rule vibrant:
