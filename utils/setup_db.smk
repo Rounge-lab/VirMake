@@ -3,7 +3,7 @@ identifier = config["identifier"]
 rule all:
     input:
         config["path"]["database"]["vcontact2"] + "/vcontact2_setup_done.txt",
-        config["path"]["database"]["DRAM"],
+        config["path"]["database"]["DRAM"] + "/DRAM.config",
         config["path"]["database"][identifier],
         config["path"]["database"]["checkv"],
         config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
@@ -43,12 +43,14 @@ rule DRAMv:
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     output:
-        directory(config["path"]["database"]["DRAM"]),
+        dram_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
+    params:
+        dram_dir=directory(config["path"]["database"]["DRAM"]),
     threads: 24
     shell:
-        "DRAM-setup.py prepare_databases --output_dir {output} --verbose --skip_uniref --threads {threads}"
+        "DRAM-setup.py prepare_databases --output_dir {params.dram_dir} --verbose --skip_uniref --threads {threads}"
         ";"
-        "DRAM-setup.py export_config --output_file {output}/DRAM.config"
+        "DRAM-setup.py export_config --output_file {output.dram_config}"
 
 if identifier == 'vibrant':
     rule vibrant:
