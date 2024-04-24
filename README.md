@@ -202,12 +202,12 @@ vibrant:
     is_virome: ['no']                       # is the sample a virome? ('yes' or 'no')
 virsorter2:
     pass1:
-        min_lenght: [3000]                  # minimum contig length for virsorter2_pass1
+        min_lenght: [3000]                  # minimum contig length for virsorter2
                                             # contigs with length < 3000 will be discarded
 
-        min_score: [0.5]                    # minimum quality score for virsorter2_pass1
+        min_score: [0.5]                    # minimum quality score for virsorter2
 
-        # viral groups searched for by virsorter2_pass1
+        # viral groups searched for by virsorter2
         viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
     pass2:
         min_lenght: [1000]
@@ -323,7 +323,7 @@ This folder contains the VCONTACT2 output. The folder `genes_2_genomes` contains
 
 These folders contain all VIBRANT results grouped by sample and one for the vOTUs respectively. It can be a bit tricky to navigate these, but they contain a lot of interesting files. The folder `VIBRANT_results` contains the several tables produced by VIBRANT. The direct viral sequences used by the pipeline is gathered from the folder `VIBRANT_phages/VIBRANT_contigs/contigs.phages_combined.fna` and `VIBRANT_vOTU_derep95_combined/VIBRANT_phages_vOTU_derep95_combined/vOTU_derep95_combined.phages_combined.fna`. The relevant taxonomic information can be found within `VIBRANT_results_contigs/VIBRANT_genome_quality_contigs.tsv` and the different AMG_ files within `VIBRANT_results`
 
-### virsorter2_pass1 and virsorter2_pass2
+### virsorter2 and virsorter_for_dram
 
 These folders contain all results from virsorter2 (pass 1 and 2 respectively). The most relevant file here is the `final-viral-score.tsv` file, which contains the scorings for each contig and what type of virus it was deemed as.
 

@@ -54,12 +54,12 @@ def create_sample_stats_virsorter2():
     for x in samples:
         checkV = getcheckv(
             output_path
-            + "/checkv/virsorter2_pass1/"
+            + "/checkv/virsorter2/"
             + x
             + "/quality_summary.tsv"
         )
         virSorter2 = getVirSorter(
-            output_path + "/virsorter2_pass1/" + x + "/final-viral-score.tsv"
+            output_path + "/virsorter2/" + x + "/final-viral-score.tsv"
         )
 
         raw_reads, filtered_reads = get_trimmed_report(x)
@@ -488,7 +488,7 @@ def vOTU_to_reads_mapping():
     for x in samples:
         cV_df = pd.read_table(
             output_path
-            + "/checkv/virsorter2_pass1/"
+            + "/checkv/virsorter2/"
             + x
             + "/quality_summary.tsv",
             sep="\t",

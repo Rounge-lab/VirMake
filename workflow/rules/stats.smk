@@ -38,7 +38,7 @@ rule get_stats:
     input:
         vOTU_results=config["path"]["output"] + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
         amg_summary=config["path"]["output"] + "/DRAMv/distilled/amg_summary.tsv",
-        virsorter2_summary=config["path"]["output"] + "/checkv/virsorter2_pass2/quality_summary.tsv",
+        virsorter2_summary=config["path"]["output"] + "/checkv/virsorter_for_dram/quality_summary.tsv",
         transposed_report=config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
         abundance_table=config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
     output:

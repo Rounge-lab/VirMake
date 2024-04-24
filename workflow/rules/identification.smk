@@ -7,25 +7,25 @@ SAMPLE, FRAC = get_samples(config["path"]["input"])
 rule IDENTIFICATION:
     input:
         expand(
-            config["path"]["output"] + "/virsorter2_pass1/{sample}/",
+            config["path"]["output"] + "/virsorter2/{sample}/",
             sample=SAMPLE,
         )
         + expand(
-            config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
+            config["path"]["output"] + "/virsorter2/{sample}/finished",
             sample=SAMPLE,
         )
         + expand(
-            config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"]
-            + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
+            config["path"]["output"] + "/checkv/virsorter2/{sample}/",
             sample=SAMPLE,
         )
         + expand(
             config["path"]["output"]
-            + "/checkv/virsorter2_pass1/{sample}/combined.fna",
+            + "/checkv/virsorter2/{sample}/quality_summary.tsv",
+            sample=SAMPLE,
+        )
+        + expand(
+            config["path"]["output"]
+            + "/checkv/virsorter2/{sample}/combined.fna",
             sample=SAMPLE,
         )
         + expand(
@@ -49,10 +49,10 @@ rule IDENTIFICATION:
         config["path"]["output"] + "/cdhit/derep95_combined.fasta",
         config["path"]["output"] + "/vOTU/",
         config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
-        config["path"]["output"] + "/virsorter2_pass2/",
-        config["path"]["output"] + "/virsorter2_pass2/finished",
-        config["path"]["output"] + "/checkv/virsorter2_pass2/",
-        config["path"]["output"] + "/checkv/virsorter2_pass2/quality_summary.tsv",
+        config["path"]["output"] + "/virsorter_for_dram/",
+        config["path"]["output"] + "/virsorter_for_dram/finished",
+        config["path"]["output"] + "/checkv/virsorter_for_dram/",
+        config["path"]["output"] + "/checkv/virsorter_for_dram/quality_summary.tsv",
     output:
         config["path"]["temp"] + "/finished_IDENTIFICATION",
     threads: 1
@@ -66,9 +66,9 @@ rule IDENTIFICATION:
         touch {output}
         """
 
-rule virsorter2_pass1:
+rule virsorter2:
     """
-    performs the first pass of viral identification with virsorter2
+    performs viral identification with virsorter2
     """
     input:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
@@ -78,18 +78,18 @@ rule virsorter2_pass1:
         groups=config["virsorter2"]["pass1"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
     output:
-        dir=directory(config["path"]["output"] + "/virsorter2_pass1/{sample}/"),
+        dir=directory(config["path"]["output"] + "/virsorter2/{sample}/"),
         final_viral_combined=config["path"]["output"]
-        + "/virsorter2_pass1/{sample}/final-viral-combined.fa",
-        finished=config["path"]["output"] + "/virsorter2_pass1/{sample}/finished",
+        + "/virsorter2/{sample}/final-viral-combined.fa",
+        finished=config["path"]["output"] + "/virsorter2/{sample}/finished",
     message:
-        "[virsorter2_pass1] Executing viral identification..."
+        "[virsorter2] Executing viral identification..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:
-        config["path"]["log"] + "/virsorter2_pass1/{sample}.log",
+        config["path"]["log"] + "/virsorter2/{sample}.log",
     benchmark:
-        config["path"]["benchmark"] + "/virsorter2_pass1/{sample}.txt"
+        config["path"]["benchmark"] + "/virsorter2/{sample}.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["big"],
@@ -113,23 +113,23 @@ rule checkv_virsorter2:
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
-        rules.virsorter2_pass1.output.finished,
-        dir=rules.virsorter2_pass1.output.dir,
-        final_viral_combined=rules.virsorter2_pass1.output.final_viral_combined,
+        rules.virsorter2.output.finished,
+        dir=rules.virsorter2.output.dir,
+        final_viral_combined=rules.virsorter2.output.final_viral_combined,
     output:
-        dir=directory(config["path"]["output"] + "/checkv/virsorter2_pass1/{sample}/"),
+        dir=directory(config["path"]["output"] + "/checkv/virsorter2/{sample}/"),
         summary=config["path"]["output"]
-        + "/checkv/virsorter2_pass1/{sample}/quality_summary.tsv",
+        + "/checkv/virsorter2/{sample}/quality_summary.tsv",
         combined=config["path"]["output"]
-        + "/checkv/virsorter2_pass1/{sample}/combined.fna",
+        + "/checkv/virsorter2/{sample}/combined.fna",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
-        "[checkv_virsorter2_pass1] Executing quality control on identified sequences..."
+        "[checkv_virsorter2] Executing quality control on identified sequences..."
     log:
-        config["path"]["log"] + "/checkv_virsorter2_pass1/{sample}.log",
+        config["path"]["log"] + "/checkv_virsorter2/{sample}.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_virsorter2_pass1/{sample}.txt"
+        config["path"]["benchmark"] + "/checkv_virsorter2/{sample}.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["normal"],
@@ -488,7 +488,7 @@ rule transform_vOTUs:
         """
 
 
-rule virsorter2_pass2:
+rule virsorter_for_dram:
     """
     Runs virsorter2 on the vOTUs
     """
@@ -500,16 +500,16 @@ rule virsorter2_pass2:
     input:
         rules.transform_vOTUs.output.vOTU,
     output:
-        dir=directory(config["path"]["output"] + "/virsorter2_pass2/"),
-        finished=config["path"]["output"] + "/virsorter2_pass2/finished",
+        dir=directory(config["path"]["output"] + "/virsorter_for_dram/"),
+        finished=config["path"]["output"] + "/virsorter_for_dram/finished",
     message:
-        "[virsorter2_pass2] Running virsorter2 on the vOTUs..."
+        "[virsorter_for_dram] Running virsorter2 on the vOTUs..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:
-        config["path"]["log"] + "/virsorter2_pass2.log",
+        config["path"]["log"] + "/virsorter_for_dram.log",
     benchmark:
-        config["path"]["benchmark"] + "/virsorter2_pass2.txt"
+        config["path"]["benchmark"] + "/virsorter_for_dram.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["big"],
@@ -538,20 +538,20 @@ rule checkv_vOTU_virsorter2:
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
-        dir=rules.virsorter2_pass2.output.dir,
-        finished=rules.virsorter2_pass2.output.finished,
+        dir=rules.virsorter_for_dram.output.dir,
+        finished=rules.virsorter_for_dram.output.finished,
     output:
-        dir=directory(config["path"]["output"] + "/checkv/virsorter2_pass2/"),
+        dir=directory(config["path"]["output"] + "/checkv/virsorter_for_dram/"),
         summary=config["path"]["output"]
-        + "/checkv/virsorter2_pass2/quality_summary.tsv",
+        + "/checkv/virsorter_for_dram/quality_summary.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
         "[checkv_vOTU_virsorter2] Running checkv on the vOTUs after virsorter2..."
     log:
-        config["path"]["log"] + "/checkv_virsorter2_pass2.log",
+        config["path"]["log"] + "/checkv_virsorter_for_dram.log",
     benchmark:
-        config["path"]["benchmark"] + "/checkv_virsorter2_pass2.txt"
+        config["path"]["benchmark"] + "/checkv_virsorter_for_dram.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["normal"],
