@@ -70,7 +70,7 @@ if identifier == 'vibrant':
             """
             download-db.sh {output}
             """
-elif identifier == "gnomad":
+elif identifier == "genomad":
     rule genomad:
         output:
             dir=directory(config["path"]["database"]["genomad"]),
