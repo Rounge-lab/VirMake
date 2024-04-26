@@ -23,28 +23,28 @@ rule IDENTIFICATION:
             + "/checkv/virsorter2/{sample}/quality_summary.tsv",
             sample=SAMPLE,
         )
-        + expand(
-            config["path"]["output"]
-            + "/checkv/virsorter2/{sample}/combined.fna",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"] + "/filtered_virsorter2/{sample}/",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"]
-            + "/filtered_virsorter2/{sample}/filtered_combined.fna",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"]
-            + "/filtered_virsorter2/{sample}/filtered_contigs",
-            sample=SAMPLE,
-        ),
-        config["path"]["output"] + "/combined_virsorter2/",
-        config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
-        config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
+    #     + expand(
+    #         config["path"]["output"]
+    #         + "/checkv/virsorter2/{sample}/combined.fna",
+    #         sample=SAMPLE,
+    #     )
+    #     + expand(
+    #         config["path"]["output"] + "/filtered_virsorter2/{sample}/",
+    #         sample=SAMPLE,
+    #     )
+    #     + expand(
+    #         config["path"]["output"]
+    #         + "/filtered_virsorter2/{sample}/filtered_combined.fna",
+    #         sample=SAMPLE,
+    #     )
+    #     + expand(
+    #         config["path"]["output"]
+    #         + "/filtered_virsorter2/{sample}/filtered_contigs",
+    #         sample=SAMPLE,
+    #     ),
+    #     config["path"]["output"] + "/combined_virsorter2/",
+    #     config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
+    #     config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
         config["path"]["output"] + "/cdhit/",
         config["path"]["output"] + "/cdhit/derep95_combined.fasta",
         config["path"]["output"] + "/vOTU/",
@@ -81,6 +81,8 @@ rule virsorter2:
         dir=directory(config["path"]["output"] + "/virsorter2/{sample}/"),
         final_viral_combined=config["path"]["output"]
         + "/virsorter2/{sample}/final-viral-combined.fa",
+        final_viral_boundary=config["path"]["output"]
+        + "/virsorter2/{sample}/final-viral-boundary.tsv",
         finished=config["path"]["output"] + "/virsorter2/{sample}/finished",
     message:
         "[virsorter2] Executing viral identification..."
@@ -100,11 +102,11 @@ rule virsorter2:
             -j {threads} --include-groups "{params.groups}"\
             --min-length {params.cutoff_length} \
             --min-score {params.cutoff_score} \
-            --keep-original-seq all\
             --db-dir {params.db_dir}\
             -i {input} &> {log}
         touch {output.finished}
         """
+            # --keep-original-seq all\
 
 rule checkv_virsorter2:
     """
@@ -120,6 +122,8 @@ rule checkv_virsorter2:
         dir=directory(config["path"]["output"] + "/checkv/virsorter2/{sample}/"),
         summary=config["path"]["output"]
         + "/checkv/virsorter2/{sample}/quality_summary.tsv",
+        contamination=config["path"]["output"]
+        + "/checkv/virsorter2/{sample}/contamination.tsv",
         combined=config["path"]["output"]
         + "/checkv/virsorter2/{sample}/combined.fna",
     conda:
@@ -145,6 +149,78 @@ rule checkv_virsorter2:
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
         """
 
+def get_virus_id_files(w, file_type):
+    vir_id_type = w.id_tool
+
+    if file_type == "vir_id_output":
+        if vir_id_type == "genomad":
+            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_virus_summary.tsv"
+        elif vir_id_type == "virsorter":
+            return config["path"]["output"]+"/virsorter2/"+w.sample+"/final-viral-boundary.tsv"
+    if file_type == "checkv_res":
+        if vir_id_type == "genomad":
+            return config["path"]["output"]+"/"+vir_id_type+"/checkv/"+w.sample+"/quality_summary.tsv"
+        elif vir_id_type == "virsorter":
+            return config["path"]["output"]+"/checkv/virsorter2/"+w.sample+"/quality_summary.tsv"
+    if file_type == "checkv_contamination":
+        if vir_id_type == "genomad":
+            return config["path"]["output"]+"/"+vir_id_type+"/checkv/"+w.sample+"/contamination.tsv"
+        elif vir_id_type == "virsorter":
+            return config["path"]["output"]+"/checkv/virsorter2/"+w.sample+"/contamination.tsv"
+
+rule reformat_virus_prediction:
+    input:
+        virus_id_table = lambda w: get_virus_id_files(w, "vir_id_output"),
+        checkv_contamination = lambda w: get_virus_id_files(w, "checkv_contamination"),
+        checkv_res = lambda w: get_virus_id_files(w, "checkv_res")
+    output:
+        reformatted_table = config["path"]["output"] + "/virus_identification/{sample}/{id_tool}_checkv_reformat.tsv"
+    conda:
+        config["path"]["envs"] + "/tidyverse.yaml"
+    threads:
+        1
+    script:
+        "../scripts/process_viral_identification.R"
+
+rule filter_predicted_viruses:
+    input:
+        virus_pred_tables = expand(config["path"]["output"]+"/virus_identification/{{sample}}/{id_tool}_checkv_reformat.tsv",
+            id_tool = "virsorter")
+    output:
+        gathered_qual = config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv",
+        representative_selection = config["path"]["output"]+"/virus_identification/{sample}/representative_virus_predictions.tsv",
+        regions = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.bed"
+    params:
+        checkv_quality = ["Complete", "High-quality", "Medium-quality"],
+        overlap_threshold = 0.1,
+        length_selection = "min_length", ## min_length or max_length
+        tool_combination = "all" ## any or all
+    conda:
+        config["path"]["envs"] + "/tidyverse.yaml"
+    threads:
+        1
+    script:
+        "../scripts/select_viral_predictions.R"
+
+rule extract_predicted_viruses:
+    input:
+        contigs = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        regions = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.bed"
+    output:
+        pred_vir_to_rename = temp(config["path"]["output"]+"/virus_identification/{sample}/tmp_pred_vir.fasta"),
+        predicted_viruses = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.fasta"
+    params:
+        index_file = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta.fai",
+    conda:
+        config["path"]["envs"] + "/DRAMv.yaml"
+    threads:
+        1
+    shell:
+        """
+            bedtools getfasta -fi {input.contigs} -bed {input.regions} -name -fo {output.pred_vir_to_rename}
+            [ -f {params.index_file} ] && rm {params.index_file}
+            awk -F ':' '/^>/ {{ print $1; next }} {{ print }}' {output.pred_vir_to_rename} > {output.predicted_viruses}
+        """
 
 rule filter_contigs_virsorter2:
     """
@@ -389,28 +465,32 @@ elif config["identifier"] == "genomad":
                 cat {input} > {output.combined}
                 """
 
-rule combine_results_virsorter2:
+rule gather_viral_predictions:
     """
-    Combine all results from virus identifiaction of all samples with virsorter2
+    Gather identified viruses from all samples
     """
     input:
+        # expand(
+        #     config["path"]["output"]
+        #     + "/filtered_virsorter2/{sample}/filtered_combined.fna",
+        #     sample=SAMPLE,
+        # ),
         expand(
-            config["path"]["output"]
-            + "/filtered_virsorter2/{sample}/filtered_combined.fna",
+            config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.fasta",
             sample=SAMPLE,
         ),
     output:
-        dir=directory(config["path"]["output"] + "/combined_virsorter2/"),
+        dir=directory(config["path"]["output"] + "/dereplication/all_viral_genomes/"),
         combined=config["path"]["output"]
-        + "/combined_virsorter2/combined_virsorter2.tsv",
+        + "/dereplication/all_viral_genomes/gathered_viruses.fasta",
     conda:
         config["path"]["envs"] + "/cdhit.yaml"
     message:
-        "[combine_results_virsorter2] Combining results from all samples..."
+        "[gather_viral_predictions] Combining results from all samples..."
     log:
-        config["path"]["log"] + "/combine_results_virsorter2.log",
+        config["path"]["log"] + "/gather_viral_predictions.log",
     benchmark:
-        config["path"]["benchmark"] + "/combine_results_virsorter2.txt"
+        config["path"]["benchmark"] + "/gather_viral_predictions.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["small"],
@@ -426,7 +506,7 @@ rule dereplication:
     Performs dereplication with clustering on the viral sequences
     """
     input:
-        rules.combine_results_virsorter2.output.combined,
+        rules.gather_viral_predictions.output.combined,
     output:
         dir=directory(config["path"]["output"] + "/cdhit/"),
         derep=config["path"]["output"] + "/cdhit/derep95_combined.fasta",
