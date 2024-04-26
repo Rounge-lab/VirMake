@@ -202,7 +202,7 @@ vibrant:
     is_virome: ['no']                       # is the sample a virome? ('yes' or 'no')
 virsorter2:
     pass1:
-        min_lenght: [3000]                  # minimum contig length for virsorter2
+        min_length: [3000]                  # minimum contig length for virsorter2
                                             # contigs with length < 3000 will be discarded
 
         min_score: [0.5]                    # minimum quality score for virsorter2
@@ -210,7 +210,7 @@ virsorter2:
         # viral groups searched for by virsorter2
         viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
     pass2:
-        min_lenght: [1000]
+        min_length: [1000]
         min_score: [0.5]
         viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
 ```

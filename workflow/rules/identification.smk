@@ -73,9 +73,9 @@ rule virsorter2:
     input:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
     params:
-        cutoff_length=config["virsorter2"]["pass1"]["min_lenght"],
-        cutoff_score=config["virsorter2"]["pass1"]["min_score"],
-        groups=config["virsorter2"]["pass1"]["viral_groups"],
+        cutoff_length=config["virsorter2"]["id"]["min_length"],
+        cutoff_score=config["virsorter2"]["id"]["min_score"],
+        groups=config["virsorter2"]["id"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
     output:
         dir=directory(config["path"]["output"] + "/virsorter2/{sample}/"),
@@ -573,9 +573,9 @@ rule virsorter_for_dram:
     Runs virsorter2 on the vOTUs
     """
     params:
-        cutoff_length=config["virsorter2"]["pass2"]["min_lenght"],
-        cutoff_score=config["virsorter2"]["pass2"]["min_score"],
-        groups=config["virsorter2"]["pass2"]["viral_groups"],
+        cutoff_length=config["virsorter2"]["for_dramv"]["min_length"],
+        cutoff_score=config["virsorter2"]["for_dramv"]["min_score"],
+        groups=config["virsorter2"]["for_dramv"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
     input:
         rules.transform_vOTUs.output.vOTU,

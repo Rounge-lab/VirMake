@@ -34,13 +34,13 @@ def make_config(virmake_path):
            config["path"]["database"] = { "genomad": str(db_path / "genomad") }
     else:
         config["virsorter2"] = {
-            "pass1": {
-                "min_lenght": 3000,
+            "id": {
+                "min_length": 3000,
                 "min_score": 0.5,
                 "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
             },
-            "pass2": {
-                "min_lenght": 1000,
+            "for_dramv": {
+                "min_length": 1000,
                 "min_score": 0.5,
                 "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
             },
