@@ -71,6 +71,15 @@ def make_config(virmake_path):
         "identity_threshold": 0.95,
         "coverage": 0.85,
     }
+    config["dereplication"] = {
+        "ani": 97,
+        "precluster_ani": 95,
+        "min_aligned_fraction": 70,
+        "vOTU_num_start": 1,
+        "vOTU_prefix": "vOTU",
+        "vOTU_suffix": "",
+        "vOTU_num_len": 5
+    }
     config["quality_threshold"] = "medium"
     config["threads"] = 24
     config["job_type"] = {

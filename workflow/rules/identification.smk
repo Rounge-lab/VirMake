@@ -6,53 +6,7 @@ SAMPLE, FRAC = get_samples(config["path"]["input"])
 
 rule IDENTIFICATION:
     input:
-        expand(
-            config["path"]["output"] + "/virsorter2/{sample}/",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"] + "/virsorter2/{sample}/finished",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"] + "/checkv/virsorter2/{sample}/",
-            sample=SAMPLE,
-        )
-        + expand(
-            config["path"]["output"]
-            + "/checkv/virsorter2/{sample}/quality_summary.tsv",
-            sample=SAMPLE,
-        )
-    #     + expand(
-    #         config["path"]["output"]
-    #         + "/checkv/virsorter2/{sample}/combined.fna",
-    #         sample=SAMPLE,
-    #     )
-    #     + expand(
-    #         config["path"]["output"] + "/filtered_virsorter2/{sample}/",
-    #         sample=SAMPLE,
-    #     )
-    #     + expand(
-    #         config["path"]["output"]
-    #         + "/filtered_virsorter2/{sample}/filtered_combined.fna",
-    #         sample=SAMPLE,
-    #     )
-    #     + expand(
-    #         config["path"]["output"]
-    #         + "/filtered_virsorter2/{sample}/filtered_contigs",
-    #         sample=SAMPLE,
-    #     ),
-    #     config["path"]["output"] + "/combined_virsorter2/",
-    #     config["path"]["output"] + "/combined_virsorter2/combined_virsorter2.tsv",
-    #     config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
-        config["path"]["output"] + "/cdhit/",
-        config["path"]["output"] + "/cdhit/derep95_combined.fasta",
-        config["path"]["output"] + "/vOTU/",
-        config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
-        config["path"]["output"] + "/virsorter_for_dram/",
-        config["path"]["output"] + "/virsorter_for_dram/finished",
-        config["path"]["output"] + "/checkv/virsorter_for_dram/",
-        config["path"]["output"] + "/checkv/virsorter_for_dram/quality_summary.tsv",
+        config["path"]["output"]+"/dereplication/old_to_new_ids.tsv"
     output:
         config["path"]["temp"] + "/finished_IDENTIFICATION",
     threads: 1
@@ -465,6 +419,119 @@ elif config["identifier"] == "genomad":
                 cat {input} > {output.combined}
                 """
 
+
+rule gather_checkV_summaries:
+    input:
+        gathered_qual = expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
+    output:
+        checkV_gathered = config["path"]["output"]+"/dereplication/checkV_summary.tsv",
+        checkM_format = config["path"]["output"]+"/dereplication/checkM_summary.tsv"
+    conda:
+        config["path"]["envs"] + "/tidyverse.yaml"
+    script:
+        "../scripts/gather_checkV.R"
+
+
+rule clear_galah_input_folder:
+    input:
+        checkV_gathered=config["path"]["output"]+"/dereplication/checkV_summary.tsv"
+    output:
+        clear_flag=temp(config["path"]["output"]+"/dereplication/clear_input.flag")
+    params:
+        dir_comb=config["path"]["output"]+"/dereplication/split/"
+    shell:
+        """
+            if [ -d {params.dir_comb} ]
+            then
+                if [ "$(ls -A {params.dir_comb})" ]; then
+                for file in {params.dir_comb}*; do rm "$file"; done
+                fi
+            else
+                if [ ! -d {params.dir_comb} ]
+                then
+                    mkdir {params.dir_comb}
+                fi
+            fi
+
+            touch {output.clear_flag}
+        """
+
+rule split_fasta_for_galah:
+    input:
+        predicted_viruses = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.fasta",
+        clear_flag=config["path"]["output"]+"/dereplication/clear_input.flag"
+    output:
+        split_flag=temp(config["path"]["output"]+"/dereplication/split_flags/{sample}.flag")
+    params:
+        split_dir=config["path"]["output"]+"/dereplication/split/"
+    shell:
+        """
+        awk -v FOLDER="{params.split_dir}/" '/^>/ {{ file=FOLDER substr($1,2) ".fna" }} {{ print > file }}' {input.predicted_viruses}
+        touch {output.split_flag}
+        """
+
+rule dereplication:
+    input:
+        split_flag=expand(config["path"]["output"]+"/dereplication/split_flags/{sample}.flag", sample = SAMPLE),
+        checkM_format=config["path"]["output"]+"/dereplication/checkM_summary.tsv"
+    output:
+        clusters=config["path"]["output"]+"/dereplication/galah_clusters.tsv",
+    params:
+        dir_comb=config["path"]["output"]+"/dereplication/split/",
+        qual_formula = "completeness-5contamination",
+        ani = config["dereplication"]["ani"],
+        precluster_ani = config["dereplication"]["precluster_ani"],
+        min_aligned_fraction = config["dereplication"]["min_aligned_fraction"],
+    log:
+        config["path"]["log"] + "/dereplication/dereplication.log"
+    conda:
+        config["path"]["envs"] + "/galah.yaml"
+    threads:
+        20
+    shell:
+        """
+            galah cluster \
+                    --genome-fasta-directory {params.dir_comb} \
+                    --output-cluster-definition {output.clusters} \
+                    --ani {params.ani} \
+                    --precluster-ani {params.precluster_ani} \
+                    --min-aligned-fraction {params.min_aligned_fraction} \
+                    --checkm-tab-table {input.checkM_format} \
+                    --quality-formula {params.qual_formula} \
+                    --threads {threads} &> {log}
+        """
+
+rule collect_repr_viral_seqs:
+    input:
+        galah_clusters=rules.dereplication.output.clusters,
+        # galah_clusters=config["path"]["output"]+"/dereplication/galah_clusters.tsv"
+    output:
+        tmp2=temp(config["path"]["output"]+"/dereplication/rename_these.fasta"),
+        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
+        contig_id_file=config["path"]["output"]+"/dereplication/old_to_new_ids.tsv"
+    params:
+        votu_num_start = config["dereplication"]["vOTU_num_start"],
+        vOTU_prefix = config["dereplication"]["vOTU_prefix"],
+        vOTU_suffix = config["dereplication"]["vOTU_suffix"],
+        vOTU_num_len = config["dereplication"]["vOTU_num_len"],
+        script=config["path"]["scripts"]+"/rename_fasta.py"
+    shell:
+        """
+            [ -f {output.genomes} ] && rm {output.genomes}
+            [ -f {output.tmp2} ] && rm {output.tmp2}
+
+            cat $(cut -f -1 {input.galah_clusters} | sort -u) >> {output.tmp2}
+
+            {params.script} \
+                -i {output.tmp2} \
+                --pre {params.vOTU_prefix} \
+                --pos {params.vOTU_suffix} \
+                -o {output.genomes} \
+                -s {params.votu_num_start} \
+                --int_length {params.vOTU_num_len} \
+                --contig_id_file {output.contig_id_file}
+        """
+
 rule gather_viral_predictions:
     """
     Gather identified viruses from all samples
@@ -578,7 +645,7 @@ rule virsorter_for_dram:
         groups=config["virsorter2"]["for_dramv"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
     input:
-        rules.transform_vOTUs.output.vOTU,
+        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
     output:
         dir=directory(config["path"]["output"] + "/virsorter_for_dram/"),
         finished=config["path"]["output"] + "/virsorter_for_dram/finished",
@@ -606,7 +673,7 @@ rule virsorter_for_dram:
             --min-score {params.cutoff_score} \
             --keep-original-seq all\
             --db-dir {params.db_dir}\
-            -i {input} &> {log}
+            -i {input.genomes} &> {log}
         touch {output.finished}
         """
 
