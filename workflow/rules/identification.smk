@@ -26,12 +26,12 @@ def get_virus_id_files(w, file_type):
     
     if file_type == "vir_seqs":
         if vir_id_type == "genomad":
-            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_virus.fna"
+            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_summary/"+w.sample+"_virus.fna"
         elif vir_id_type == "virsorter":
             return config["path"]["output"]+"/virsorter2/"+w.sample+"/final-viral-combined.fa"
     if file_type == "vir_id_output":
         if vir_id_type == "genomad":
-            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_virus_summary.tsv"
+            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_summary/"+w.sample+"_virus_summary.tsv"
         elif vir_id_type == "virsorter":
             return config["path"]["output"]+"/virsorter2/"+w.sample+"/final-viral-boundary.tsv"
     if file_type == "checkv_res":
@@ -64,7 +64,6 @@ rule virsorter2:
                 + "/virsorter2/{sample}/final-viral-combined.fa",
         final_viral_boundary=config["path"]["output"]
                 + "/virsorter2/{sample}/final-viral-boundary.tsv",
-        finished=config["path"]["output"] + "/virsorter2/{sample}/finished",
     message:
         "[virsorter2] Executing viral identification..."
     conda:
@@ -85,19 +84,17 @@ rule virsorter2:
             --min-score {params.cutoff_score} \
             --db-dir {params.db_dir}\
             -i {input} &> {log}
-        touch {output.finished}
         """
-            # --keep-original-seq all\
 
 rule genomad:
     """
     performs viral identification using geNomad
     """
     input:
-        assembly_output = rules.metaSpades.output.contigs,
+        assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
     output:
         dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
-        finished=config["path"]["output"] + "/genomad/{sample}/finished",
+        predicted_viruses = config["path"]["output"] + "/genomad/{sample}/{sample}_summary/{sample}_virus.fna"
     params:
         db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
     conda:
@@ -115,42 +112,40 @@ rule genomad:
     shell:
         """
         genomad end-to-end {input} {output.dir} {params.db_dir} &> {log}
-        touch {output.finished}
         """
 
-rule vibrant:
-    """
-    performs the first pass of viral identification with VIBRANT
-    """
-    input:
-        assembly_output = rules.metaSpades.output.contigs,
-    output:
-    params:
-        db_dir=config["path"]["database"]["vibrant"] + "/databases",
-        files_dir=config["path"]["database"]["vibrant"] + "/files",
-        virome=vibrant_virome(config["vibrant"]["is_virome"]),
-    conda:
-        config["path"]["envs"] + "/vibrant.yaml"
-    message:
-    log:
-        config["path"]["log"] + "/vibrant/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/vibrant/{sample}.txt"
-    threads: config["threads"]
-    resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
-    shell:
-        """
-        VIBRANT_run.py -i {input}\
-            -t {threads}\
-            -folder {output.dir}\
-            -d {params.db_dir}\
-            -m {params.files_dir}\
-            {params.virome}\
-            &> {log}
-        touch {output.finished}
-    """
+# rule vibrant:
+#     """
+#     performs the first pass of viral identification with VIBRANT
+#     """
+#     input:
+#         assembly_output = rules.metaSpades.output.contigs,
+#     output:
+#     params:
+#         db_dir=config["path"]["database"]["vibrant"] + "/databases",
+#         files_dir=config["path"]["database"]["vibrant"] + "/files",
+#         virome=vibrant_virome(config["vibrant"]["is_virome"]),
+#     conda:
+#         config["path"]["envs"] + "/vibrant.yaml"
+#     message:
+#     log:
+#         config["path"]["log"] + "/vibrant/{sample}.log",
+#     benchmark:
+#         config["path"]["benchmark"] + "/vibrant/{sample}.txt"
+#     threads: config["threads"]
+#     resources:
+#         mem_mb=config["memory"]["big"],
+#         runtime=config["time"]["normal"],
+#     shell:
+#         """
+#         VIBRANT_run.py -i {input}\
+#             -t {threads}\
+#             -folder {output.dir}\
+#             -d {params.db_dir}\
+#             -m {params.files_dir}\
+#             {params.virome}\
+#             &> {log}
+#     """
 
 rule checkv:
     """
@@ -159,10 +154,7 @@ rule checkv:
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
-        rules.virsorter2.output.finished,
-        dir=rules.virsorter2.output.dir,
         viral_predictions=lambda w: lambda w: get_virus_id_files(w, "vir_seqs")
-        # rules.virsorter2.output.final_viral_combined,
     output:
         dir=directory(config["path"]["output"] + "/checkv/{id_tool}/{sample}/"),
         summary=config["path"]["output"]
@@ -211,7 +203,7 @@ rule reformat_virus_prediction:
 rule filter_predicted_viruses:
     input:
         virus_pred_tables = expand(config["path"]["output"]+"/virus_identification/{{sample}}/{id_tool}_checkv_reformat.tsv",
-            id_tool = "virsorter")
+            id_tool = "genomad")
     output:
         gathered_qual = config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv",
         representative_selection = config["path"]["output"]+"/virus_identification/{sample}/representative_virus_predictions.tsv",
