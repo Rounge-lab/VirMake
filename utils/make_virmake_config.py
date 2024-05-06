@@ -132,7 +132,7 @@ def make_config(virmake_path,
 @click.option(
     "-w",
     "--work-dir",
-    default="work_dir",
+    default="working_dir",
     help="Path to working directory.",
 )
 @click.option(

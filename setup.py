@@ -79,7 +79,7 @@ def create_venv(logger, virmake_path):
 
 
 def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
-    """create config.yaml"""
+    """create params.yaml"""
     logger.info(f"\nCreating configuration file...\n")
     cmd = f"mkdir {virmake_path}/workflow/config"
     subprocess.run(cmd.split())
@@ -171,6 +171,19 @@ def setup_db(logger, virmake_path):
         else:
             pass
 
+def prep_sample_table(logger, virmake_path, work_dir, reads, contigs):
+    """create samples.tsv"""
+    logger.info(f"\nCreating samples table...\n")
+    cmd = (
+        f"conda run -p venv/ python utils/create_samples_file.py "
+        f"{virmake_path} -w {work_dir}"
+        )
+    if not reads == "":
+        cmd += f" -r {reads}"
+    if not contigs == "":
+        cmd += f" -c {contigs}"
+    subprocess.run(cmd.split())
+
 
 def prep_script(logger, virmake_path):
     """prepare main script"""
@@ -230,6 +243,7 @@ def main():
     create_slurm_profile(logger, virmake_path)
     create_working_dir(logger, virmake_path, args.work_dir)
     # setup_db(logger, virmake_path)
+    prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     prep_script(logger, virmake_path)
 
     # remove setup.log on success
