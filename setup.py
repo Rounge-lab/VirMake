@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import argparse
 
 
 def strip_stdout(stdout):
@@ -77,12 +78,16 @@ def create_venv(logger, virmake_path):
     
 
 
-def create_virmake_config(logger, virmake_path):
+def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
     """create config.yaml"""
     logger.info(f"\nCreating configuration file...\n")
     cmd = f"mkdir {virmake_path}/workflow/config"
     subprocess.run(cmd.split())
-    cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path}"
+    cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path} -w {work_dir}"
+    if not reads == "":
+        cmd += f" -r {reads}"
+    if not contigs == "":
+        cmd += f" -c {contigs}"
     subprocess.run(cmd.split())
 
 
@@ -95,11 +100,11 @@ def create_slurm_profile(logger, virmake_path):
     subprocess.run(cmd.split())
 
 
-def create_working_dir(logger, virmake_path):
+def create_working_dir(logger, virmake_path, work_dir):
     """create working_dir structure"""
     logger.info("Creating working directory structure...")
-    os.makedirs(virmake_path / "working_dir", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "input", exist_ok=True)
+    os.makedirs(virmake_path / work_dir, exist_ok=True)
+    os.makedirs(virmake_path / work_dir / "input", exist_ok=True)
 
 
 # Change to add in logic where if vibrant is use, the database  is used
@@ -182,8 +187,35 @@ def prep_script(logger, virmake_path):
     cmd = "chmod +x virmake"
     subprocess.run(cmd.split())
 
+# @click.command()
+# @click.option(
+#     "-w",
+#     "--work-dir",
+#     default="working_dir",
+#     help="Path to working directory.",
+# )
+# @click.option(
+#     "-r",
+#     "--reads",
+#     default=None,
+#     help="Location of read files",
+# )
+# @click.option(
+#     "-c",
+#     "--contigs",
+#     default=None,
+#     help="Location of assembled contigs.",
+# )
 
 def main():
+    
+    parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and working dir.')
+    parser.add_argument('--work-dir', type=str, default="working_dir", help="Path to working directory.")
+    parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
+    parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
+
+    args = parser.parse_args()
+    
     """Run setup"""
     logger = set_logger()
 
@@ -194,10 +226,10 @@ def main():
     # run all steps
     check_conda(logger)
     create_venv(logger, virmake_path)
-    create_virmake_config(logger, virmake_path)
+    create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     create_slurm_profile(logger, virmake_path)
-    create_working_dir(logger, virmake_path)
-    setup_db(logger, virmake_path)
+    create_working_dir(logger, virmake_path, args.work_dir)
+    # setup_db(logger, virmake_path)
     prep_script(logger, virmake_path)
 
     # remove setup.log on success

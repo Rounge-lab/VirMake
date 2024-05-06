@@ -7,7 +7,10 @@ import click
 
 # CLI command tool to choose the viral identifier
 
-def make_config(virmake_path):
+def make_config(virmake_path,
+                work_dir,
+                input_reads,
+                input_contigs):
     """Creates a default config structure."""
     config = {}
     db_path = virmake_path / "databases"
@@ -50,12 +53,14 @@ def make_config(virmake_path):
     config["path"] = {
         "virmake": str(virmake_path),
         "envs": str(virmake_path / "envs"),
-        "input": str(virmake_path / "working_dir" / "input"),
-        "output": str(virmake_path / "working_dir" / "output"),
-        "log": str(virmake_path / "working_dir" / "log"),
-        "benchmark": str(virmake_path / "working_dir" / "benchmark"),
-        "temp": str(virmake_path / "working_dir" / "temp"),
-        "scripts": str(virmake_path / "workflow" / "scripts"),
+        "input": str(virmake_path / work_dir / "input"),
+        "output": str(virmake_path / work_dir / "output"),
+        "log": str(virmake_path / work_dir / "log"),
+        "benchmark": str(virmake_path / work_dir / "benchmark"),
+        "temp": str(virmake_path / work_dir / "temp"),
+        "scripts": str(virmake_path / work_dir / "scripts"),
+        "input_reads": str(input_reads),
+        "input_contigs": str(input_contigs),
         "database": {
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
             "checkv": str(db_path / "checkv"),
@@ -122,12 +127,34 @@ def make_config(virmake_path):
 
     return config
 
-
-def main():
+@click.command()
+@click.argument("virmake_path")
+@click.option(
+    "-w",
+    "--work-dir",
+    default="work_dir",
+    help="Path to working directory.",
+)
+@click.option(
+    "-r",
+    "--reads",
+    default="",
+    help="Location of read files",
+)
+@click.option(
+    "-c",
+    "--contigs",
+    default="",
+    help="Location of assembled contigs.",
+)
+def run_setup(virmake_path, work_dir, reads, contigs):
     """Saves the config to a file."""
-    virmake_path = pathlib.Path(sys.argv[1])
+    virmake_path = pathlib.Path(virmake_path)
     config_path = virmake_path / "workflow" / "config" / "params.yaml"
-    config = make_config(virmake_path)
+    config = make_config(virmake_path, 
+                         work_dir=work_dir, 
+                         input_reads=reads, 
+                         input_contigs=contigs)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")
         print("Skipping...")
@@ -137,4 +164,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_setup()
