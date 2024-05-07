@@ -24,9 +24,6 @@ def make_config(virmake_path,
         "is_virome": "no",
         }  
            
-    config["path"]["database"] = {  }
-
-    config["path"]["database"] = { "genomad": str(db_path / "genomad") }
     config["virsorter2"] = {
         "id": {
             "min_length": 3000,
@@ -56,6 +53,7 @@ def make_config(virmake_path,
         "database": {
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
             "virsorter2": str(db_path / "virsorter2/db"),
+            "genomad": str(db_path / "genomad"),
             "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1"),
             "checkv": str(db_path / "checkv"),
             "INPHARED": str(db_path / "INPHARED"),
