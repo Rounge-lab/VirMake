@@ -26,10 +26,10 @@ rule dramv_annotate:
     """
     input:
         config["path"]["output"] + "/virsorter_for_dram/"
+        DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
     output:
         dir=directory(config["path"]["output"] + "/DRAMv/annotations/"),
     params:
-        DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
         min_contig_size=config["min_contig_size"],
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
@@ -43,7 +43,7 @@ rule dramv_annotate:
     threads: config["threads"]
     shell:
         """
-        DRAM-setup.py import_config --config_loc {params.DRAM_config}
+        DRAM-setup.py import_config --config_loc {input.DRAM_config}
         rm -rdf {output.dir}
         DRAM-v.py annotate -i {input}/for-dramv/final-viral-combined-for-dramv.fa\
         -v {input}/for-dramv/viral-affi-contigs-for-dramv.tab\

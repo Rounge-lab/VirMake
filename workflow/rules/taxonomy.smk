@@ -81,21 +81,17 @@ rule inphared_setup:
     """
     Adds relevant entires from INPHARED into setup files before VCONTACT2
     """
-    params:
-        inphared_g2g=config["path"]["database"]["INPHARED"]
-        + "/vConTACT2_gene_to_genome.csv",
-        inphared_proteins=config["path"]["database"]["INPHARED"]
-        + "/vConTACT2_proteins.faa",
-        simplify_faa=config["path"]["scripts"] + "/simplify_faa-ffn_derep.py",
     input:
         g2g=rules.gene2genome.output,
         proteins=rules.prodigal.output.proteins,
         orf=rules.prodigal.output.orf,
+        inphared_g2g=config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
+        inphared_proteins=config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
     output:
-        combinedg2g=config["path"]["output"]
-        + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
-        combined_proteins=config["path"]["output"]
-        + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+        combinedg2g=config["path"]["output"] + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+        combined_proteins=config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+    params:
+        simplify_faa=config["path"]["scripts"] + "/simplify_faa-ffn_derep.py",
     benchmark:
         config["path"]["benchmark"] + "/inphared_setup.txt"
     log:
@@ -108,10 +104,10 @@ rule inphared_setup:
     threads: config["threads"]
     shell:
         """
-        cat {input.g2g} {params.inphared_g2g} > {output.combinedg2g}
+        cat {input.g2g} {input.inphared_g2g} > {output.combinedg2g}
         sed -i 's/,None_provided/,none/g' {output.combinedg2g}
         python3 {params.simplify_faa} {input.orf}
-        cat {input.orf}.simple.faa {params.inphared_proteins} > {output.combined_proteins}
+        cat {input.orf}.simple.faa {input.inphared_proteins} > {output.combined_proteins}
         """
 
 
@@ -120,10 +116,9 @@ rule vcontact2:
     Performs Taxonomic annotation with VCONTACT2
     """
     input:
-        proteins=config["path"]["output"]
-        + "/vcontact2/genes_2_genomes/combined_proteins.faa",
-        g2g=config["path"]["output"]
-        + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+        proteins=config["path"]["output"]+ "/vcontact2/genes_2_genomes/combined_proteins.faa",
+        g2g=config["path"]["output"]+ "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+        flag=config["path"]["database"]["vcontact2"] + "/flag",
     output:
         dir=directory(config["path"]["output"] + "/vcontact2/taxonomic_annotation/"),
     benchmark:

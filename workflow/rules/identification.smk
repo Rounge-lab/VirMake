@@ -26,6 +26,7 @@ rule virsorter:
     """
     input:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        flag=config["path"]["database"]["virsorter2"] + "/flag"
     output:
         dir=directory(config["path"]["output"]+"/virsorter/{sample}/"),
         viral_combined=config["path"]["output"]+"/virsorter/{sample}/final-viral-combined.fa",
@@ -67,6 +68,7 @@ rule genomad:
     """
     input:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        flag=config["path"]["database"]["genomad"] + "/flag",
     output:
         dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
         viruses = config["path"]["output"] + "/genomad/{sample}/{sample}_summary/{sample}_virus.fna",
@@ -100,6 +102,7 @@ rule genomad:
 #     """
 #     input:
 #         assembly_output = rules.metaSpades.output.contigs,
+#         flag=config["path"]["database"]["vibrant"] + "/flag",
 #     output:
 #     params:
 #         db_dir=config["path"]["database"]["vibrant"] + "/databases",
@@ -131,15 +134,16 @@ rule checkv:
     """
     performs Quality control on identified viral sequences
     """
-    params:
-        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
         virus_predictions = config["path"]["output"] + "/{id_tool}/{sample}/viruses.fasta",
+        flag=config["path"]["database"]["checkv"] + "/flag",
     output:
         dir=directory(config["path"]["output"] + "/checkv/{id_tool}/{sample}/"),
         summary=config["path"]["output"] + "/checkv/{id_tool}/{sample}/quality_summary.tsv",
         contamination=config["path"]["output"] + "/checkv/{id_tool}/{sample}/contamination.tsv",
         combined=config["path"]["output"] + "/checkv/{id_tool}/{sample}/combined.fna",
+    params:
+        db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -331,16 +335,17 @@ rule virsorter_for_dram:
     """
     Runs virsorter2 on the vOTUs
     """
+    input:
+        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
+        flag=config["path"]["database"]["virsorter2"] + "/flag"
+    output:
+        dir=directory(config["path"]["output"] + "/virsorter_for_dram/"),
+        finished=config["path"]["output"] + "/virsorter_for_dram/finished",
     params:
         cutoff_length=config["virsorter2"]["for_dramv"]["min_length"],
         cutoff_score=config["virsorter2"]["for_dramv"]["min_score"],
         groups=config["virsorter2"]["for_dramv"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
-    input:
-        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
-    output:
-        dir=directory(config["path"]["output"] + "/virsorter_for_dram/"),
-        finished=config["path"]["output"] + "/virsorter_for_dram/finished",
     message:
         "[virsorter_for_dram] Running virsorter2 on the vOTUs..."
     conda:
@@ -381,8 +386,7 @@ rule checkv_vOTU_virsorter2:
         finished=rules.virsorter_for_dram.output.finished,
     output:
         dir=directory(config["path"]["output"] + "/checkv/virsorter_for_dram/"),
-        summary=config["path"]["output"]
-        + "/checkv/virsorter_for_dram/quality_summary.tsv",
+        summary=config["path"]["output"]+ "/checkv/virsorter_for_dram/quality_summary.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:

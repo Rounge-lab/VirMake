@@ -70,21 +70,19 @@ rule metaSpades:
 
 rule metaQUAST:
     """
-    performs quality control on all assembled contigs
+    Performs quality control on all assembled contigs
     with the reference database RefSeq Viral
     """
-    params:
-        reference=config["path"]["database"]["RefSeq"] + "/viral.1.1.genomic.fna",
     input:
         expand(
             config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
             sample=SAMPLE,
         ),
+        reference=config["path"]["database"]["RefSeq"],
     output:
         dir=directory(config["path"]["output"] + "/metaQUAST/"),
         report=config["path"]["output"] + "/metaQUAST/report.html",
-        transposed_report=config["path"]["output"]
-        + "/metaQUAST/combined_reference/transposed_report.tsv",
+        transposed_report=config["path"]["output"]+ "/metaQUAST/combined_reference/transposed_report.tsv",
     message:
         "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
     conda:
@@ -101,5 +99,5 @@ rule metaQUAST:
         """
         mkdir -p {output.dir}
         metaquast.py {input} -o {output.dir}\
-        -r {params.reference} --threads {threads} --max-ref-number 0 &> {log}
+            -r {input.reference} --threads {threads} --max-ref-number 0 &> {log}
         """

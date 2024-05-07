@@ -11,7 +11,13 @@ onsuccess:
     print("Workflow finished successfully!")
 
 onerror:
-    print("Error has occured. Please, check log files for more details.")
+    print("Error has occured. Please check log files for more details.")
+
+module setup_db:
+    snakefile:
+        "rules/setup.smk"
+    config:
+        config
 
 module qc:
     snakefile:
@@ -55,6 +61,7 @@ module stats:
 	config:
 		config
 
+use rule * from setup_db
 use rule * from qc
 use rule * from assembly
 use rule * from identification
@@ -62,10 +69,6 @@ use rule * from mapping
 use rule * from taxonomy
 use rule * from function
 use rule * from stats
-
-# addition of rule to create master expand command for the different viral identifier
-# functionalizes the ASSEMBLY rule for the different viral identifers, to be done
-# def get_output_dirs(pipeline: str) -> list:
 
 rule ALL:
     input:
