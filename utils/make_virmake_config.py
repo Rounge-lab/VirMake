@@ -1,7 +1,5 @@
 import yaml
 import pathlib
-import sys
-import logging
 import click
 
 
@@ -17,37 +15,30 @@ def make_config(virmake_path,
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
-    config["identifier"] = "virsorter2" # may be changed to vibrant or genomad
+    config["identifier"] = "virsorter" # may be changed to vibrant or genomad
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
 
-    logging.info("Viral identifier chosen is "
-                 + config["identifier"]
-                 + "vibrant, applying appropriate config settings")
-
-    if config["identifier"] == 'vibrant':
-           config["vibrant"] = {
-            "is_virome": "no",
-            }  
+    config["vibrant"] = {
+        "is_virome": "no",
+        }  
            
-           config["path"]["database"] = { "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1") }
+    config["path"]["database"] = {  }
 
-    elif config["identifier"] == 'genomad':
-           config["path"]["database"] = { "genomad": str(db_path / "genomad") }
-    else:
-        config["virsorter2"] = {
-            "id": {
-                "min_length": 3000,
-                "min_score": 0.5,
-                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-            },
-            "for_dramv": {
-                "min_length": 1000,
-                "min_score": 0.5,
-                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-            },
-        }
+    config["path"]["database"] = { "genomad": str(db_path / "genomad") }
+    config["virsorter2"] = {
+        "id": {
+            "min_length": 3000,
+            "min_score": 0.5,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
+        },
+        "for_dramv": {
+            "min_length": 1000,
+            "min_score": 0.5,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
+        },
+    }
  
 
     config["path"] = {
@@ -63,20 +54,16 @@ def make_config(virmake_path,
         "input_reads": str(input_reads),
         "input_contigs": str(input_contigs),
         "database": {
-            "DRAM": str(db_path / "DRAM" / "DRAM_data"),
-            "checkv": str(db_path / "checkv"),
-            "virsorter2": str(db_path / "virsorter2/db"),
-            "INPHARED": str(db_path / "INPHARED"),
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
+            "virsorter2": str(db_path / "virsorter2/db"),
+            "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1"),
+            "checkv": str(db_path / "checkv"),
+            "INPHARED": str(db_path / "INPHARED"),
             "vcontact2": str(db_path / "vcontact2"),
+            "DRAM": str(db_path / "DRAM" / "DRAM_data"),
         },
     }
 
-
-    config["cd-hit-est"] = {
-        "identity_threshold": 0.95,
-        "coverage": 0.85,
-    }
     config["dereplication"] = {
         "ani": 97,
         "precluster_ani": 95,
