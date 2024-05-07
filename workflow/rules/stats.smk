@@ -1,6 +1,7 @@
 from scripts.workflow_utils import get_samples
 
-SAMPLE, FRAC = get_samples(config["path"]["input"])
+sample_table, SAMPLE = get_samples(config["path"]["samples"])
+FRAC = ["1", "2"]
 
 # from scripts.workflow_utils import get_samples
 

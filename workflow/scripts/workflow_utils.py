@@ -1,15 +1,9 @@
-from snakemake.io import glob_wildcards
+import pandas as pd
 
 def get_samples(path):
-    (
-        SAMPLE,
-        FRAC,
-    ) = glob_wildcards(path + "/{sample}_{frac}.fastq.gz")
-
-    # remove duplicates
-    SAMPLE = sorted(list(set(SAMPLE)))
-    FRAC = sorted(list(set(FRAC)))
-    return SAMPLE, FRAC
+    sample_table = pd.read_csv(path, delimiter='\t')
+    samples = sample_table["sample_id"].to_list()
+    return sample_table, samples
 
 # GLOBAL FUNCTIONS #
 def get_min_quality(threshold):

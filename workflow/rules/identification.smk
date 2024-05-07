@@ -1,6 +1,6 @@
 from scripts.workflow_utils import get_samples, get_min_quality
 
-SAMPLE, FRAC = get_samples(config["path"]["input"])
+sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
 # VIRAL IDENTIFICATION #
 
@@ -20,58 +20,31 @@ rule IDENTIFICATION:
         touch {output}
         """
 
-
-def get_virus_id_files(w, file_type):
-    vir_id_type = w.id_tool
-    
-    if file_type == "vir_seqs":
-        if vir_id_type == "genomad":
-            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_summary/"+w.sample+"_virus.fna"
-        elif vir_id_type == "virsorter":
-            return config["path"]["output"]+"/virsorter2/"+w.sample+"/final-viral-combined.fa"
-    if file_type == "vir_id_output":
-        if vir_id_type == "genomad":
-            return config["path"]["output"]+"/genomad/"+w.sample+"/"+w.sample+"_summary/"+w.sample+"_virus_summary.tsv"
-        elif vir_id_type == "virsorter":
-            return config["path"]["output"]+"/virsorter2/"+w.sample+"/final-viral-boundary.tsv"
-    if file_type == "checkv_res":
-        if vir_id_type == "genomad":
-            return config["path"]["output"]+"/checkv/genomad/"+w.sample+"/quality_summary.tsv"
-        elif vir_id_type == "virsorter":
-            return config["path"]["output"]+"/checkv/virsorter2/"+w.sample+"/quality_summary.tsv"
-    if file_type == "checkv_contamination":
-        if vir_id_type == "genomad":
-            return config["path"]["output"]+"/checkv/genomad/"+w.sample+"/contamination.tsv"
-        elif vir_id_type == "virsorter":
-            return config["path"]["output"]+"/checkv/virsorter2/"+w.sample+"/contamination.tsv"
-
-
-
-rule virsorter2:
+rule virsorter:
     """
     performs viral identification with virsorter2
     """
     input:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+    output:
+        dir=directory(config["path"]["output"]+"/virsorter/{sample}/"),
+        viral_combined=config["path"]["output"]+"/virsorter/{sample}/final-viral-combined.fa",
+        viral_boundary=config["path"]["output"]+"/virsorter/{sample}/final-viral-boundary.tsv",
+        virus_predictions=config["path"]["output"]+"/virsorter/{sample}/viruses.fasta",
+        virus_table=config["path"]["output"]+"/virsorter/{sample}/virus_table.tsv",
     params:
         cutoff_length=config["virsorter2"]["id"]["min_length"],
         cutoff_score=config["virsorter2"]["id"]["min_score"],
         groups=config["virsorter2"]["id"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
-    output:
-        dir=directory(config["path"]["output"] + "/virsorter2/{sample}/"),
-        final_viral_combined=config["path"]["output"]
-                + "/virsorter2/{sample}/final-viral-combined.fa",
-        final_viral_boundary=config["path"]["output"]
-                + "/virsorter2/{sample}/final-viral-boundary.tsv",
     message:
         "[virsorter2] Executing viral identification..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:
-        config["path"]["log"] + "/virsorter2/{sample}.log",
+        config["path"]["log"] + "/virsorter/{sample}.log",
     benchmark:
-        config["path"]["benchmark"] + "/virsorter2/{sample}.txt"
+        config["path"]["benchmark"] + "/virsorter/{sample}.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["big"],
@@ -84,6 +57,8 @@ rule virsorter2:
             --min-score {params.cutoff_score} \
             --db-dir {params.db_dir}\
             -i {input} &> {log}
+        cp {output.viral_combined} {output.virus_predictions}
+        cp {output.viral_boundary} {output.virus_table}
         """
 
 rule genomad:
@@ -94,7 +69,10 @@ rule genomad:
         assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
     output:
         dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
-        predicted_viruses = config["path"]["output"] + "/genomad/{sample}/{sample}_summary/{sample}_virus.fna"
+        viruses = config["path"]["output"] + "/genomad/{sample}/{sample}_summary/{sample}_virus.fna",
+        virus_tab = config["path"]["output"] + "/genomad/{sample}/{sample}_summary/{sample}_virus_summary.tsv",
+        virus_predictions = config["path"]["output"] + "/genomad/{sample}/viruses.fasta",
+        virus_table = config["path"]["output"] + "/genomad/{sample}/virus_table.tsv"
     params:
         db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
     conda:
@@ -112,6 +90,8 @@ rule genomad:
     shell:
         """
         genomad end-to-end {input} {output.dir} {params.db_dir} &> {log}
+        cp {output.viruses} {output.virus_predictions}
+        cp {output.virus_tab} {output.virus_table}
         """
 
 # rule vibrant:
@@ -154,15 +134,12 @@ rule checkv:
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     input:
-        viral_predictions=lambda w: lambda w: get_virus_id_files(w, "vir_seqs")
+        virus_predictions = config["path"]["output"] + "/{id_tool}/{sample}/viruses.fasta",
     output:
         dir=directory(config["path"]["output"] + "/checkv/{id_tool}/{sample}/"),
-        summary=config["path"]["output"]
-                + "/checkv/{id_tool}/{sample}/quality_summary.tsv",
-        contamination=config["path"]["output"]
-                + "/checkv/{id_tool}/{sample}/contamination.tsv",
-        combined=config["path"]["output"]
-                + "/checkv/{id_tool}/{sample}/combined.fna",
+        summary=config["path"]["output"] + "/checkv/{id_tool}/{sample}/quality_summary.tsv",
+        contamination=config["path"]["output"] + "/checkv/{id_tool}/{sample}/contamination.tsv",
+        combined=config["path"]["output"] + "/checkv/{id_tool}/{sample}/combined.fna",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -178,7 +155,7 @@ rule checkv:
     shell:
         """
         mkdir -p {output.dir}
-        checkv end_to_end {input.viral_predictions}\
+        checkv end_to_end {input.virus_predictions}\
             {output.dir} -t {threads} -d {params.db_dir} &> {log}
         touch {output.dir}/proviruses.fna
         touch {output.dir}/viruses.fna
@@ -188,11 +165,11 @@ rule checkv:
 
 rule reformat_virus_prediction:
     input:
-        virus_id_table = lambda w: get_virus_id_files(w, "vir_id_output"),
-        checkv_contamination = lambda w: get_virus_id_files(w, "checkv_contamination"),
-        checkv_res = lambda w: get_virus_id_files(w, "checkv_res")
+        virus_table = config["path"]["output"] + "/{id_tool}/{sample}/virus_table.tsv",
+        checkv_contamination=config["path"]["output"] + "/checkv/{id_tool}/{sample}/contamination.tsv",
+        checkv_res = config["path"]["output"] + "/checkv/{id_tool}/{sample}/quality_summary.tsv",
     output:
-        reformatted_table = config["path"]["output"] + "/virus_identification/{sample}/{id_tool}_checkv_reformat.tsv"
+        reformatted_table = config["path"]["output"]+"/virus_identification/{sample}/{id_tool}_checkv_reformat.tsv"
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
     threads:
@@ -202,8 +179,7 @@ rule reformat_virus_prediction:
 
 rule filter_predicted_viruses:
     input:
-        virus_pred_tables = expand(config["path"]["output"]+"/virus_identification/{{sample}}/{id_tool}_checkv_reformat.tsv",
-            id_tool = "genomad")
+        virus_pred_tables = config["path"]["output"]+"/virus_identification/{sample}/"+"virsorter"+"_checkv_reformat.tsv"
     output:
         gathered_qual = config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv",
         representative_selection = config["path"]["output"]+"/virus_identification/{sample}/representative_virus_predictions.tsv",

@@ -1,6 +1,6 @@
 from scripts.workflow_utils import get_samples
 
-SAMPLE, FRAC = get_samples(config["path"]["input"])
+sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
 onstart:
     touch(config["path"]["temp"])
