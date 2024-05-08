@@ -15,7 +15,7 @@ onerror:
 
 module setup_db:
     snakefile:
-        "rules/setup.smk"
+        "rules/setup_db.smk"
     config:
         config
 
