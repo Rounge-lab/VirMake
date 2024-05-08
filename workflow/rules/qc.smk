@@ -46,8 +46,8 @@ rule fastp_pe:
     performs quality control/pre-processing of the raw reads
     """
     input:
-        R1=config["path"]["input_reads"] + "{sample}_1.fastq.gz",
-        R2=config["path"]["input_reads"] + "{sample}_2.fastq.gz",
+        R1=config["path"]["input_reads"] + "/{sample}_1.fastq.gz",
+        R2=config["path"]["input_reads"] + "/{sample}_2.fastq.gz",
     output:
         R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
         R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",

@@ -25,7 +25,7 @@ rule dramv_annotate:
     Performs Functional annotation with DRAMv
     """
     input:
-        config["path"]["output"] + "/virsorter_for_dram/"
+        config["path"]["output"] + "/virsorter_for_dram/",
         DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
     output:
         dir=directory(config["path"]["output"] + "/DRAMv/annotations/"),

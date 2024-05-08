@@ -15,7 +15,7 @@ def make_config(virmake_path,
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
-    config["identifier"] = "virsorter" # may be changed to vibrant or genomad
+    config["identifier"] = "virsorter2" # may be changed to vibrant or genomad
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
