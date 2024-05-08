@@ -27,7 +27,7 @@ rule prodigal:
     performs gene prediction on vOTUs
     """
     input:
-        config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
     output:
         proteins=config["path"]["output"] + "/prodigal/proteins.faa",
         orf=config["path"]["output"] + "/prodigal/ORFs.genes",
