@@ -60,7 +60,7 @@ rule build_index:
     Builds an index to prepare for mapping
     """
     input:
-        config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
     output:
         index_dir=directory(config["path"]["output"] + "/mapping/index"),
     conda:
@@ -115,7 +115,7 @@ rule contig_stats:
     Creates simple coverage statisitcs for each read mapping
     """
     input:
-        genomes=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
         bam=rules.read_mapping.output,
     output:
         basecov=config["path"]["output"]
@@ -211,7 +211,7 @@ rule instrain_profile:
     Create inStrain profiles
     """
     input:
-        genome=config["path"]["output"] + "/vOTU/vOTU_derep95_combined.fasta",
+        genome=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
         mapping=rules.read_mapping.output,
     output:
         directory(config["path"]["output"] + "/instrain/{sample}/"),
