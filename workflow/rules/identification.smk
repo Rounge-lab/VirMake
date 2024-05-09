@@ -323,8 +323,8 @@ rule collect_repr_viral_seqs:
 
             {params.script} \
                 -i {output.tmp2} \
-                --pre {params.vOTU_prefix} \
-                --pos {params.vOTU_suffix} \
+                --pre "{params.vOTU_prefix}" \
+                --pos "{params.vOTU_suffix}" \
                 -o {output.genomes} \
                 -s {params.votu_num_start} \
                 --int_length {params.vOTU_num_len} \
