@@ -91,7 +91,7 @@ rule genomad:
         runtime=config["time"]["normal"],
     shell:
         """
-        genomad end-to-end {input} {output.dir} {params.db_dir} &> {log}
+        genomad end-to-end {input.assembly_output} {output.dir} {params.db_dir} &> {log}
         cp {output.viruses} {output.virus_predictions}
         cp {output.virus_tab} {output.virus_table}
         """
