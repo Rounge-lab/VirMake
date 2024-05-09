@@ -74,7 +74,7 @@ rule metaQUAST:
     with the reference database RefSeq Viral
     """
     input:
-        expand(
+        contigs=expand(
             config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
             sample=SAMPLE,
         ),
@@ -98,6 +98,6 @@ rule metaQUAST:
     shell:
         """
         mkdir -p {output.dir}
-        metaquast.py {input} -o {output.dir}\
+        metaquast.py {input.contigs} -o {output.dir}\
             -r {input.reference} --threads {threads} --max-ref-number 0 &> {log}
         """
