@@ -57,7 +57,7 @@ rule virsorter:
             --min-length {params.cutoff_length} \
             --min-score {params.cutoff_score} \
             --db-dir {params.db_dir}\
-            -i {input} &> {log}
+            -i {input.assembly_output} &> {log}
         cp {output.viral_combined} {output.virus_predictions}
         cp {output.viral_boundary} {output.virus_table}
         """
