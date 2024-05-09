@@ -67,7 +67,7 @@ rule vs2_db:
 
 rule checkv_db:
     output:
-        directory(config["path"]["database"]["checkv"]),
+        dir=directory(config["path"]["database"]["checkv"]),
         flag=config["path"]["database"]["checkv"] + "/flag",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
@@ -77,8 +77,7 @@ rule checkv_db:
         config["path"]["log"] + "/checkv_db/checkv_db.log",
     shell:
         """
-        checkv download_database {output}
-        
+        checkv download_database {output.dir}
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
             --db {params.db_dir}/genome_db/checkv_reps &> {log}
         touch {output.flag}
