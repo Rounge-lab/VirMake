@@ -54,14 +54,14 @@ rule genomad_db:
 
 rule vs2_db:
     output:
-        directory(config["path"]["database"]["virsorter2"]),
+        dir=directory(config["path"]["database"]["virsorter2"]),
         flag=config["path"]["database"]["virsorter2"] + "/flag",
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     threads: 24
     shell:
         """
-        virsorter setup -d {output}
+        virsorter setup -d {output.dir}
         touch {output.flag}
         """
 
