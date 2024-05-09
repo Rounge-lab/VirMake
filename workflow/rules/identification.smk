@@ -169,7 +169,7 @@ rule checkv:
 
 rule reformat_virus_prediction:
     input:
-        virus_table = config["path"]["output"] + "/{id_tool}/{sample}/virus_table.tsv",
+        virus_id_table = config["path"]["output"] + "/{id_tool}/{sample}/virus_table.tsv",
         checkv_contamination=config["path"]["output"] + "/checkv/{id_tool}/{sample}/contamination.tsv",
         checkv_res = config["path"]["output"] + "/checkv/{id_tool}/{sample}/quality_summary.tsv",
     output:
