@@ -25,7 +25,7 @@ rule dramv_annotate:
     Performs Functional annotation with DRAMv
     """
     input:
-        config["path"]["output"] + "/virsorter_for_dram/",
+        dir=config["path"]["output"] + "/virsorter_for_dram/",
         DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
     output:
         dir=directory(config["path"]["output"] + "/DRAMv/annotations/"),
@@ -45,8 +45,8 @@ rule dramv_annotate:
         """
         DRAM-setup.py import_config --config_loc {input.DRAM_config}
         rm -rdf {output.dir}
-        DRAM-v.py annotate -i {input}/for-dramv/final-viral-combined-for-dramv.fa\
-        -v {input}/for-dramv/viral-affi-contigs-for-dramv.tab\
+        DRAM-v.py annotate -i {input.dir}/for-dramv/final-viral-combined-for-dramv.fa\
+        -v {input.dir}/for-dramv/viral-affi-contigs-for-dramv.tab\
         --output_dir {output.dir}\
         --threads {threads}\
         --min_contig_size {params.min_contig_size}\
