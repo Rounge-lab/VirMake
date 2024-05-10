@@ -321,7 +321,7 @@ rule collect_repr_viral_seqs:
 
             cat $(cut -f -1 {input.galah_clusters} | sort -u) >> {output.tmp2}
 
-            {params.script} \
+            python3 {params.script} \
                 -i {output.tmp2} \
                 --pre "{params.vOTU_prefix}" \
                 --pos "{params.vOTU_suffix}" \
