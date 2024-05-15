@@ -123,6 +123,7 @@ def make_config(virmake_path,
             "stats": True,
         },
         "stats": {
+            "mapping": True,
             "instrain": False,
         }
     }

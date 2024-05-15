@@ -42,6 +42,7 @@ rule get_vOTU_stats:
         gathered_specs=config["path"]["output"]+"/dereplication/checkV_summary.tsv",
         derep_file=config["path"]["output"]+"/dereplication/galah_clusters.tsv",
         contig_id_file=config["path"]["output"]+"/dereplication/old_to_new_ids.tsv",
+        rel_abund=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
         # instrain_by_genome=config["path"]["output"]+"/"
         # DRAM_annotations=config["path"]["output"]+"/DRAMv/annotations/annotations.tsv" if config["run_DRAMv"] else [],
         # DRAM_distilled=config["path"]["output"]+"/DRAMv/distilled/amg_summary.tsv" if config["run_DRAMv"] else [],

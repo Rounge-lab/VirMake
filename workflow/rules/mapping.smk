@@ -6,7 +6,7 @@ sample_table, SAMPLE = get_samples(config["path"]["samples"])
 rule MAPPING:
     input:
         config["path"]["output"]+ "/contig_stats/rel_abundance.tsv",
-        config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv" if config["rule_inclusion"]["instrain"] else [],
+        config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv" if config["rule_inclusion"]["all"]["instrain"] else [],
     output:
         config["path"]["temp"] + "/finished_MAPPING",
     threads: 1
