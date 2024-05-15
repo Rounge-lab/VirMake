@@ -111,6 +111,21 @@ def make_config(virmake_path,
         "viral_genomes_combined.csv",
         "derep95_combined.fasta.clstr",
     ]
+    config["rule_inclusion"] = {
+        "all": {
+            "qc": True,
+            "assembly": True,
+            "identification": True,
+            "taxonomy": True,
+            "mapping": True,
+            "instrain": True,
+            "function": True,
+            "stats": True,
+        },
+        "stats": {
+            "instrain": True,
+        }
+    }
 
     return config
 

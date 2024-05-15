@@ -72,13 +72,13 @@ use rule * from stats
 
 rule ALL:
     input:
-        config["path"]["temp"] + "/finished_QC",
-        config["path"]["temp"] + "/finished_ASSEMBLY",
-        config["path"]["temp"] + "/finished_IDENTIFICATION",
-        config["path"]["temp"] + "/finished_MAPPING",
-        config["path"]["temp"] + "/finished_TAXONOMY",
-        config["path"]["temp"] + "/finished_FUNCTION",
-        config["path"]["temp"] + "/finished_STATS",
+        config["path"]["temp"] + "/finished_QC" if config["rule_inclusion"]["all"]["qc"] else [],
+        config["path"]["temp"] + "/finished_ASSEMBLY" if config["rule_inclusion"]["all"]["assembly"] else [],
+        config["path"]["temp"] + "/finished_IDENTIFICATION" if config["rule_inclusion"]["all"]["identification"] else [],
+        config["path"]["temp"] + "/finished_MAPPING" if config["rule_inclusion"]["all"]["mapping"] else [],
+        config["path"]["temp"] + "/finished_TAXONOMY" if config["rule_inclusion"]["all"]["taxonomy"] else [],
+        config["path"]["temp"] + "/finished_FUNCTION" if config["rule_inclusion"]["all"]["function"] else [],
+        config["path"]["temp"] + "/finished_STATS" if config["rule_inclusion"]["all"]["stats"] else [],
     params:
         temp=config["path"]["temp"],
     threads: 1
