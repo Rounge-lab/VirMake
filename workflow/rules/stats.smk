@@ -17,7 +17,7 @@ rule STATS:
         # config["path"]["temp"] + "/html_files.txt",
         # config["path"]["temp"] + "/tables.txt",
         # config["path"]["output"] + "/complete_output.zip",
-        # config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
+        # config["path"]["output"] + "/statistics/comparison_comparisonsTable.tsv",
         # config["path"]["benchmark"] + "/_summary/",
         # config["path"]["benchmark"] + "/_summary/merged_benchmarks.csv",
         # config["path"]["benchmark"] + "/_summary/REPORT.txt",
@@ -62,7 +62,7 @@ rule get_stats:
         transposed_report=config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
         abundance_table=config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
     output:
-        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
+        config["path"]["output"] + "/statistics/comparison_comparisonsTable.tsv",
 #        config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
         config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
         config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",

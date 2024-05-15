@@ -21,7 +21,7 @@ vOTU.relative.abundance <- read.table(paste(stats.path, "vOTU_Relative_Abundance
 vOTU.stats.combined <- read.table(paste(stats.path, "vOTU_stats_combined.tsv", sep = "/"), header = TRUE, sep = "\t")
 vOTU.stats.vibrant <- read.table(paste(stats.path, "vOTU_Stats_vibrant.tsv", sep = "/"), header = TRUE, sep = "\t")
 vOTU.stats.virsorter2 <- read.table(paste(stats.path, "vOTU_Stats_virsorter2.tsv", sep = "/"), header = TRUE, sep = "\t")
-compared.samples <- read.table(paste(stats.path, "compared_samples_comparisonsTable.tsv",
+compared.samples <- read.table(paste(stats.path, "comparison_comparisonsTable.tsv",
                                sep="/"), sep="\t", header=TRUE)
 
 UI <- fluidPage(theme = shinytheme("cerulean"),

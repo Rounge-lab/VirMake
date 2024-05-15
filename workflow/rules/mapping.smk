@@ -7,40 +7,12 @@ rule MAPPING:
     input:
         config["path"]["output"] + "/mapping/index",
         expand(
-            config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_coverage_histogram.txt",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
-            sample=SAMPLE,
-        ),
-        expand(
             config["path"]["output"]
             + "/contig_stats/{sample}/trimmed_mean_coverage.tsv",
             sample=SAMPLE,
         ),
-        config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
-        expand(
-            config["path"]["output"] + "/instrain/{sample}",
-            sample=SAMPLE,
-        ),
-        config["path"]["output"] + "/instrain/compared_samples",
+        config["path"]["output"]+ "/contig_stats/rel_abundance.tsv",
+        config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv",
     output:
         config["path"]["temp"] + "/finished_MAPPING",
     threads: 1
@@ -205,6 +177,14 @@ rule combine_coverage:
     script:
         config["path"]["scripts"] + "/combine_coverage.R"
 
+rule relative_abundance:
+    input:
+        raw=config["path"]["output"]+ "/contig_stats/raw_coverage_table.tsv",
+    output:
+        rel=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv",
+    script:
+        config["path"]["scripts"] + "/rel_from_raw.py"
+
 
 rule instrain_profile:
     """
@@ -243,7 +223,8 @@ rule instrain_compare:
             sample=SAMPLE,
         ),
     output:
-        directory(config["path"]["output"] + "/instrain/compared_samples"),
+        dir=directory(config["path"]["output"] + "/instrain/comparison"),
+        instrain_genome_summary=config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv",
     conda:
         config["path"]["envs"] + "/instrain.yaml"
     log:
@@ -258,5 +239,5 @@ rule instrain_compare:
         runtime=config["time"]["normal"],
     shell:
         """
-        inStrain compare -i {input} -o {output} &> {log}
+        inStrain compare -i {input} -o {output.dir} &> {log}
         """

@@ -527,9 +527,9 @@ def copy_instrain_compare_output():
     os.system(
         "cp "
         + output_path
-        + "/instrain/compared_samples/output/compared_samples_comparisonsTable.tsv "
+        + "/instrain/comparison/output/comparison_comparisonsTable.tsv "
         + output_path
-        + "/statistics/compared_samples_comparisonsTable.tsv "
+        + "/statistics/comparison_comparisonsTable.tsv "
     )
 
 
