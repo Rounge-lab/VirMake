@@ -51,7 +51,21 @@ def process_derep_virus_specs(specs_file, derep_file, id_file):
     
     return derep_proc_specs
 
+def process_abundance_data(abundance_file):
+    abundance_data = pd.read_csv(abundance_file, sep="\t", index_col=0)
+    
+    presence = (abundance_data > 0)
 
+    n_presence = presence.sum(axis=1)
+    mean_present = abundance_data.where(presence).mean(axis=1)
+
+    abundance_summary = pd.DataFrame({
+        'vOTU': abundance_data.index,
+        'n_present': n_presence.values,
+        'mean_present': mean_present.values.round(2),
+    })
+
+    return(abundance_summary)
 
 def main():
     
@@ -61,7 +75,12 @@ def main():
                                                   derep_file=snakemake.input.derep_file,
                                                   id_file=snakemake.input.contig_id_file)
     
+
     combined_table = pd.merge(left=derep_viral_specs, right=taxonomy, how="outer", on=["vOTU"])
+    
+    if snakemake.input.rel_abund:
+        abundance_stats = process_abundance_data(abundance_file=snakemake.input.rel_abund)
+        combined_table = pd.merge(left=combined_table, right=abundance_stats, how="outer", on=["vOTU"])
 
     combined_table.to_csv(snakemake.output.vOTU_stats, sep="\t", index=False)
 
