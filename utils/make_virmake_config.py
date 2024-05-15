@@ -1,6 +1,7 @@
 import yaml
 import pathlib
 import click
+import os
 
 
 # CLI command tool to choose the viral identifier
@@ -48,8 +49,8 @@ def make_config(virmake_path,
         "temp": str(virmake_path / work_dir / "temp"),
         "scripts": str(virmake_path / "workflow" / "scripts"),
         "samples": str(virmake_path / work_dir / "samples.tsv"),
-        "input_reads": str(input_reads),
-        "input_contigs": str(input_contigs),
+        "input_reads": str(os.path.normpath(input_reads)),
+        "input_contigs": str(os.path.normpath(input_contigs)),
         "database": {
             "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
             "virsorter2": str(db_path / "virsorter2"),

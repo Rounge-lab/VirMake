@@ -9,14 +9,15 @@ FRAC = ["1", "2"]
 
 rule STATS:
     input:
-#        config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
-        config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
-        config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
-        config["path"]["output"] + "/statistics/",
-        config["path"]["temp"] + "/html_files.txt",
-        config["path"]["temp"] + "/tables.txt",
-        config["path"]["output"] + "/complete_output.zip",
-        config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
+        config["path"]["output"] + "/statistics/vOTU_stats.tsv",
+        # config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
+        # config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
+        # config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
+        # config["path"]["output"] + "/statistics/",
+        # config["path"]["temp"] + "/html_files.txt",
+        # config["path"]["temp"] + "/tables.txt",
+        # config["path"]["output"] + "/complete_output.zip",
+        # config["path"]["output"] + "/statistics/compared_samples_comparisonsTable.tsv",
         # config["path"]["benchmark"] + "/_summary/",
         # config["path"]["benchmark"] + "/_summary/merged_benchmarks.csv",
         # config["path"]["benchmark"] + "/_summary/REPORT.txt",
@@ -31,6 +32,24 @@ rule STATS:
         """
         touch {output}
         """
+
+rule get_vOTU_stats:
+    """
+    Gathers info on vOTUs.
+    """
+    input:
+        taxonomy=config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
+        gathered_specs=config["path"]["output"]+"/dereplication/checkV_summary.tsv",
+        derep_file=config["path"]["output"]+"/dereplication/galah_clusters.tsv",
+        contig_id_file=config["path"]["output"]+"/dereplication/old_to_new_ids.tsv",
+        # instrain_by_genome=config["path"]["output"]+"/"
+        # DRAM_annotations=config["path"]["output"]+"/DRAMv/annotations/annotations.tsv" if config["run_DRAMv"] else [],
+        # DRAM_distilled=config["path"]["output"]+"/DRAMv/distilled/amg_summary.tsv" if config["run_DRAMv"] else [],
+    output:
+        vOTU_stats=config["path"]["output"] + "/statistics/vOTU_stats.tsv"
+    script:
+        config["path"]["scripts"] + "/get_vOTU_stats.py"
+
 
 rule get_stats:
     """

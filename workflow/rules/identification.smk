@@ -183,7 +183,7 @@ rule reformat_virus_prediction:
 
 rule filter_predicted_viruses:
     input:
-        virus_pred_tables = config["path"]["output"]+"/virus_identification/{sample}/"+"virsorter"+"_checkv_reformat.tsv"
+        virus_pred_tables = config["path"]["output"]+"/virus_identification/{sample}/"+config["identifier"].strip("2")+"_checkv_reformat.tsv"
     output:
         gathered_qual = config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv",
         representative_selection = config["path"]["output"]+"/virus_identification/{sample}/representative_virus_predictions.tsv",

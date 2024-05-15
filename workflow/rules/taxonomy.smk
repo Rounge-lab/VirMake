@@ -10,6 +10,7 @@ rule TAXONOMY:
         + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
         config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
         config["path"]["output"] + "/vcontact2/taxonomic_annotation/",
+        config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
     output:
         config["path"]["temp"] + "/finished_TAXONOMY",
     threads: 1
@@ -158,8 +159,8 @@ rule graphanalyzer:
         rules.vcontact2.output.dir,
     output:
         dir=directory(config["path"]["output"] + "/graphanalyzer/"),
-        vOTU_results=config["path"]["output"]
-        + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
+        vcontact_res=config["path"]["output"] + "/graphanalyzer/csv_edit_vOTU_results.xlsx",
+        vOTU_results=config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
     conda:
         config["path"]["envs"] + "/graphanalyzer.yaml"
     threads: config["threads"]
