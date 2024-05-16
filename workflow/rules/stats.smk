@@ -10,6 +10,7 @@ FRAC = ["1", "2"]
 rule STATS:
     input:
         config["path"]["output"] + "/statistics/vOTU_stats.tsv",
+        config["path"]["output"] + "/statistics/sample_stats.tsv"
         # config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",
         # config["path"]["output"] + "/statistics/Sample_stats_virsorter2.tsv",
         # config["path"]["output"] + "/statistics/vOTU_AMGs.tsv",
@@ -50,6 +51,18 @@ rule get_vOTU_stats:
         vOTU_stats=config["path"]["output"] + "/statistics/vOTU_stats.tsv"
     script:
         config["path"]["scripts"] + "/get_vOTU_stats.py"
+
+rule get_sample_stats:
+    """
+    Gathers info on samples.
+    """
+    input:
+        virus_id_tables=expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
+        rel_abund=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
+    output:
+        sample_stats=config["path"]["output"] + "/statistics/sample_stats.tsv"
+    script:
+        config["path"]["scripts"] + "/get_sample_stats.py"
 
 
 rule get_stats:
