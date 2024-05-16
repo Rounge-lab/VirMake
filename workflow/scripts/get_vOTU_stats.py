@@ -67,6 +67,21 @@ def process_abundance_data(abundance_file):
 
     return(abundance_summary)
 
+def get_dramv_summary(dramv_summary_file):
+    dramv_cols = ["vOTU", "Gene count", "Strand switches", "potential AMG count",
+                  "Transposase present", "Possible Non-Viral Contig",
+                  "Viral genes with unknown function", "Viral hypothetical genes", 
+                  "Viral genes with viral benefits", "Viral genes with host benefits",
+                  "Viral structure genes"]
+    dramv_summary = pd.read_csv(dramv_summary_file, sep="\t", index_col=0)
+    dramv_summary.index.name = "vOTU"
+    dramv_summary.reset_index(inplace=True)
+    dramv_summary["vOTU"] = dramv_summary["vOTU"].str.replace(r'_cat_\d+', '', regex=True)
+
+    dramv_summary = dramv_summary[dramv_cols]
+
+    return dramv_summary
+
 def main():
     
     taxonomy = process_taxonomy_info(taxonomy_file=snakemake.input.taxonomy)
@@ -80,6 +95,10 @@ def main():
     
     if snakemake.input.rel_abund:
         abundance_stats = process_abundance_data(abundance_file=snakemake.input.rel_abund)
+        combined_table = pd.merge(left=combined_table, right=abundance_stats, how="outer", on=["vOTU"])
+    
+    if snakemake.input.DRAM_distilled_stats:
+        abundance_stats = get_dramv_summary(dramv_summary_file=snakemake.input.DRAM_distilled_stats)
         combined_table = pd.merge(left=combined_table, right=abundance_stats, how="outer", on=["vOTU"])
 
     combined_table.to_csv(snakemake.output.vOTU_stats, sep="\t", index=False)

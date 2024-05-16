@@ -125,6 +125,7 @@ def make_config(virmake_path,
         "stats": {
             "mapping": True,
             "instrain": False,
+            "dramv": True,
         }
     }
 

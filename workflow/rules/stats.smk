@@ -45,7 +45,7 @@ rule get_vOTU_stats:
         rel_abund=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
         # instrain_by_genome=config["path"]["output"]+"/"
         # DRAM_annotations=config["path"]["output"]+"/DRAMv/annotations/annotations.tsv" if config["run_DRAMv"] else [],
-        # DRAM_distilled=config["path"]["output"]+"/DRAMv/distilled/amg_summary.tsv" if config["run_DRAMv"] else [],
+        DRAM_distilled_stats=config["path"]["output"]+"/DRAMv/distilled/vMAG_stats.tsv" if config["rule_inclusion"]["stats"]["dramv"] else [],
     output:
         vOTU_stats=config["path"]["output"] + "/statistics/vOTU_stats.tsv"
     script:
