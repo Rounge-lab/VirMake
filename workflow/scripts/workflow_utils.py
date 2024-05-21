@@ -5,6 +5,15 @@ def get_samples(path):
     samples = sample_table["sample_id"].to_list()
     return sample_table, samples
 
+def get_assembly_loc(wildcards, 
+                     sample_table, 
+                     standard_output):
+    assembly_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'contigs'].iloc[0]
+    if pd.isna(assembly_loc) or assembly_loc == "":
+        return standard_output + "/metaSpades/"+wildcards.sample+"/contigs.fasta"
+    else:
+        return assembly_loc
+
 # GLOBAL FUNCTIONS #
 def get_min_quality(threshold):
     """

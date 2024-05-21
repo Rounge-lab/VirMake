@@ -1,4 +1,4 @@
-from scripts.workflow_utils import get_samples, get_min_quality
+from scripts.workflow_utils import get_samples, get_min_quality, get_assembly_loc
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -25,7 +25,7 @@ rule virsorter:
     performs viral identification with virsorter2
     """
     input:
-        assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
         flag=config["path"]["database"]["virsorter2"] + "/flag"
     output:
         dir=directory(config["path"]["output"]+"/virsorter/{sample}/"),
@@ -67,7 +67,7 @@ rule genomad:
     performs viral identification using geNomad
     """
     input:
-        assembly_output = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
         flag=config["path"]["database"]["genomad"] + "/flag",
     output:
         dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
@@ -101,7 +101,7 @@ rule genomad:
 #     performs the first pass of viral identification with VIBRANT
 #     """
 #     input:
-#         assembly_output = rules.metaSpades.output.contigs,
+#         assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
 #         flag=config["path"]["database"]["vibrant"] + "/flag",
 #     output:
 #     params:
@@ -202,13 +202,13 @@ rule filter_predicted_viruses:
 
 rule extract_predicted_viruses:
     input:
-        contigs = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+        contigs = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
         regions = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.bed"
     output:
         pred_vir_to_rename = temp(config["path"]["output"]+"/virus_identification/{sample}/tmp_pred_vir.fasta"),
         predicted_viruses = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.fasta"
     params:
-        index_file = config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta.fai",
+        index_file = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"])+".fai",
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     threads:

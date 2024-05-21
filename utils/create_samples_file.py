@@ -5,6 +5,9 @@ from snakemake.io import glob_wildcards
 
 
 def get_reads_samples(path):
+
+    path = path.rstrip("/")
+
     (
         SAMPLES,
         FRAC,
@@ -22,6 +25,9 @@ def get_reads_samples(path):
     return reads_table
 
 def get_contigs_samples(path):
+
+    path = path.rstrip("/")
+
     (
         SAMPLES,
     ) = glob_wildcards(path + "/{sample}.fasta")

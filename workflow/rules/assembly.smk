@@ -1,4 +1,4 @@
-from scripts.workflow_utils import get_samples
+from scripts.workflow_utils import get_samples, get_assembly_loc
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -68,6 +68,14 @@ rule metaSpades:
         --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_mb} &> {log}
         """
 
+rule get_contigs_for_metaquast:
+    input:
+        contigs=lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+    output:
+        contigs=temp(config["path"]["output"]+"/assembly/tmp/{sample}.fasta")
+    shell:
+        "cp {input.contigs} {output.contigs}"
+
 rule metaQUAST:
     """
     Performs quality control on all assembled contigs
@@ -75,7 +83,7 @@ rule metaQUAST:
     """
     input:
         contigs=expand(
-            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
+            config["path"]["output"]+"/assembly/tmp/{sample}.fasta",
             sample=SAMPLE,
         ),
         reference=config["path"]["database"]["RefSeq"],
