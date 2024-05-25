@@ -25,7 +25,7 @@ rule dramv_annotate:
         DRAM_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
     output:
         dir=directory(config["path"]["output"] + "/DRAMv/annotations/"),
-        annotations=directory(config["path"]["output"] + "/DRAMv/annotations/annotations.tsv"),
+        annotations=config["path"]["output"] + "/DRAMv/annotations/annotations.tsv",
     params:
         min_contig_size=config["min_contig_size"],
     conda:
