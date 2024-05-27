@@ -340,14 +340,16 @@ rule virsorter_for_dram:
         flag=config["path"]["database"]["virsorter2"] + "/flag"
     output:
         dir=directory(config["path"]["output"] + "/virsorter_for_dram/"),
+        vs_annotations=config["path"]["output"]+ "/virsorter_for_dram/for-dramv/viral-affi-contigs-for-dramv.tab",
+        vs_seqs=config["path"]["output"]+ "/virsorter_for_dram/for-dramv/final-viral-combined-for-dramv.fa",
         finished=config["path"]["output"] + "/virsorter_for_dram/finished",
     params:
         cutoff_length=config["virsorter2"]["for_dramv"]["min_length"],
         cutoff_score=config["virsorter2"]["for_dramv"]["min_score"],
         groups=config["virsorter2"]["for_dramv"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
-    message:
-        "[virsorter_for_dram] Running virsorter2 on the vOTUs..."
+    # message:
+    #     "[virsorter_for_dram] Running virsorter2 on the vOTUs..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:

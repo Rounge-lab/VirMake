@@ -32,8 +32,8 @@ def make_config(virmake_path,
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
         "for_dramv": {
-            "min_length": 1000,
-            "min_score": 0.5,
+            "min_length": 100,
+            "min_score": 0.01,
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }

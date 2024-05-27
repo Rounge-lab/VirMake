@@ -69,14 +69,14 @@ def process_abundance_data(abundance_file):
 
 def get_dramv_summary(dramv_summary_file):
     dramv_cols = ["vOTU", "Gene count", "Strand switches", "potential AMG count",
-                  "Transposase present", "Possible Non-Viral Contig",
-                  "Viral genes with unknown function", "Viral hypothetical genes", 
-                  "Viral genes with viral benefits", "Viral genes with host benefits",
-                  "Viral structure genes"]
+                  "Transposase present", "Possible Non-Viral Contig"]#,
+                #   "Viral genes with unknown function", "Viral hypothetical genes", 
+                #   "Viral genes with viral benefits", "Viral genes with host benefits",
+                #   "Viral structure genes"]
     dramv_summary = pd.read_csv(dramv_summary_file, sep="\t", index_col=0)
     dramv_summary.index.name = "vOTU"
     dramv_summary.reset_index(inplace=True)
-    dramv_summary["vOTU"] = dramv_summary["vOTU"].str.replace(r'_cat_\d+', '', regex=True)
+    dramv_summary["vOTU"] = dramv_summary["vOTU"].str.replace(r'-cat_\d+', '', regex=True)
 
     dramv_summary = dramv_summary[dramv_cols]
 
