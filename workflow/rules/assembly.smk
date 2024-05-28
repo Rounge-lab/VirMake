@@ -6,21 +6,8 @@ sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
 rule ASSEMBLY:
     input:
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
-            sample=SAMPLE,
-        ),
-        config["path"]["output"] + "/metaQUAST/report.html",
-        config["path"]["output"]
-        + "/metaQUAST/combined_reference/transposed_report.tsv",
+        expand(config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",sample=SAMPLE),
+        config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv" if config["rule_inclusion"]["all"]["metaquast"] else [],
     output:
         config["path"]["temp"] + "/finished_ASSEMBLY",
     threads: 1
@@ -91,8 +78,6 @@ rule metaQUAST:
         dir=directory(config["path"]["output"] + "/metaQUAST/"),
         report=config["path"]["output"] + "/metaQUAST/report.html",
         transposed_report=config["path"]["output"]+ "/metaQUAST/combined_reference/transposed_report.tsv",
-    message:
-        "[metaQUAST] Running metaQUAST quality control on assembled contigs..."
     conda:
         config["path"]["envs"] + "/metaQUAST.yaml"
     log:

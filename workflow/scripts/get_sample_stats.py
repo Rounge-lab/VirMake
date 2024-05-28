@@ -55,6 +55,19 @@ def summarize_virus_id_stats(stats_files):
 
     return virus_id_summary
 
+def process_metaquast(mq_file):
+    mq_cols = ["# contigs",
+               "Largest contig",
+               "Total length",
+               "N50",
+               "N90"]
+
+    mq_res = pd.read_csv(mq_file, sep="\t", )
+    mq_res["sample_id"] = mq_res["Assembly"].str.replace("_contigs", "")
+    mq_res = mq_res[["sample_id"] + mq_cols]
+    
+    return mq_res
+
 def process_flagstat(stat_file, sample_id):
     colnames=["QC_reads","failed_reads","name"]
     flagstat = pd.read_csv(stat_file, sep="\t", index_col=False, header=None, names=colnames)
@@ -99,6 +112,10 @@ def process_mapping_stats(flagstat_files):
 def main():
     
     samplewise_summary = summarize_virus_id_stats(snakemake.input.virus_id_tables)
+
+    if snakemake.input.mq_report:
+        mq_stats = process_metaquast(mq_file=snakemake.input.mq_report)
+        samplewise_summary = pd.merge(left=samplewise_summary, right=mq_stats, how="outer", on=["sample_id"])
     
     if snakemake.input.rel_abund:
         abundance_stats = process_abundance_data(abundance_file=snakemake.input.rel_abund)

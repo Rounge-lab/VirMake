@@ -58,6 +58,7 @@ rule get_sample_stats:
     """
     input:
         virus_id_tables=expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
+        mq_report=config["path"]["output"]+ "/metaQUAST/combined_reference/transposed_report.tsv" if config["rule_inclusion"]["stats"]["metaquast"] else [],
         rel_abund=config["path"]["output"] + "/mapping/rel_abundance_table.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
         flagstat=expand(config["path"]["output"]+"/mapping/flagstat/{sample}_flagstat.txt", sample=SAMPLE) if config["rule_inclusion"]["stats"]["mapping"] else [],
     output:
