@@ -5,7 +5,7 @@ sample_table, SAMPLE = get_samples(config["path"]["samples"])
 # MAPPING
 rule MAPPING:
     input:
-        config["path"]["output"]+ "/contig_stats/rel_abundance.tsv",
+        config["path"]["output"] + "/mapping/rel_abundance_table.tsv",
         config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv" if config["rule_inclusion"]["all"]["instrain"] else [],
     output:
         config["path"]["temp"] + "/finished_MAPPING",
@@ -76,7 +76,7 @@ rule read_mapping:
         samtools view -b -o {output} - &> {log.samtools}
         """
 
-rule contig_stats:
+rule pileup:
     """
     Creates simple coverage statisitcs for each read mapping
     """
@@ -85,19 +85,19 @@ rule contig_stats:
         bam=rules.read_mapping.output,
     output:
         basecov=config["path"]["output"]
-        + "/contig_stats/{sample}/postfilter_base_coverage.txt.gz",
+        + "/mapping/pileup/{sample}/postfilter_base_coverage.txt.gz",
         covhist=config["path"]["output"]
-        + "/contig_stats/{sample}/postfilter_coverage_histogram.txt",
+        + "/mapping/pileup/{sample}/postfilter_coverage_histogram.txt",
         covstats=config["path"]["output"]
-        + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
+        + "/mapping/pileup/{sample}/postfilter_coverage_stats.txt",
         bincov=config["path"]["output"]
-        + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
+        + "/mapping/pileup/{sample}/postfilter_coverage_binned.txt",
     conda:
         config["path"]["envs"] + "/bowtie2.yaml"
     log:
-        config["path"]["log"] + "/contig_stats/{sample}.log",
+        config["path"]["log"] + "/mapping/pileup/{sample}.log",
     benchmark:
-        config["path"]["benchmark"] + "/contig_stats/{sample}.txt"
+        config["path"]["benchmark"] + "/mapping/pileup/{sample}.txt"
     message:
         "[contig_stats] Creating coverage statistics for each sample..."
     threads: config["threads"]
@@ -125,18 +125,18 @@ rule combine_coverage:
     input:
         covstats=expand(
             config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
+            + "/mapping/pileup/{sample}/postfilter_coverage_stats.txt",
             sample=SAMPLE,
         ),
         binned_coverage=expand(
             config["path"]["output"]
-            + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
+            + "/mapping/pileup/{sample}/postfilter_coverage_binned.txt",
             sample=SAMPLE,
         ),
     output:
-        covstats=config["path"]["output"] + "/contig_stats/covstats.tsv",
-        mapped_reads=config["path"]["output"] + "/contig_stats/mapped_reads_table.tsv",
-        rel_abundance=config["path"]["output"] + "/contig_stats/rel_abundance_table.tsv",
+        covstats=config["path"]["output"] + "/mapping/covstats.tsv",
+        mapped_reads=config["path"]["output"] + "/mapping/mapped_reads_table.tsv",
+        rel_abundance=config["path"]["output"] + "/mapping/rel_abundance_table.tsv",
     params:
         min_coverage=config["min_coverage"],
     threads: 1

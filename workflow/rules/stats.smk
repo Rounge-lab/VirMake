@@ -43,7 +43,7 @@ rule get_vOTU_stats:
         gathered_specs=config["path"]["output"]+"/dereplication/checkV_summary.tsv",
         derep_file=config["path"]["output"]+"/dereplication/galah_clusters.tsv",
         contig_id_file=config["path"]["output"]+"/dereplication/old_to_new_ids.tsv",
-        rel_abund=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
+        rel_abund=config["path"]["output"] + "/mapping/rel_abundance_table.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
         # instrain_by_genome=config["path"]["output"]+"/"
         # DRAM_annotations=config["path"]["output"]+"/DRAMv/annotations/annotations.tsv" if config["run_DRAMv"] else [],
         DRAM_distilled_stats=config["path"]["output"]+"/DRAMv/distilled/vMAG_stats.tsv" if config["rule_inclusion"]["stats"]["dramv"] else [],
@@ -58,7 +58,7 @@ rule get_sample_stats:
     """
     input:
         virus_id_tables=expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
-        rel_abund=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
+        rel_abund=config["path"]["output"] + "/mapping/rel_abundance_table.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
     output:
         sample_stats=config["path"]["output"] + "/statistics/sample_stats.tsv"
     script:
@@ -74,7 +74,7 @@ rule get_stats:
         amg_summary=config["path"]["output"] + "/DRAMv/distilled/amg_summary.tsv",
         virsorter2_summary=config["path"]["output"] + "/checkv/virsorter_for_dram/quality_summary.tsv",
         transposed_report=config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv",
-        abundance_table=config["path"]["output"] + "/contig_stats/raw_coverage_table.tsv",
+        abundance_table=config["path"]["output"] + "/mapping/rel_abundance_table.tsv",
     output:
         config["path"]["output"] + "/statistics/comparison_comparisonsTable.tsv",
 #        config["path"]["output"] + "/statistics/Sample_stats_vibrant.tsv",

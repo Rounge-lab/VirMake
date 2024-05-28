@@ -378,7 +378,7 @@ def create_relative_Abundance():
     Function that creates the relative abundance table.
     It calculates the relative abundance based on the coverage file.
     """
-    df = pd.read_table(output_path + "/contig_stats/raw_coverage_table.tsv")
+    df = pd.read_table(output_path + "/mapping/rel_abundance_table.tsv")
     ra_df = pd.DataFrame(columns=df.columns, index=df.index, data=None)
     ra_df["ID"] = df["ID"]
     for column in df.columns[1:]:
