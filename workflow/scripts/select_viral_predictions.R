@@ -140,7 +140,7 @@ if (length(unique(viral_predictions$vir_id_tool)) > 1) {
 }
 
 ## Rename viral predictions
-set.seed(1)
+set.seed(sum(utf8ToInt(paste(snakemake@wildcards[["sample_id"]], snakemake@wildcards[["id_tool"]]))))
 tmp_renaming <-
   selected_predictions %>% 
   mutate(virus_id = paste(sample_id, "virus", sample(10^(7):(10^8-1), nrow(.)), sep = "_"))  
