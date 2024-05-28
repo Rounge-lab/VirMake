@@ -9,7 +9,7 @@ cov_stats <-
   lapply(snakemake@input[["covstats"]], function(covstats) {
     read_tsv(covstats, show_col_types=FALSE) %>%
       rename(vOTU = 1) %>%
-      mutate(sample_id = str_extract(covstats, "(?<=contig_stats/).*(?=/postfilter_coverage_stats)"))
+      mutate(sample_id = str_extract(covstats, "(?<=pileup/).*(?=/postfilter_coverage_stats)"))
   }) %>%
   bind_rows() %>%
   select(sample_id, everything())
@@ -19,7 +19,7 @@ binned_stats <-
   lapply(snakemake@input[["binned_coverage"]], function(covstats) {
     read_tsv(covstats, show_col_types=FALSE, skip=2) %>%
       rename(vOTU = 1) %>%
-      mutate(sample_id = str_extract(covstats, "(?<=contig_stats/).*(?=/postfilter_coverage_binned)"))
+      mutate(sample_id = str_extract(covstats, "(?<=pileup/).*(?=/postfilter_coverage_binned)"))
   }) %>%
   bind_rows() %>%
   group_by(sample_id, vOTU) %>%
