@@ -117,33 +117,6 @@ rule contig_stats:
             bincov={output.bincov} &> {log}
         """
 
-
-rule get_trimmed_coverage:
-    """
-    Gets the trimmed mean of the coverage
-    """
-    input:
-        basecov=rules.contig_stats.output.basecov,
-        covstats=rules.contig_stats.output.covstats,
-    output:
-        trimmed_mean=config["path"]["output"]
-        + "/contig_stats/{sample}/trimmed_mean_coverage.tsv",
-    params:
-        trim_perc=config["trim_percentage"],
-    threads: 1
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
-    log:
-        config["path"]["log"] + "/trimmed_mean/{sample}.log",
-    benchmark:
-        config["path"]["benchmark"] + "/trimmed_mean/{sample}.txt"
-    message:
-        "[get_trimmed_coverage] Getting trimmed mean of coverage..."
-    script:
-        config["path"]["scripts"] + "/trimmed_mean.py"
-
-
 rule combine_coverage:
     """
     Combines all the coverages into one file,
@@ -155,9 +128,15 @@ rule combine_coverage:
             + "/contig_stats/{sample}/postfilter_coverage_stats.txt",
             sample=SAMPLE,
         ),
+        binned_coverage=expand(
+            config["path"]["output"]
+            + "/contig_stats/{sample}/postfilter_coverage_binned.txt",
+            sample=SAMPLE,
+        ),
     output:
-        abundance_table=config["path"]["output"]
-        + "/contig_stats/raw_coverage_table.tsv",
+        covstats=config["path"]["output"] + "/contig_stats/covstats.tsv",
+        mapped_reads=config["path"]["output"] + "/contig_stats/mapped_reads_table.tsv",
+        rel_abundance=config["path"]["output"] + "/contig_stats/rel_abundance_table.tsv",
     params:
         min_coverage=config["min_coverage"],
     threads: 1
@@ -166,18 +145,8 @@ rule combine_coverage:
         runtime=config["time"]["tiny"],
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
-    message:
-        "[combine_coverage] Combining coverage statistics..."
     script:
         config["path"]["scripts"] + "/combine_coverage.R"
-
-rule relative_abundance:
-    input:
-        raw=config["path"]["output"]+ "/contig_stats/raw_coverage_table.tsv",
-    output:
-        rel=config["path"]["output"]+ "/contig_stats/rel_abundance.tsv",
-    script:
-        config["path"]["scripts"] + "/rel_from_raw.py"
 
 
 rule instrain_profile:
