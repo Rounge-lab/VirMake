@@ -59,6 +59,7 @@ rule get_sample_stats:
     input:
         virus_id_tables=expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
         rel_abund=config["path"]["output"] + "/mapping/rel_abundance_table.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
+        flagstat=expand(config["path"]["output"]+"/mapping/flagstat/{sample}_flagstat.txt", sample=SAMPLE) if config["rule_inclusion"]["stats"]["mapping"] else [],
     output:
         sample_stats=config["path"]["output"] + "/statistics/sample_stats.tsv"
     script:

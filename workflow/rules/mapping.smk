@@ -76,9 +76,36 @@ rule read_mapping:
         samtools view -b -o {output} - &> {log.samtools}
         """
 
+rule flagstat:
+    """
+    Creates a read mapping summary for each sample
+    """
+    input:
+        bam=rules.read_mapping.output,
+    output:
+        flagstat=config["path"]["output"]+"/mapping/flagstat/{sample}_flagstat.txt",
+    conda:
+        config["path"]["envs"] + "/bowtie2.yaml"
+    log:
+        config["path"]["log"] + "/mapping/flagstat/{sample}.log",
+    benchmark:
+        config["path"]["benchmark"] + "/mapping/flagstat/{sample}.txt"
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
+    shell:
+        """
+        samtools flagstats \
+            {input.bam} \
+            -O tsv \
+            --threads {threads} \
+            > {output.flagstat} 2> {log}
+        """
+
 rule pileup:
     """
-    Creates simple coverage statisitcs for each read mapping
+    Creates simple coverage statisitcs for each sample
     """
     input:
         genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
