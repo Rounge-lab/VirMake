@@ -34,17 +34,17 @@ VirMake
 ├── config
 ├── img
 ├── resources
-│   └── databases
-|       ├── checkv
-│       ├── DRAM
-│       ├── genomad
-│       ├── INPHARED
-│       ├── RefSeq
-│       ├── vcontact2
-│       ├── vibrant
-│       └── virsorter2
-├── results
+│   ├── databases
+|   │   ├── checkv
+│   │   ├── DRAM
+│   │   ├── genomad
+│   │   ├── INPHARED
+│   │   ├── RefSeq
+│   │   ├── vcontact2
+│   │   ├── vibrant
+│   │   └── virsorter2
 │   └── input
+├── results
 ├── utils
 ├── venv
 └── workflow
@@ -90,7 +90,7 @@ After that you can run the workflow offline.
 
 ### Getting samples
 
-To run the workflow you will need to provide input files. The input files should be placed in `./results/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
+To run the workflow you will need to provide input files. The input files should be placed in `./resources/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
 
 You can also download samples from SRA database by using:
 
@@ -98,7 +98,7 @@ You can also download samples from SRA database by using:
 ./virmake get SRA <accession_number>
 ```
 
-This command will download the samples from SRA database, place them in `VirMake/results/input/` folder, `gzip` them and rename them accordingly.
+This command will download the samples from SRA database, place them in `VirMake/resources/input/` folder, `gzip` them and rename them accordingly.
 
 You can get example files from [1] by running:
 
@@ -110,7 +110,7 @@ You can get example files from [1] by running:
 
 ### Running the workflow
 
-**Before running the workflow, add all your samples to the input folder in the results folder.**
+**Before running the workflow, add all your samples to the input folder in the resources folder.**
 
 To run the workflow use:
 
@@ -179,7 +179,7 @@ path:
         vibrant: [/.../VirMake/resources/databases/vibrant]
         virsorter2: [/.../VirMake/resources/databases/virsorter2]
     envs: [/.../VirMake/workflow/envs]
-    input: [/.../VirMake/results/input]
+    input: [/.../VirMake/resources/input]
     log: [/.../VirMake/results/log]
     output: [/.../VirMake/results/output]
     profile: []

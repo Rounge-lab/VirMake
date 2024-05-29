@@ -219,8 +219,8 @@ def run_prep_offline(threads):
     "-o",
     "--output-dir",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="location to download data to. Default is 'results/input'.",
-    default=pathlib.Path(__file__).parent / "results" / "input",
+    help="location to download data to. Default is 'resources/input'.",
+    default=pathlib.Path(__file__).parent / "resources" / "input",
 )
 def run_get(database, accession, output_dir):
     """Downloads read data from public databases."""

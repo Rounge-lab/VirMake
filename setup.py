@@ -100,11 +100,11 @@ def create_slurm_profile(logger, virmake_path):
     subprocess.run(cmd.split())
 
 
-def create_results_dir(logger, virmake_path, results_dir):
+def create_dirs(logger, virmake_path, results_dir):
     """create results directory"""
     logger.info("Creating results directory...")
     os.makedirs(virmake_path / results_dir, exist_ok=True)
-    os.makedirs(virmake_path / results_dir / "input", exist_ok=True)
+    os.makedirs(virmake_path / "resources" / "input", exist_ok=True)
 
 
 # Change to add in logic where if vibrant is use, the database  is used
@@ -241,7 +241,7 @@ def main():
     create_venv(logger, virmake_path)
     create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     create_slurm_profile(logger, virmake_path)
-    create_results_dir(logger, virmake_path, args.work_dir)
+    create_dirs(logger, virmake_path, args.work_dir)
     # setup_db(logger, virmake_path)
     prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     prep_script(logger, virmake_path)
