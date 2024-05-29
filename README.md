@@ -31,6 +31,7 @@ An expected directory structure should look like this (files are omitted for rea
 
 ```
 VirMake
+├── img
 ├── resources
 │   └── databases
 |       ├── checkv
@@ -41,17 +42,16 @@ VirMake
 │       ├── vcontact2
 │       ├── vibrant
 │       └── virsorter2
-├── envs
-├── img
+├── results
+│   └── input
 ├── utils
 ├── venv
-├── workflow
-│   ├── .snakemake
-│   ├── config
-│   ├── scripts
-│   └── Snakefile
-└── results
-    └── input
+└── workflow
+    ├── .snakemake
+    ├── config
+    ├── envs
+    ├── scripts
+    └── Snakefile
 ```
 
 ## Usage
@@ -178,7 +178,7 @@ path:
         vcontact2: [/.../VirMake/resources/databases/vcontact2]
         vibrant: [/.../VirMake/resources/databases/vibrant]
         virsorter2: [/.../VirMake/resources/databases/virsorter2]
-    envs: [/.../VirMake/envs]
+    envs: [/.../VirMake/workflow/envs]
     input: [/.../VirMake/results/input]
     log: [/.../VirMake/results/log]
     output: [/.../VirMake/results/output]
