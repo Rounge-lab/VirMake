@@ -49,10 +49,10 @@ VirMake
 ├── venv
 └── workflow
     ├── .snakemake
+    ├── Snakefile
     ├── envs
     ├── rules
-    ├── scripts
-    └── Snakefile
+    └── scripts
 ```
 
 ## Usage
