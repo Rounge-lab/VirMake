@@ -12,15 +12,15 @@ new_headers <- c("Marker lineage", "# genomes", "# markers", "# marker sets", "0
 checkM_format <- do.call("rbind", lapply(snakemake@input[["gathered_qual"]], function(f) {
     if (!file.info(f)$size == 0) {
         tmp <- read.delim(f, stringsAsFactors = FALSE)
-  
-  
+
+
         tmp$Completeness <- tmp$completeness
         ## Virus sequences extracted; quality sorted by completeness
         tmp$Contamination <- 0
         tmp$`Bin Id` <- tmp$virus_id
 
         if (nrow(tmp) == 1) {
-            tmp <- cbind(tmp, matrix(sapply(new_headers, function(x) rep(0,nrow(tmp))), 
+            tmp <- cbind(tmp, matrix(sapply(new_headers, function(x) rep(0,nrow(tmp))),
                                 nrow = 1, dimnames = list(NULL, new_headers)))
         } else {
             tmp <- cbind(tmp, sapply(new_headers, function(x) rep(0,nrow(tmp))))

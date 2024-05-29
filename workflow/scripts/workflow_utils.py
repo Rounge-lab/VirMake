@@ -5,8 +5,8 @@ def get_samples(path):
     samples = sample_table["sample_id"].to_list()
     return sample_table, samples
 
-def get_qc_reads_loc(wildcards, 
-                     sample_table, 
+def get_qc_reads_loc(wildcards,
+                     sample_table,
                      standard_output,
                      r):
     qc_r1_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'qc_r1'].iloc[0]
@@ -19,8 +19,8 @@ def get_qc_reads_loc(wildcards,
         elif r == "2":
             return qc_r2_loc
 
-def get_assembly_loc(wildcards, 
-                     sample_table, 
+def get_assembly_loc(wildcards,
+                     sample_table,
                      standard_output):
     assembly_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'contigs'].iloc[0]
     if pd.isna(assembly_loc) or assembly_loc == "":

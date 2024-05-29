@@ -13,7 +13,7 @@ def process_taxonomy_info(taxonomy_file):
     taxonomy = pd.read_csv(taxonomy_file, index_col=0)
     taxonomy = taxonomy[taxonomy_cols]
     taxonomy = taxonomy.rename(columns={"Scaffold": "vOTU"})
-    
+
     return taxonomy
 
 def process_derep_virus_specs(specs_file, derep_file, id_file):
@@ -31,7 +31,7 @@ def process_derep_virus_specs(specs_file, derep_file, id_file):
 
     contig_ids = pd.read_csv(id_file, sep='\t')
     contig_ids = contig_ids.rename(columns={"new_id": "vOTU"})
-    
+
     derep = pd.merge(left=derep, right=contig_ids, how="outer", on="old_id")
     # derep = derep["virus_id", "vOTU"]
 
@@ -48,12 +48,12 @@ def process_derep_virus_specs(specs_file, derep_file, id_file):
         'pangenome_n_provirus': ((grp["provirus"] == "Yes") | (grp["vir_id_provirus_assignment"] == "TRUE")).sum(),
 
     })).reset_index()
-    
+
     return derep_proc_specs
 
 def process_abundance_data(abundance_file):
     abundance_data = pd.read_csv(abundance_file, sep="\t", index_col=0)
-    
+
     presence = (abundance_data > 0)
 
     n_presence = presence.sum(axis=1)
@@ -70,7 +70,7 @@ def process_abundance_data(abundance_file):
 def get_dramv_summary(dramv_summary_file):
     dramv_cols = ["vOTU", "Gene count", "Strand switches", "potential AMG count",
                   "Transposase present", "Possible Non-Viral Contig"]#,
-                #   "Viral genes with unknown function", "Viral hypothetical genes", 
+                #   "Viral genes with unknown function", "Viral hypothetical genes",
                 #   "Viral genes with viral benefits", "Viral genes with host benefits",
                 #   "Viral structure genes"]
     dramv_summary = pd.read_csv(dramv_summary_file, sep="\t", index_col=0)
@@ -83,20 +83,20 @@ def get_dramv_summary(dramv_summary_file):
     return dramv_summary
 
 def main():
-    
+
     taxonomy = process_taxonomy_info(taxonomy_file=snakemake.input.taxonomy)
 
     derep_viral_specs = process_derep_virus_specs(specs_file=snakemake.input.gathered_specs,
                                                   derep_file=snakemake.input.derep_file,
                                                   id_file=snakemake.input.contig_id_file)
-    
+
 
     combined_table = pd.merge(left=derep_viral_specs, right=taxonomy, how="outer", on=["vOTU"])
-    
+
     if snakemake.input.rel_abund:
         abundance_stats = process_abundance_data(abundance_file=snakemake.input.rel_abund)
         combined_table = pd.merge(left=combined_table, right=abundance_stats, how="outer", on=["vOTU"])
-    
+
     if snakemake.input.DRAM_distilled_stats:
         abundance_stats = get_dramv_summary(dramv_summary_file=snakemake.input.DRAM_distilled_stats)
         combined_table = pd.merge(left=combined_table, right=abundance_stats, how="outer", on=["vOTU"])

@@ -26,40 +26,40 @@ module qc:
         config
 
 module assembly:
-	snakefile:
-		"rules/assembly.smk"
-	config:
-		config
+        snakefile:
+                "rules/assembly.smk"
+        config:
+                config
 
 module identification:
-	snakefile:
-		"rules/identification.smk"
-	config:
-		config
+        snakefile:
+                "rules/identification.smk"
+        config:
+                config
 
 module mapping:
-	snakefile:
-		"rules/mapping.smk"
-	config:
-		config
+        snakefile:
+                "rules/mapping.smk"
+        config:
+                config
 
 module taxonomy:
-	snakefile:
-		"rules/taxonomy.smk"
-	config:
-		config
+        snakefile:
+                "rules/taxonomy.smk"
+        config:
+                config
 
 module function:
-	snakefile:
-		"rules/function.smk"
-	config:
-		config
+        snakefile:
+                "rules/function.smk"
+        config:
+                config
 
 module stats:
-	snakefile:
-		"rules/stats.smk"
-	config:
-		config
+        snakefile:
+                "rules/stats.smk"
+        config:
+                config
 
 use rule * from setup_db
 use rule * from qc

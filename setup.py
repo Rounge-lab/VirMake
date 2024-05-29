@@ -75,7 +75,7 @@ def create_venv(logger, virmake_path):
             f"conda env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
         )
         subprocess.run(cmd.split())
-    
+
 
 
 def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
@@ -223,7 +223,7 @@ def prep_script(logger, virmake_path):
 # )
 
 def main():
-    
+
     parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and results dir.')
     parser.add_argument('--work-dir', type=str, default="results", help="Path to results directory.")
     parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
@@ -231,7 +231,7 @@ def main():
     parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
 
     args = parser.parse_args()
-    
+
     """Run setup"""
     logger = set_logger()
 

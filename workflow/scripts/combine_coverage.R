@@ -24,11 +24,11 @@ binned_stats <-
   bind_rows() %>%
   group_by(sample_id, vOTU) %>%
   summarize(median_binned = median(Cov)) %>%
-  ungroup() 
+  ungroup()
 
 cov_stats <-
   cov_stats %>%
-  left_join(binned_stats, by = c("sample_id", "vOTU")) 
+  left_join(binned_stats, by = c("sample_id", "vOTU"))
 
 
 cov_stats %>%

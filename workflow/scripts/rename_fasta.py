@@ -26,12 +26,12 @@ def main():
     count = int(args.s)
 
     old_names, new_names = [], []
-    
+
     if args.pos == "None":
         pos = ""
     else:
         pos = args.pos
-    
+
     # Parse file and write to output
     for line in fasta_in.readlines():
         if line.startswith('>'):
@@ -42,7 +42,7 @@ def main():
             count += 1
         else:
             fasta_out.write(line)
-     
+
      # Finish.
     fasta_out.close()
     fasta_in.close()

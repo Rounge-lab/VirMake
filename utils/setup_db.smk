@@ -95,7 +95,7 @@ rule checkv:
     shell:
         """
         checkv download_database {output}
-        
+
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
             --db {params.db_dir}/genome_db/checkv_reps &> {log}
         """

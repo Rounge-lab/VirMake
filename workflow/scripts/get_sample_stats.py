@@ -10,7 +10,7 @@ def get_sample_ids_from_path(path, pre_string, post_string):
 
     sample_pattern = f'{pre_string}(.*?){post_string}'
     match = re.search(sample_pattern, path)
-    
+
     if match:
         return match.group(1)
     else:
@@ -45,12 +45,12 @@ def summarize_virus_id_stats(stats_files):
     pre = "virus_identification/"
     post = "/gathered_quality_tables.tsv"
     sample_ids = [get_sample_ids_from_path(s, pre, post) for s in stats_files]
-    
+
     virus_id_summaries = []
 
     for vir_id_file, sample_id in zip(stats_files, sample_ids):
         virus_id_summaries.append(get_virus_id_stats(vir_id_file, sample_id))
-    
+
     virus_id_summary = pd.concat(virus_id_summaries, ignore_index=True)
 
     return virus_id_summary
@@ -65,7 +65,7 @@ def process_metaquast(mq_file):
     mq_res = pd.read_csv(mq_file, sep="\t", )
     mq_res["sample_id"] = mq_res["Assembly"].str.replace("_contigs", "")
     mq_res = mq_res[["sample_id"] + mq_cols]
-    
+
     return mq_res
 
 def process_flagstat(stat_file, sample_id):
@@ -82,7 +82,7 @@ def process_flagstat(stat_file, sample_id):
 
 def process_abundance_data(abundance_file):
     abundance_data = pd.read_csv(abundance_file, sep="\t", index_col=0)
-    
+
     presence = (abundance_data > 0)
 
     n_presence = presence.sum(axis=0)
@@ -104,23 +104,23 @@ def process_mapping_stats(flagstat_files):
 
     for stat_file, sample_id in zip(flagstat_files, sample_ids):
         mapping_summaries.append(process_flagstat(stat_file, sample_id))
-    
+
     mapping_summary = pd.concat(mapping_summaries, ignore_index=True)
 
     return mapping_summary
 
 def main():
-    
+
     samplewise_summary = summarize_virus_id_stats(snakemake.input.virus_id_tables)
 
     if snakemake.input.mq_report:
         mq_stats = process_metaquast(mq_file=snakemake.input.mq_report)
         samplewise_summary = pd.merge(left=samplewise_summary, right=mq_stats, how="outer", on=["sample_id"])
-    
+
     if snakemake.input.rel_abund:
         abundance_stats = process_abundance_data(abundance_file=snakemake.input.rel_abund)
         samplewise_summary = pd.merge(left=samplewise_summary, right=abundance_stats, how="outer", on=["sample_id"])
-    
+
     if snakemake.input.flagstat:
         mapping_stats = process_mapping_stats(flagstat_files=snakemake.input.flagstat)
         samplewise_summary = pd.merge(left=samplewise_summary, right=mapping_stats, how="outer", on=["sample_id"])

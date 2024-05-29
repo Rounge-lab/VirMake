@@ -23,8 +23,8 @@ def make_config(virmake_path,
 
     config["vibrant"] = {
         "is_virome": "no",
-        }  
-           
+        }
+
     config["virsorter2"] = {
         "id": {
             "min_length": 3000,
@@ -37,7 +37,7 @@ def make_config(virmake_path,
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }
- 
+
 
     config["path"] = {
         "virmake": str(virmake_path),
@@ -157,9 +157,9 @@ def run_setup(virmake_path, work_dir, reads, contigs):
     """Saves the config to a file."""
     virmake_path = pathlib.Path(virmake_path)
     config_path = virmake_path / "config" / "params.yaml"
-    config = make_config(virmake_path, 
-                         work_dir=work_dir, 
-                         input_reads=reads, 
+    config = make_config(virmake_path,
+                         work_dir=work_dir,
+                         input_reads=reads,
                          input_contigs=contigs)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")

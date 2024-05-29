@@ -367,7 +367,7 @@ def vOTU_AMG_stats():
             "Description": row["gene_description"],
         }
         rows_list.append(row_dict)
-    
+
     df = pd.DataFrame(rows_list, columns=column_names)
 
     df.to_csv(output_path + "/statistics/vOTU_AMGs.tsv", sep="\t", index=False)
