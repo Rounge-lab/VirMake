@@ -35,11 +35,11 @@ VirMake
 ├── img
 ├── resources
 │   ├── databases
-|   │   ├── checkv
 │   │   ├── DRAM
-│   │   ├── genomad
 │   │   ├── INPHARED
 │   │   ├── RefSeq
+|   │   ├── checkv
+│   │   ├── genomad
 │   │   ├── vcontact2
 │   │   ├── vibrant
 │   │   └── virsorter2
@@ -50,6 +50,7 @@ VirMake
 └── workflow
     ├── .snakemake
     ├── envs
+    ├── rules
     ├── scripts
     └── Snakefile
 ```
