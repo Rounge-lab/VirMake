@@ -171,7 +171,7 @@ def setup_db(logger, virmake_path):
         else:
             pass
 
-def prep_sample_table(logger, virmake_path, work_dir, reads, contigs):
+def prep_sample_table(logger, virmake_path, work_dir, reads, qc_reads, contigs):
     """create samples.tsv"""
     logger.info(f"\nCreating samples table...\n")
     cmd = (
@@ -180,6 +180,8 @@ def prep_sample_table(logger, virmake_path, work_dir, reads, contigs):
         )
     if not reads == "":
         cmd += f" -r {reads}"
+    if not qc_reads == "":
+        cmd += f" -q {qc_reads}"
     if not contigs == "":
         cmd += f" -c {contigs}"
     subprocess.run(cmd.split())
@@ -225,6 +227,7 @@ def main():
     parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and working dir.')
     parser.add_argument('--work-dir', type=str, default="working_dir", help="Path to working directory.")
     parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
+    parser.add_argument('--qc-reads', type=str, default="", help="Path where QC reads can be found.")
     parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
 
     args = parser.parse_args()
@@ -243,7 +246,7 @@ def main():
     create_slurm_profile(logger, virmake_path)
     create_working_dir(logger, virmake_path, args.work_dir)
     # setup_db(logger, virmake_path)
-    prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.contigs)
+    prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
     prep_script(logger, virmake_path)
 
     # remove setup.log on success
