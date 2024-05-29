@@ -71,19 +71,26 @@ rule fastp_pe:
         -h {output.html} -j {output.json} &> {log}
         """
 
+rule move_qc_for_fastqc:
+    input:
+        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
+        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
+    output:
+        R1 = temp(config["path"]["output"] + "/qc/tmp/{sample}_1.fastq"),
+        R2 = temp(config["path"]["output"] + "/qc/tmp/{sample}_2.fastq"),
+    shell:
+        """
+            cp {input.R1} {output.R1}
+            cp {input.R2} {output.R2}
+        """
+
 rule fastqc:
     """
     performs quality control of processed QC reads
     """
     input:
-        expand(
-            rules.fastp_pe.output.R1,
-            sample=SAMPLE,
-        ),
-        expand(
-            rules.fastp_pe.output.R2,
-            sample=SAMPLE,
-        ),
+        expand(rules.move_qc_for_fastqc.output.R1, sample=SAMPLE),
+        expand(rules.move_qc_for_fastqc.output.R2, sample=SAMPLE),
     output:
         report=expand(
             config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",

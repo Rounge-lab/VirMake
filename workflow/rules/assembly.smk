@@ -1,4 +1,4 @@
-from scripts.workflow_utils import get_samples, get_assembly_loc
+from scripts.workflow_utils import get_samples, get_qc_reads_loc, get_assembly_loc
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -27,8 +27,10 @@ rule metaSpades:
     Assembles all sequences with metaSpades
     """
     input:
-        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
-        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
+        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
+        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
+        # R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
+        # R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
     output:
         dir=directory(
             config["path"]["output"] + "/metaSpades/{sample}/",

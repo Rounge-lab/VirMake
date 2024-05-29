@@ -1,4 +1,4 @@
-from scripts.workflow_utils import get_samples
+from scripts.workflow_utils import get_samples, get_qc_reads_loc
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -53,8 +53,10 @@ rule read_mapping:
     performs read mapping between original sample and vOTUs
     """
     input:
-        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
-        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
+        # R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
+        # R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
+        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
+        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
         index_dir=rules.build_index.output.index_dir,
     output:
         config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
