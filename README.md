@@ -49,7 +49,7 @@ VirMake
 │   ├── config
 │   ├── scripts
 │   └── Snakefile
-└── working_dir
+└── results
     └── input
 ```
 
@@ -89,7 +89,7 @@ After that you can run the workflow offline.
 
 ### Getting samples
 
-To run the workflow you will need to provide input files. The input files should be placed in `./working_dir/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
+To run the workflow you will need to provide input files. The input files should be placed in `./results/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
 
 You can also download samples from SRA database by using:
 
@@ -97,7 +97,7 @@ You can also download samples from SRA database by using:
 ./virmake get SRA <accession_number>
 ```
 
-This command will download the samples from SRA database, place them in `VirMake/working_dir/input/` folder, `gzip` them and rename them accordingly.
+This command will download the samples from SRA database, place them in `VirMake/results/input/` folder, `gzip` them and rename them accordingly.
 
 You can get example files from [1] by running:
 
@@ -109,7 +109,7 @@ You can get example files from [1] by running:
 
 ### Running the workflow
 
-**Before running the workflow, add all your samples to the working_dir under the input folder.**
+**Before running the workflow, add all your samples to the input folder in the results folder.**
 
 To run the workflow use:
 
@@ -168,7 +168,7 @@ min_coverage: [75]                          # minimum coverage for combine_cover
 # absolute paths to various folders being used by the pipeline
 # we do not recommend changing these unless you know what you are doing!
 path:
-    benchmark: [/.../VirMake/working_dir/benchmark]
+    benchmark: [/.../VirMake/results/benchmark]
     database:
         DRAM: [/.../VirMake/databases/DRAM]
         INPHARED: [/.../VirMake/databases/INPHARED]
@@ -178,12 +178,12 @@ path:
         vibrant: [/.../VirMake/databases/vibrant]
         virsorter2: [/.../VirMake/databases/virsorter2]
     envs: [/.../VirMake/envs]
-    input: [/.../VirMake/working_dir/input]
-    log: [/.../VirMake/working_dir/log]
-    output: [/.../VirMake/working_dir/output]
+    input: [/.../VirMake/results/input]
+    log: [/.../VirMake/results/log]
+    output: [/.../VirMake/results/output]
     profile: []
     scripts: [/.../VirMake/workflow/scripts]
-    temp: [/.../VirMake/working_dir/temp]
+    temp: [/.../VirMake/results/temp]
     virmake: [/.../VirMake]
 
 ###############################################################################################
@@ -249,6 +249,6 @@ default-resources:
 ## Output explained
 
 The pipeline provides many files and to help navigate these this section will explain what each section provides.
-These are all folders within the `./working_dir/output` folder.
+These are all folders within the `./results/output` folder.
 
 

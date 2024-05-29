@@ -100,11 +100,11 @@ def create_slurm_profile(logger, virmake_path):
     subprocess.run(cmd.split())
 
 
-def create_working_dir(logger, virmake_path, work_dir):
-    """create working_dir structure"""
-    logger.info("Creating working directory structure...")
-    os.makedirs(virmake_path / work_dir, exist_ok=True)
-    os.makedirs(virmake_path / work_dir / "input", exist_ok=True)
+def create_results_dir(logger, virmake_path, results_dir):
+    """create results directory"""
+    logger.info("Creating results directory...")
+    os.makedirs(virmake_path / results_dir, exist_ok=True)
+    os.makedirs(virmake_path / results_dir / "input", exist_ok=True)
 
 
 # Change to add in logic where if vibrant is use, the database  is used
@@ -204,8 +204,8 @@ def prep_script(logger, virmake_path):
 # @click.option(
 #     "-w",
 #     "--work-dir",
-#     default="working_dir",
-#     help="Path to working directory.",
+#     default="results",
+#     help="Path to results directory.",
 # )
 # @click.option(
 #     "-r",
@@ -222,8 +222,8 @@ def prep_script(logger, virmake_path):
 
 def main():
     
-    parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and working dir.')
-    parser.add_argument('--work-dir', type=str, default="working_dir", help="Path to working directory.")
+    parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and results dir.')
+    parser.add_argument('--work-dir', type=str, default="results", help="Path to results directory.")
     parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
     parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
 
@@ -241,7 +241,7 @@ def main():
     create_venv(logger, virmake_path)
     create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     create_slurm_profile(logger, virmake_path)
-    create_working_dir(logger, virmake_path, args.work_dir)
+    create_results_dir(logger, virmake_path, args.work_dir)
     # setup_db(logger, virmake_path)
     prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     prep_script(logger, virmake_path)

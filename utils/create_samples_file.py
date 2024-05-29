@@ -47,7 +47,7 @@ def get_contigs_samples(path):
 @click.option(
     "-w",
     "--work-dir",
-    default="working_dir",
+    default="results",
     help="Path to working directory.",
 )
 @click.option(
