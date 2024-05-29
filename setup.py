@@ -81,7 +81,7 @@ def create_venv(logger, virmake_path):
 def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
     """create params.yaml"""
     logger.info(f"\nCreating configuration file...\n")
-    cmd = f"mkdir {virmake_path}/workflow/config"
+    cmd = f"mkdir {virmake_path}/config"
     subprocess.run(cmd.split())
     cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path} -w {work_dir}"
     if not reads == "":
@@ -153,7 +153,7 @@ def setup_db(logger, virmake_path):
             cmd = (
                 "conda run -p venv/ --no-capture-output "
                 "snakemake --snakefile utils/setup_db.smk --cores 24 "
-                f"--configfile {virmake_path / 'workflow' / 'config' / 'params.yaml'} "
+                f"--configfile {virmake_path / 'config' / 'params.yaml'} "
                 f"--use-conda --nolock --rerun-incomplete "
                 f"--directory {virmake_path / 'workflow'}"
             )

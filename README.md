@@ -31,6 +31,7 @@ An expected directory structure should look like this (files are omitted for rea
 
 ```
 VirMake
+├── config
 ├── img
 ├── resources
 │   └── databases
@@ -48,7 +49,6 @@ VirMake
 ├── venv
 └── workflow
     ├── .snakemake
-    ├── config
     ├── envs
     ├── scripts
     └── Snakefile
@@ -141,7 +141,7 @@ This will launch shiny app within your browser.
 
 ### Workflow params file
 
-To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/workflow/config/params.yaml`.
+To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/config/params.yaml`.
 The file contains the following adjustable settings (default values are provided in square brackets):
 
 ```
@@ -218,7 +218,7 @@ virsorter2:
 
 ### HPC profile file
 
-You can adjust the HPC profile file to suit your needs. The file is located in `./workflow/config/config.yaml`
+You can adjust the HPC profile file to suit your needs. The file is located in `./config/config.yaml`
 
 The profile file should look like this:
 

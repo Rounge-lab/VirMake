@@ -156,7 +156,7 @@ def make_config(virmake_path,
 def run_setup(virmake_path, work_dir, reads, contigs):
     """Saves the config to a file."""
     virmake_path = pathlib.Path(virmake_path)
-    config_path = virmake_path / "workflow" / "config" / "params.yaml"
+    config_path = virmake_path / "config" / "params.yaml"
     config = make_config(virmake_path, 
                          work_dir=work_dir, 
                          input_reads=reads, 

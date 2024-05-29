@@ -18,14 +18,14 @@ def cli():
 
 # load config file
 try:
-    with open("workflow/config/params.yaml", "r") as cf:
+    with open("config/params.yaml", "r") as cf:
         try:
             config = yaml.safe_load(cf)
         except yaml.YAMLError as ye:
             logging.critical(ye)
             exit(1)
 except FileNotFoundError:
-    logging.critical("Config file not found: workflow/config/params.yaml")
+    logging.critical("Config file not found: config/params.yaml")
     exit(1)
 
 # load virmake path
@@ -117,7 +117,7 @@ def run_workflow(
 
     # load needed paths and check if they exist
     if not config_file:
-        config_file = virmake_path / "workflow" / "config" / "params.yaml"
+        config_file = virmake_path / "config" / "params.yaml"
     else:
         config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():
@@ -127,7 +127,7 @@ def run_workflow(
         )
         exit(1)
     if not profile:
-        profile = virmake_path / "workflow" / "config"
+        profile = virmake_path / "config"
     else:
         profile = pathlib.Path(profile).resolve()
     if not workflow_dir:
@@ -190,7 +190,7 @@ def run_prep_offline(threads):
     ).format(
         snakefile=virmake_path / "workflow" / "Snakefile",
         threads=threads,
-        config=virmake_path / "workflow" / "config" / "params.yaml",
+        config=virmake_path / "config" / "params.yaml",
         workflow_dir=virmake_path / "workflow",
     )
     try:
@@ -278,8 +278,8 @@ def clean(target, yes):
             shutil.rmtree(virmake_path / "results")
         if (virmake_path / "resources" / "databases").exists():
             shutil.rmtree(virmake_path / "resources" / "databases")
-        if (virmake_path / "workflow" / "config").exists():
-            shutil.rmtree(virmake_path / "workflow" / "config")
+        if (virmake_path / "config").exists():
+            shutil.rmtree(virmake_path / "config")
     elif target == "databases":
         if (virmake_path / "resources" / "databases").exists():
             shutil.rmtree(virmake_path / "resources" / "databases")
@@ -299,8 +299,8 @@ def clean(target, yes):
             for d in dirs:
                 shutil.rmtree(virmake_path / "results" / d)
     elif target == "config":
-        if (virmake_path / "workflow" / "config").exists():
-            shutil.rmtree(virmake_path / "workflow" / "config")
+        if (virmake_path / "config").exists():
+            shutil.rmtree(virmake_path / "config")
     else:
         logging.critical(f"unknown target: {target}")
         exit(1)
