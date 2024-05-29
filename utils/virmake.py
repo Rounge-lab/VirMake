@@ -276,13 +276,13 @@ def clean(target, yes):
     if target == "all":
         if (virmake_path / "results").exists():
             shutil.rmtree(virmake_path / "results")
-        if (virmake_path / "databases").exists():
-            shutil.rmtree(virmake_path / "databases")
+        if (virmake_path / "resources" / "databases").exists():
+            shutil.rmtree(virmake_path / "resources" / "databases")
         if (virmake_path / "workflow" / "config").exists():
             shutil.rmtree(virmake_path / "workflow" / "config")
     elif target == "databases":
-        if (virmake_path / "databases").exists():
-            shutil.rmtree(virmake_path / "databases")
+        if (virmake_path / "resources" / "databases").exists():
+            shutil.rmtree(virmake_path / "resources" / "databases")
     elif target == "results":
         if (virmake_path / "results").exists():
             dirs = os.listdir(virmake_path / "results")

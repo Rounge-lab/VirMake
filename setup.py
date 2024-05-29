@@ -130,8 +130,8 @@ def setup_db(logger, virmake_path):
     while True:
         if setup_db.lower() in ["y", ""]:
             logger.info("\nSetting up databases...\n")
-            os.makedirs(virmake_path / "databases", exist_ok=True)
-            db_files = os.listdir(virmake_path / "databases")
+            os.makedirs(virmake_path / "resources" / "databases", exist_ok=True)
+            db_files = os.listdir(virmake_path / "resources" / "databases")
             if db_files == [
                 "checkv",
                 "vibrant",
@@ -147,8 +147,8 @@ def setup_db(logger, virmake_path):
                 )
                 overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
                 if overwrite_db.lower() in ["y", ""]:
-                    shutil.rmtree(virmake_path / "databases")
-                    os.makedirs(virmake_path / "databases", exist_ok=True)
+                    shutil.rmtree(virmake_path / "resources" / "databases")
+                    os.makedirs(virmake_path / "resources" / "databases", exist_ok=True)
             logger.info("\nWorking...\n")
             cmd = (
                 "conda run -p venv/ --no-capture-output "

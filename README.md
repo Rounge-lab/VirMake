@@ -31,15 +31,16 @@ An expected directory structure should look like this (files are omitted for rea
 
 ```
 VirMake
-├── databases
-│   ├── checkv
-│   ├── DRAM
-│   ├── genomad
-│   ├── INPHARED
-│   ├── RefSeq
-│   ├── vcontact2
-│   ├── vibrant
-│   └── virsorter2
+├── resources
+│   └── databases
+|       ├── checkv
+│       ├── DRAM
+│       ├── genomad
+│       ├── INPHARED
+│       ├── RefSeq
+│       ├── vcontact2
+│       ├── vibrant
+│       └── virsorter2
 ├── envs
 ├── img
 ├── utils
@@ -170,13 +171,13 @@ min_coverage: [75]                          # minimum coverage for combine_cover
 path:
     benchmark: [/.../VirMake/results/benchmark]
     database:
-        DRAM: [/.../VirMake/databases/DRAM]
-        INPHARED: [/.../VirMake/databases/INPHARED]
-        RefSeq: [/.../VirMake/databases/RefSeq]
-        checkv: [/.../VirMake/databases/checkv]
-        vcontact2: [/.../VirMake/databases/vcontact2]
-        vibrant: [/.../VirMake/databases/vibrant]
-        virsorter2: [/.../VirMake/databases/virsorter2]
+        DRAM: [/.../VirMake/resources/databases/DRAM]
+        INPHARED: [/.../VirMake/resources/databases/INPHARED]
+        RefSeq: [/.../VirMake/resources/databases/RefSeq]
+        checkv: [/.../VirMake/resources/databases/checkv]
+        vcontact2: [/.../VirMake/resources/databases/vcontact2]
+        vibrant: [/.../VirMake/resources/databases/vibrant]
+        virsorter2: [/.../VirMake/resources/databases/virsorter2]
     envs: [/.../VirMake/envs]
     input: [/.../VirMake/results/input]
     log: [/.../VirMake/results/log]

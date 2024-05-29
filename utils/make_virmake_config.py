@@ -12,7 +12,7 @@ def make_config(virmake_path,
                 input_contigs):
     """Creates a default config structure."""
     config = {}
-    db_path = virmake_path / "databases"
+    db_path = virmake_path / "resources" / "databases"
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
