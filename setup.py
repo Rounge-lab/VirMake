@@ -107,70 +107,6 @@ def create_dirs(logger, virmake_path, results_dir):
     os.makedirs(virmake_path / "resources" / "input", exist_ok=True)
 
 
-# Change to add in logic where if vibrant is use, the database  is used
-
-def setup_db(logger, virmake_path):
-    """setup databases"""
-    if len(sys.argv) == 1:
-        logger.info("\n[ DATABASE SETUP ]\n")
-        logger.info(
-            "VirMake can automatically download and setup databases for you.\n"
-            "Since VirMake uses DRAM, minimum 125GB of RAM is required.\n"
-            "Around 180GB of free disk space is required to store databases.\n"
-            "This is recommended for first time users.\n"
-            "If you choose not to setup databases now,\n"
-            "you will have to do it manually later!"
-        )
-        setup_db = input(
-            "\nDo you want to setup databases automatically? [Y/n]\n"
-        )
-    else:
-        if sys.argv[1].lower() == "-y":
-            setup_db = "y"
-    while True:
-        if setup_db.lower() in ["y", ""]:
-            logger.info("\nSetting up databases...\n")
-            os.makedirs(virmake_path / "resources" / "databases", exist_ok=True)
-            db_files = os.listdir(virmake_path / "resources" / "databases")
-            if db_files == [
-                "checkv",
-                "vibrant",
-                "INPHARED",
-                "DRAM",
-                "virsorter2",
-                "vcontact2",
-                "RefSeq",
-                "genomad",
-            ]:
-                logger.info(
-                    "Old database files were found in databases directory."
-                )
-                overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
-                if overwrite_db.lower() in ["y", ""]:
-                    shutil.rmtree(virmake_path / "resources" / "databases")
-                    os.makedirs(virmake_path / "resources" / "databases", exist_ok=True)
-            logger.info("\nWorking...\n")
-            cmd = (
-                "conda run -p venv/ --no-capture-output "
-                "snakemake --snakefile utils/setup_db.smk --cores 24 "
-                f"--configfile {virmake_path / 'config' / 'params.yaml'} "
-                f"--use-conda --nolock --rerun-incomplete "
-                f"--directory {virmake_path / 'workflow'}"
-            )
-            db_workflow = subprocess.run(cmd.split(), capture_output=True)
-            if db_workflow.returncode != 0:
-                logger.error(
-                    "Snakemake error! See setup.log for full traceback.\n"
-                )
-                logger.critical(strip_stdout(db_workflow.stderr))
-                exit(1)
-            break
-        elif setup_db.lower() == "n":
-            logger.info("\nSkipping database setup...\n")
-            break
-        else:
-            pass
-
 def prep_sample_table(logger, virmake_path, work_dir, reads, qc_reads, contigs):
     """create samples.tsv"""
     logger.info(f"\nCreating samples table...\n")
@@ -202,25 +138,6 @@ def prep_script(logger, virmake_path):
     cmd = "chmod +x virmake"
     subprocess.run(cmd.split())
 
-# @click.command()
-# @click.option(
-#     "-w",
-#     "--work-dir",
-#     default="results",
-#     help="Path to results directory.",
-# )
-# @click.option(
-#     "-r",
-#     "--reads",
-#     default=None,
-#     help="Location of read files",
-# )
-# @click.option(
-#     "-c",
-#     "--contigs",
-#     default=None,
-#     help="Location of assembled contigs.",
-# )
 
 def main():
 
@@ -245,7 +162,6 @@ def main():
     create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     create_slurm_profile(logger, virmake_path)
     create_dirs(logger, virmake_path, args.work_dir)
-    # setup_db(logger, virmake_path)
     prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
     prep_script(logger, virmake_path)
 
