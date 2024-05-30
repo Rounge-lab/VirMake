@@ -9,7 +9,7 @@
 
 ## About VirMake
 
-VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on SLURM cluster execution. It has been tested with x86_64-based Linux.
+VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on x86_64-based Linux and with SLURM cluster execution.
 
 <!-- ![Flowchart](img/flowchart.png) -->
 
@@ -18,16 +18,16 @@ VirMake is a Snakemake based pipeline that offers viral metagenomic data analysi
 ### Prerequisites:
 - Git
 - Conda (Miniconda or Anaconda) installation with write permissions. Conda must be activated with its base environment.
-- At least 125 GB of RAM and 180 GB of free disk space. Additional disk space will be needed for the output files depending on the size and number of your samples!
+- To run all modules, at least 125 GB of RAM and 180 GB of free disk space is required.
 
 ### To install VirMake follow these steps:
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
-2. Run the VirMake setup script `python setup.py -y`. The `-y` flag will automatically trigger installation of the databases. If you want to install the databases yourself, you can omit the flag. Also, **if you encounter any errors** during the installation, please run the setup script again without the flag. We recommend using `screen` or `tmux`to run the setup script.
-3. Sit back and relax... The installation will take a while, especially if setting up databases.
-4. Check `setup.log` file for any errors. If there are no errors, you are ready to go!
+2. Run the VirMake setup script `python setup.py`. This script will set up a conda environment, config files and a table specifying the location of input files.
+    * Running the setup script with the option `--working-dir` will set the output directory where config files are written to. The default is `./working_dir/`.
+    * Running the setup script with options `--reads`, `--reads-qc`, and `--contigs` allows you to specify the location of any input files.
 
-An expected directory structure should look like this (files are omitted for readability):
+Following setup, the directory structure should look like this:
 
 ```
 VirMake
