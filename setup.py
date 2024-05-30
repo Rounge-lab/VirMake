@@ -3,9 +3,7 @@
 import logging
 import os
 import pathlib
-import shutil
 import subprocess
-import sys
 import argparse
 
 
@@ -75,7 +73,6 @@ def create_venv(logger, virmake_path):
             f"conda env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
         )
         subprocess.run(cmd.split())
-
 
 
 def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
