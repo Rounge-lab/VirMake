@@ -2,7 +2,7 @@ identifier = config["identifier"]
 
 rule SETUP_DB:
     input:
-        config["path"]["database"]["RefSeq"] if config["rule_inclusion"]["all"]["metaquast"] else []
+        config["path"]["database"]["RefSeq"] if config["rule_inclusion"]["all"]["metaquast"] else [],
         config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
         config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
         config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
