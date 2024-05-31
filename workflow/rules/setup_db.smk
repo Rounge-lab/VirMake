@@ -2,14 +2,16 @@ identifier = config["identifier"]
 
 rule SETUP_DB:
     input:
-        config["path"]["database"]["vcontact2"] + "/flag",
-        config["path"]["database"]["DRAM"] + "/DRAM.config",
-        config["path"]["database"][identifier] + "/flag",
-        config["path"]["database"]["checkv"],
-        config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa",
-        config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv",
-        config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv",
-        config["path"]["database"]["RefSeq"]
+        config["path"]["database"]["RefSeq"] if config["rule_inclusion"]["all"]["metaquast"] else []
+        config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
+        config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
+        config["path"]["database"][identifier] + "/flag" if config["rule_inclusion"]["all"]["identification"] else [],
+        config["path"]["database"]["checkv"] if config["rule_inclusion"]["all"]["identification"] else [],
+        config["path"]["database"]["vcontact2"] + "/flag" if config["rule_inclusion"]["all"]["taxonomy"] else [],
+        config["path"]["database"]["INPHARED"] + "/vConTACT2_proteins.faa" if config["rule_inclusion"]["all"]["taxonomy"] else [],
+        config["path"]["database"]["INPHARED"] + "/data_excluding_refseq.tsv" if config["rule_inclusion"]["all"]["taxonomy"] else [],
+        config["path"]["database"]["INPHARED"] + "/vConTACT2_gene_to_genome.csv" if config["rule_inclusion"]["all"]["taxonomy"] else [],
+        config["path"]["database"]["DRAM"] + "/DRAM.config" if config["rule_inclusion"]["all"]["function"] else [],
     output:
         config["path"]["temp"] + "/finished_DB"
     shell:

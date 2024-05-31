@@ -42,7 +42,6 @@ def make_config(virmake_path,
     config["path"] = {
         "virmake": str(virmake_path),
         "envs": str(virmake_path / "workflow" / "envs"),
-        "input": str(virmake_path / "resources" / "input"),
         "output": str(virmake_path / work_dir / "output"),
         "log": str(virmake_path / work_dir / "log"),
         "benchmark": str(virmake_path / work_dir / "benchmark"),

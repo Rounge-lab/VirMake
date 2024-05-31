@@ -33,6 +33,44 @@ virmake_path = pathlib.Path(__file__).parent.absolute()
 
 
 @cli.command(
+    "db",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads databases for steps defined in config.\n"+
+        "Databases will be downloaded as needed if not downloaded using this option.",
+)
+@click.option(
+    "-n",
+    "--dryrun",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="test execution",
+)
+def get_dbs(threads, dryrun):
+    """Downloads all databases needed to run the workflow."""
+    cmd = (
+        "snakemake --snakefile {snakefile} "
+        "--conda-frontend mamba --configfile {config} "
+        "--nolock  --use-conda "
+        "--show-failed-logs --directory {workflow_dir} "
+        "-c{threads} "
+        "setup_db"
+        "{dryrun} "
+    ).format(
+        snakefile=virmake_path / "workflow" / "Snakefile",
+        threads=threads,
+        config=virmake_path / "config" / "params.yaml",
+        workflow_dir=virmake_path / "workflow",
+        dryrun = "-n" if dryrun else ""
+    )
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
+
+@cli.command(
     "run",
     context_settings=dict(ignore_unknown_options=True),
     short_help="Runs the main workflow",
