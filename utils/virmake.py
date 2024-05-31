@@ -39,6 +39,13 @@ virmake_path = pathlib.Path(__file__).parent.absolute()
         "Databases will be downloaded as needed if not downloaded using this option.",
 )
 @click.option(
+    "-c",
+    "--threads",
+    default=24,
+    type=int,
+    help="maximum number of threads used on multithreaded jobs",
+)
+@click.option(
     "-n",
     "--dryrun",
     is_flag=True,
@@ -54,7 +61,7 @@ def get_dbs(threads, dryrun):
         "--nolock  --use-conda "
         "--show-failed-logs --directory {workflow_dir} "
         "-c{threads} "
-        "setup_db"
+        "SETUP_DB "
         "{dryrun} "
     ).format(
         snakefile=virmake_path / "workflow" / "Snakefile",
@@ -237,54 +244,6 @@ def run_prep_offline(threads):
         # removes the traceback
         logging.critical(e)
         exit(1)
-
-
-# Download sample data
-@cli.command(
-    "get",
-    context_settings=dict(ignore_unknown_options=True),
-    short_help="Downloads read data from public databases.",
-)
-@click.argument(
-    "database",
-    type=click.Choice(["SRA"]),
-)
-@click.argument(
-    "accession",
-    type=str,
-)
-@click.option(
-    "-o",
-    "--output-dir",
-    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="location to download data to. Default is 'resources/input'.",
-    default=pathlib.Path(__file__).parent / "resources" / "input",
-)
-def run_get(database, accession, output_dir):
-    """Downloads read data from public databases."""
-    db_commands = {
-        "SRA": "fasterq-dump {accession} -O {output_dir}".format(
-            accession=accession, output_dir=output_dir
-        )
-    }
-    cmd = db_commands[database]
-    try:
-        print(f"Downloading {accession} from {database}...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    cmd = f"gzip {output_dir}/*"
-    try:
-        print("Compressing files...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    print("Done! Files written in: {output_dir}".format(output_dir=output_dir))
-
 
 # Clean
 @cli.command(
