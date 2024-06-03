@@ -103,10 +103,15 @@ rule DRAMv_db:
     shell:
         """
         # Temporary fix for vogdb
-        # Use vogdb version 221 instead of incompatible version 222 (latest)
+        # Recreate vog.hmm.tar.gz file without the enclosing hmm folder
         mkdir -p {output.dram_dir}/vogdb
-        wget -nv "https://fileshare.lisc.univie.ac.at/vog/vog221/vog.hmm.tar.gz"
+        wget -nv "https://fileshare.lisc.univie.ac.at/vog/latest/vog.hmm.tar.gz"
+        tar xzf vog.hmm.tar.gz
+        cd hmm
+        tar czf vog.hmm.tar.gz *.hmm
         mv vog.hmm.tar.gz {output.dram_dir}/vogdb
+        cd ..
+        rm -rf vog.hmm.tar.gz hmm
 
         DRAM-setup.py prepare_databases --output_dir {output.dram_dir} \
             --verbose --skip_uniref --threads {threads} \
