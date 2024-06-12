@@ -215,8 +215,9 @@ rule instrain_compare:
             sample=SAMPLE,
         ),
     output:
-        dir=directory(config["path"]["output"] + "/instrain/comparison"),
         instrain_genome_summary=config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv",
+    params:
+        dir=config["path"]["output"] + "/instrain/comparison",
     conda:
         config["path"]["envs"] + "/instrain.yaml"
     log:
@@ -231,5 +232,7 @@ rule instrain_compare:
         runtime=config["time"]["normal"],
     shell:
         """
-        inStrain compare -i {input} -o {output.dir} &> {log}
+        mkdir -p {params.dir}
+        inStrain compare -i {input} -o {params.dir} &> {log}
+        [ -f {output.instrain_genome_summary}.gz ] && gzip -d {output.instrain_genome_summary}.gz
         """
