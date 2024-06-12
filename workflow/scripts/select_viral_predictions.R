@@ -18,8 +18,8 @@ detected_overlaps <-
   group_by(contig_id) %>%
   group_split() %>%
   lapply(function(tmp) {
-    if (nrow(tmp) == 1) {
-      ## Only one viral prediction tool used
+    if (nrow(tmp) < 2) {
+      ## Only one viral prediction tool used, or no predictions of high enough quality
       tmp
     } else {
       ## More than one prediction tool used: Identify overlapping predictions
@@ -134,9 +134,16 @@ if (length(unique(viral_predictions$vir_id_tool)) > 1) {
                   filter(is.na(value) | full_overlap_frac < full_overlap_frac_threshold))
   }
 } else {
-  selected_predictions <-
-    detected_overlaps %>%
-    mutate(value = id)
+  if (nrow(detected_overlaps > 0)) {
+    selected_predictions <-
+      detected_overlaps %>%
+      mutate(value = id)
+  } else {
+    selected_predictions <-
+      viral_predictions %>%
+      mutate(value = "")
+  }
+  
 }
 
 ## Rename viral predictions
