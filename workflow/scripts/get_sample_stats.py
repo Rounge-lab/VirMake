@@ -18,11 +18,14 @@ def get_sample_ids_from_path(path, pre_string, post_string):
 
 def calculate_n50(lengths):
     """Calculate the N50 for a sequence of lengths."""
-    lengths_sorted = sorted(lengths, reverse=True)
-    csum = pd.Series(lengths_sorted).cumsum()
-    half_total = csum.iloc[-1] / 2
-    n50_index = csum[csum >= half_total].index[0]
-    return lengths_sorted[n50_index]
+    if len(length) > 0:
+        lengths_sorted = sorted(lengths, reverse=True)
+        csum = pd.Series(lengths_sorted).cumsum()
+        half_total = csum.iloc[-1] / 2
+        n50_index = csum[csum >= half_total].index[0]
+        return lengths_sorted[n50_index]
+    else:
+        return 0
 
 def get_virus_id_stats(virus_id_file, sample_id):
     virus_id_stats = pd.read_csv(virus_id_file, sep="\t", index_col=False)
