@@ -18,7 +18,7 @@ def get_sample_ids_from_path(path, pre_string, post_string):
 
 def calculate_n50(lengths):
     """Calculate the N50 for a sequence of lengths."""
-    if len(length) > 0:
+    if len(lengths) > 0:
         lengths_sorted = sorted(lengths, reverse=True)
         csum = pd.Series(lengths_sorted).cumsum()
         half_total = csum.iloc[-1] / 2
