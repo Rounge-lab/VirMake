@@ -234,5 +234,5 @@ rule instrain_compare:
         """
         mkdir -p {params.dir}
         inStrain compare -i {input} -o {params.dir} &> {log}
-        [ -f {output.instrain_genome_summary}.gz ] && gzip -d {output.instrain_genome_summary}.gz
+        # [ -f {output.instrain_genome_summary}.gz ] && gzip -d {output.instrain_genome_summary}.gz
         """
