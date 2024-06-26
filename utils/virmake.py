@@ -18,19 +18,64 @@ def cli():
 
 # load config file
 try:
-    with open("workflow/config/params.yaml", "r") as cf:
+    with open("config/params.yaml", "r") as cf:
         try:
             config = yaml.safe_load(cf)
         except yaml.YAMLError as ye:
             logging.critical(ye)
             exit(1)
 except FileNotFoundError:
-    logging.critical("Config file not found: workflow/config/params.yaml")
+    logging.critical("Config file not found: config/params.yaml")
     exit(1)
 
 # load virmake path
 virmake_path = pathlib.Path(__file__).parent.absolute()
 
+
+@cli.command(
+    "db",
+    context_settings=dict(ignore_unknown_options=True),
+    short_help="Downloads databases for steps defined in config.\n"+
+        "Databases will be downloaded as needed if not downloaded using this option.",
+)
+@click.option(
+    "-c",
+    "--threads",
+    default=24,
+    type=int,
+    help="maximum number of threads used on multithreaded jobs",
+)
+@click.option(
+    "-n",
+    "--dryrun",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="test execution",
+)
+def get_dbs(threads, dryrun):
+    """Downloads all databases needed to run the workflow."""
+    cmd = (
+        "snakemake --snakefile {snakefile} "
+        "--conda-frontend mamba --configfile {config} "
+        "--nolock  --use-conda "
+        "--show-failed-logs --directory {workflow_dir} "
+        "-c{threads} "
+        "SETUP_DB "
+        "{dryrun} "
+    ).format(
+        snakefile=virmake_path / "workflow" / "Snakefile",
+        threads=threads,
+        config=virmake_path / "config" / "params.yaml",
+        workflow_dir=virmake_path / "workflow",
+        dryrun = "-n" if dryrun else ""
+    )
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        # removes the traceback
+        logging.critical(e)
+        exit(1)
 
 @cli.command(
     "run",
@@ -117,7 +162,7 @@ def run_workflow(
 
     # load needed paths and check if they exist
     if not config_file:
-        config_file = virmake_path / "workflow" / "config" / "params.yaml"
+        config_file = virmake_path / "config" / "params.yaml"
     else:
         config_file = pathlib.Path(config_file).resolve()
     if not config_file.exists():
@@ -127,7 +172,7 @@ def run_workflow(
         )
         exit(1)
     if not profile:
-        profile = virmake_path / "workflow" / "config"
+        profile = virmake_path / "config"
     else:
         profile = pathlib.Path(profile).resolve()
     if not workflow_dir:
@@ -185,13 +230,13 @@ def run_prep_offline(threads):
         "snakemake --snakefile {snakefile} "
         "--conda-frontend mamba --configfile {config} "
         "--nolock  --use-conda --conda-create-envs-only "
-        "--show-failed-logs --directory {working_dir} "
+        "--show-failed-logs --directory {workflow_dir} "
         "-c{threads}"
     ).format(
         snakefile=virmake_path / "workflow" / "Snakefile",
         threads=threads,
-        config=virmake_path / "workflow" / "config" / "params.yaml",
-        working_dir=virmake_path / "workflow",
+        config=virmake_path / "config" / "params.yaml",
+        workflow_dir=virmake_path / "workflow",
     )
     try:
         subprocess.check_call(cmd, shell=True)
@@ -199,54 +244,6 @@ def run_prep_offline(threads):
         # removes the traceback
         logging.critical(e)
         exit(1)
-
-
-# Download sample data
-@cli.command(
-    "get",
-    context_settings=dict(ignore_unknown_options=True),
-    short_help="Downloads read data from public databases.",
-)
-@click.argument(
-    "database",
-    type=click.Choice(["SRA"]),
-)
-@click.argument(
-    "accession",
-    type=str,
-)
-@click.option(
-    "-o",
-    "--output-dir",
-    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
-    help="location to download data to. Default is 'working_dir/input'.",
-    default=pathlib.Path(__file__).parent / "working_dir" / "input",
-)
-def run_get(database, accession, output_dir):
-    """Downloads read data from public databases."""
-    db_commands = {
-        "SRA": "fasterq-dump {accession} -O {output_dir}".format(
-            accession=accession, output_dir=output_dir
-        )
-    }
-    cmd = db_commands[database]
-    try:
-        print(f"Downloading {accession} from {database}...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    cmd = f"gzip {output_dir}/*"
-    try:
-        print("Compressing files...")
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-    print("Done! Files written in: {output_dir}".format(output_dir=output_dir))
-
 
 # Clean
 @cli.command(
@@ -256,7 +253,7 @@ def run_get(database, accession, output_dir):
 )
 @click.argument(
     "target",
-    type=click.Choice(["all", "databases", "working_dir", "config"]),
+    type=click.Choice(["all", "databases", "results", "config"]),
 )
 @click.option(
     "-y",
@@ -274,18 +271,18 @@ def clean(target, yes):
             default=False,
         )
     if target == "all":
-        if (virmake_path / "working_dir").exists():
-            shutil.rmtree(virmake_path / "working_dir")
-        if (virmake_path / "databases").exists():
-            shutil.rmtree(virmake_path / "databases")
-        if (virmake_path / "workflow" / "config").exists():
-            shutil.rmtree(virmake_path / "workflow" / "config")
+        if (virmake_path / "results").exists():
+            shutil.rmtree(virmake_path / "results")
+        if (virmake_path / "resources" / "databases").exists():
+            shutil.rmtree(virmake_path / "resources" / "databases")
+        if (virmake_path / "config").exists():
+            shutil.rmtree(virmake_path / "config")
     elif target == "databases":
-        if (virmake_path / "databases").exists():
-            shutil.rmtree(virmake_path / "databases")
-    elif target == "working_dir":
-        if (virmake_path / "working_dir").exists():
-            dirs = os.listdir(virmake_path / "working_dir")
+        if (virmake_path / "resources" / "databases").exists():
+            shutil.rmtree(virmake_path / "resources" / "databases")
+    elif target == "results":
+        if (virmake_path / "results").exists():
+            dirs = os.listdir(virmake_path / "results")
             if ".snakemake" in dirs:
                 logging.warning(
                     "Not removing .snakemake directory!"
@@ -297,10 +294,10 @@ def clean(target, yes):
                 )
                 dirs.remove(".snakemake")
             for d in dirs:
-                shutil.rmtree(virmake_path / "working_dir" / d)
+                shutil.rmtree(virmake_path / "results" / d)
     elif target == "config":
-        if (virmake_path / "workflow" / "config").exists():
-            shutil.rmtree(virmake_path / "workflow" / "config")
+        if (virmake_path / "config").exists():
+            shutil.rmtree(virmake_path / "config")
     else:
         logging.critical(f"unknown target: {target}")
         exit(1)

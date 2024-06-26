@@ -3,9 +3,8 @@
 import logging
 import os
 import pathlib
-import shutil
 import subprocess
-import sys
+import argparse
 
 
 def strip_stdout(stdout):
@@ -63,7 +62,7 @@ def create_venv(logger, virmake_path):
     logger.info("\nAttempting to use mamba...\n")
     try:
         cmd = (
-            f"mamba env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
+            f"mamba env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
         )
         subprocess.run(cmd.split())
     except FileNotFoundError:
@@ -71,18 +70,21 @@ def create_venv(logger, virmake_path):
             "Mamba was not available in base environment, using conda.\n"
         )
         cmd = (
-            f"conda env create -f {virmake_path / 'envs' / 'virmake.yaml'} -p venv"
+            f"conda env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
         )
         subprocess.run(cmd.split())
-    
 
 
-def create_virmake_config(logger, virmake_path):
-    """create config.yaml"""
+def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
+    """create params.yaml"""
     logger.info(f"\nCreating configuration file...\n")
-    cmd = f"mkdir {virmake_path}/workflow/config"
+    cmd = f"mkdir {virmake_path}/config"
     subprocess.run(cmd.split())
-    cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path}"
+    cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path} -w {work_dir}"
+    if not reads == "":
+        cmd += f" -r {reads}"
+    if not contigs == "":
+        cmd += f" -c {contigs}"
     subprocess.run(cmd.split())
 
 
@@ -95,76 +97,27 @@ def create_slurm_profile(logger, virmake_path):
     subprocess.run(cmd.split())
 
 
-def create_working_dir(logger, virmake_path):
-    """create working_dir structure"""
-    logger.info("Creating working directory structure...")
-    os.makedirs(virmake_path / "working_dir", exist_ok=True)
-    os.makedirs(virmake_path / "working_dir" / "input", exist_ok=True)
+def create_dirs(logger, virmake_path, results_dir):
+    """create results directory"""
+    logger.info("Creating results directory...")
+    os.makedirs(virmake_path / results_dir, exist_ok=True)
+    os.makedirs(virmake_path / "resources" / "input", exist_ok=True)
 
 
-# Change to add in logic where if vibrant is use, the database  is used
-
-def setup_db(logger, virmake_path):
-    """setup databases"""
-    if len(sys.argv) == 1:
-        logger.info("\n[ DATABASE SETUP ]\n")
-        logger.info(
-            "VirMake can automatically download and setup databases for you.\n"
-            "Since VirMake uses DRAM, minimum 125GB of RAM is required.\n"
-            "Around 180GB of free disk space is required to store databases.\n"
-            "This is recommended for first time users.\n"
-            "If you choose not to setup databases now,\n"
-            "you will have to do it manually later!"
+def prep_sample_table(logger, virmake_path, work_dir, reads, qc_reads, contigs):
+    """create samples.tsv"""
+    logger.info(f"\nCreating samples table...\n")
+    cmd = (
+        f"conda run -p venv/ python utils/create_samples_file.py "
+        f"{virmake_path} -w {work_dir}"
         )
-        setup_db = input(
-            "\nDo you want to setup databases automatically? [Y/n]\n"
-        )
-    else:
-        if sys.argv[1].lower() == "-y":
-            setup_db = "y"
-    while True:
-        if setup_db.lower() in ["y", ""]:
-            logger.info("\nSetting up databases...\n")
-            os.makedirs(virmake_path / "databases", exist_ok=True)
-            db_files = os.listdir(virmake_path / "databases")
-            if db_files == [
-                "checkv",
-                "vibrant",
-                "INPHARED",
-                "DRAM",
-                "virsorter2",
-                "vcontact2",
-                "RefSeq",
-                "genomad",
-            ]:
-                logger.info(
-                    "Old database files were found in databases directory."
-                )
-                overwrite_db = input("Do you wish to overwrite them? [Y/n]\n")
-                if overwrite_db.lower() in ["y", ""]:
-                    shutil.rmtree(virmake_path / "databases")
-                    os.makedirs(virmake_path / "databases", exist_ok=True)
-            logger.info("\nWorking...\n")
-            cmd = (
-                "conda run -p venv/ --no-capture-output "
-                "snakemake --snakefile utils/setup_db.smk --cores 24 "
-                f"--configfile {virmake_path / 'workflow' / 'config' / 'params.yaml'} "
-                f"--use-conda --nolock --rerun-incomplete "
-                f"--directory {virmake_path / 'workflow'}"
-            )
-            db_workflow = subprocess.run(cmd.split(), capture_output=True)
-            if db_workflow.returncode != 0:
-                logger.error(
-                    "Snakemake error! See setup.log for full traceback.\n"
-                )
-                logger.critical(strip_stdout(db_workflow.stderr))
-                exit(1)
-            break
-        elif setup_db.lower() == "n":
-            logger.info("\nSkipping database setup...\n")
-            break
-        else:
-            pass
+    if not reads == "":
+        cmd += f" -r {reads}"
+    if not qc_reads == "":
+        cmd += f" -q {qc_reads}"
+    if not contigs == "":
+        cmd += f" -c {contigs}"
+    subprocess.run(cmd.split())
 
 
 def prep_script(logger, virmake_path):
@@ -184,6 +137,15 @@ def prep_script(logger, virmake_path):
 
 
 def main():
+
+    parser = argparse.ArgumentParser(description='Prepare for running VirMake by setting input paths and results dir.')
+    parser.add_argument('--work-dir', type=str, default="results", help="Path to results directory.")
+    parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
+    parser.add_argument('--qc-reads', type=str, default="", help="Path where QC reads can be found.")
+    parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
+
+    args = parser.parse_args()
+
     """Run setup"""
     logger = set_logger()
 
@@ -194,10 +156,10 @@ def main():
     # run all steps
     check_conda(logger)
     create_venv(logger, virmake_path)
-    create_virmake_config(logger, virmake_path)
+    create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
     create_slurm_profile(logger, virmake_path)
-    create_working_dir(logger, virmake_path)
-    setup_db(logger, virmake_path)
+    create_dirs(logger, virmake_path, args.work_dir)
+    prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
     prep_script(logger, virmake_path)
 
     # remove setup.log on success

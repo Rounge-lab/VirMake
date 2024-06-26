@@ -54,7 +54,7 @@ def get_trimmed_mean(filename, contig_summary_file, trim_perc=0.05):
                 contig_cov.append([contig_id, trimmed_cov])
                 break
 
-            if re.search("#vOTU_", line):
+            if re.search("#vOTU", line):
                 if contig_id == "":
                     contig_id = line.replace("#", "")
                 else:

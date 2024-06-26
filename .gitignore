@@ -22,3 +22,4 @@ working_dir
 *.log
 *fasterq*/
 venv/
+resources/

@@ -1,16 +1,18 @@
 import yaml
 import pathlib
-import sys
-import logging
 import click
+import os
 
 
 # CLI command tool to choose the viral identifier
 
-def make_config(virmake_path):
+def make_config(virmake_path,
+                work_dir,
+                input_reads,
+                input_contigs):
     """Creates a default config structure."""
     config = {}
-    db_path = virmake_path / "databases"
+    db_path = virmake_path / "resources" / "databases"
 
     config["slurm_account"] = "default"
     config["assembler"] = "metaspades"
@@ -19,57 +21,55 @@ def make_config(virmake_path):
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
 
-    logging.info("Viral identifier chosen is "
-                 + config["identifier"]
-                 + "vibrant, applying appropriate config settings")
-
-    if config["identifier"] == 'vibrant':
-           config["vibrant"] = {
-            "is_virome": "no",
-            }  
-           
-           config["path"]["database"] = { "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1") }
-
-    elif config["identifier"] == 'genomad':
-           config["path"]["database"] = { "genomad": str(db_path / "genomad") }
-    else:
-        config["virsorter2"] = {
-            "pass1": {
-                "min_lenght": 3000,
-                "min_score": 0.5,
-                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-            },
-            "pass2": {
-                "min_lenght": 1000,
-                "min_score": 0.5,
-                "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-            },
+    config["vibrant"] = {
+        "is_virome": "no",
         }
- 
 
-    config["path"] = {
-        "virmake": str(virmake_path),
-        "envs": str(virmake_path / "envs"),
-        "input": str(virmake_path / "working_dir" / "input"),
-        "output": str(virmake_path / "working_dir" / "output"),
-        "log": str(virmake_path / "working_dir" / "log"),
-        "benchmark": str(virmake_path / "working_dir" / "benchmark"),
-        "temp": str(virmake_path / "working_dir" / "temp"),
-        "scripts": str(virmake_path / "workflow" / "scripts"),
-        "database": {
-            "DRAM": str(db_path / "DRAM" / "DRAM_data"),
-            "checkv": str(db_path / "checkv"),
-            "virsorter2": str(db_path / "virsorter2/db"),
-            "INPHARED": str(db_path / "INPHARED"),
-            "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
-            "vcontact2": str(db_path / "vcontact2"),
+    config["virsorter2"] = {
+        "id": {
+            "min_length": 3000,
+            "min_score": 0.5,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
+        },
+        "for_dramv": {
+            "min_length": 100,
+            "min_score": 0.01,
+            "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
     }
 
 
-    config["cd-hit-est"] = {
-        "identity_threshold": 0.95,
-        "coverage": 0.85,
+    config["path"] = {
+        "virmake": str(virmake_path),
+        "envs": str(virmake_path / "workflow" / "envs"),
+        "output": str(virmake_path / work_dir / "output"),
+        "log": str(virmake_path / work_dir / "log"),
+        "benchmark": str(virmake_path / work_dir / "benchmark"),
+        "temp": str(virmake_path / work_dir / "temp"),
+        "scripts": str(virmake_path / "workflow" / "scripts"),
+        "samples": str(virmake_path / work_dir / "samples.tsv"),
+        "input_reads": str(os.path.normpath(input_reads)),
+        "input_contigs": str(os.path.normpath(input_contigs)),
+        "database": {
+            "RefSeq": str(db_path / "RefSeq/viral.1.1.genomic.fna"),
+            "virsorter2": str(db_path / "virsorter2"),
+            "genomad": str(db_path / "genomad"),
+            "vibrant": str(db_path / "vibrant" / "vibrant-1.2.1"),
+            "checkv": str(db_path / "checkv"),
+            "INPHARED": str(db_path / "INPHARED"),
+            "vcontact2": str(db_path / "vcontact2"),
+            "DRAM": str(db_path / "DRAM" / "DRAM_data"),
+        },
+    }
+
+    config["dereplication"] = {
+        "ani": 97,
+        "precluster_ani": 95,
+        "min_aligned_fraction": 70,
+        "vOTU_num_start": 1,
+        "vOTU_prefix": "vOTU",
+        "vOTU_suffix": "",
+        "vOTU_num_len": 5
     }
     config["quality_threshold"] = "medium"
     config["threads"] = 24
@@ -105,20 +105,61 @@ def make_config(virmake_path):
         "quality_summary.tsv",
         "contig_plasmid_summary",
         "results_vcontact2",
-        "compared_samples_comparisonsTable.tsv",
+        "comparison_comparisonsTable.tsv",
         "transposed_report.tsv",
         "viral_genomes_combined.csv",
         "derep95_combined.fasta.clstr",
     ]
+    config["rule_inclusion"] = {
+        "all": {
+            "qc": True,
+            "assembly": True,
+            "metaquast": True,
+            "identification": True,
+            "taxonomy": True,
+            "mapping": True,
+            "instrain": True,
+            "function": True,
+            "stats": True,
+        },
+        "stats": {
+            "metaquast": True,
+            "mapping": True,
+            "instrain": False,
+            "dramv": True,
+        }
+    }
 
     return config
 
-
-def main():
+@click.command()
+@click.argument("virmake_path")
+@click.option(
+    "-w",
+    "--work-dir",
+    default="results",
+    help="Path to working directory.",
+)
+@click.option(
+    "-r",
+    "--reads",
+    default="",
+    help="Location of read files",
+)
+@click.option(
+    "-c",
+    "--contigs",
+    default="",
+    help="Location of assembled contigs.",
+)
+def run_setup(virmake_path, work_dir, reads, contigs):
     """Saves the config to a file."""
-    virmake_path = pathlib.Path(sys.argv[1])
-    config_path = virmake_path / "workflow" / "config" / "params.yaml"
-    config = make_config(virmake_path)
+    virmake_path = pathlib.Path(virmake_path)
+    config_path = virmake_path / "config" / "params.yaml"
+    config = make_config(virmake_path,
+                         work_dir=work_dir,
+                         input_reads=reads,
+                         input_contigs=contigs)
     if config_path.exists():
         print(f"Config file {config_path} already exists.")
         print("Skipping...")
@@ -128,4 +169,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_setup()

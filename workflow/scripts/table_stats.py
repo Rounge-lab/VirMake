@@ -54,12 +54,12 @@ def create_sample_stats_virsorter2():
     for x in samples:
         checkV = getcheckv(
             output_path
-            + "/checkv/virsorter2_pass1/"
+            + "/checkv/virsorter2/"
             + x
             + "/quality_summary.tsv"
         )
         virSorter2 = getVirSorter(
-            output_path + "/virsorter2_pass1/" + x + "/final-viral-score.tsv"
+            output_path + "/virsorter2/" + x + "/final-viral-score.tsv"
         )
 
         raw_reads, filtered_reads = get_trimmed_report(x)
@@ -349,26 +349,28 @@ def get_DRAMv(input):
 
 def vOTU_AMG_stats():
     """
-    Function that creates the  AMG table and aggregates the functional annotation
+    Function that creates the AMG table and aggregates the functional annotation
     from VIBRANT and DRAMv
     """
     column_names = ["protein/gene", "scaffold", "ID", "Description"]
-    df = pd.DataFrame(columns=column_names)
     dramv_amgs = pd.read_table(
         output_path + "/DRAMv/distilled/amg_summary.tsv",
         sep="\t",
         usecols=["gene", "scaffold", "gene_id", "gene_description"],
     )
-    for index, x in dramv_amgs.iterrows():
-        row = {"protein/gene": "", "scaffold": "", "ID": "", "Description": ""}
+    rows_list = []
+    for _, row in dramv_amgs.iterrows():
+        row_dict = {
+            "protein/gene": row["gene"],
+            "scaffold": row["scaffold"],
+            "ID": row["gene_id"],
+            "Description": row["gene_description"],
+        }
+        rows_list.append(row_dict)
 
-        row["protein/gene"] = x["gene"]
-        row["scaffold"] = x["scaffold"]
-        row["ID"] = x["gene_id"]
-        row["Description"] = x["gene_description"]
-        df = df.append(row, ignore_index=True)
+    df = pd.DataFrame(rows_list, columns=column_names)
 
-    df.to_csv(output_path + "/statistics/vOTU_AMGs.tsv", sep="\t")
+    df.to_csv(output_path + "/statistics/vOTU_AMGs.tsv", sep="\t", index=False)
 
 
 def create_relative_Abundance():
@@ -376,7 +378,7 @@ def create_relative_Abundance():
     Function that creates the relative abundance table.
     It calculates the relative abundance based on the coverage file.
     """
-    df = pd.read_table(output_path + "/contig_stats/raw_coverage_table.tsv")
+    df = pd.read_table(output_path + "/mapping/rel_abundance_table.tsv")
     ra_df = pd.DataFrame(columns=df.columns, index=df.index, data=None)
     ra_df["ID"] = df["ID"]
     for column in df.columns[1:]:
@@ -486,7 +488,7 @@ def vOTU_to_reads_mapping():
     for x in samples:
         cV_df = pd.read_table(
             output_path
-            + "/checkv/virsorter2_pass1/"
+            + "/checkv/virsorter2/"
             + x
             + "/quality_summary.tsv",
             sep="\t",
@@ -525,9 +527,9 @@ def copy_instrain_compare_output():
     os.system(
         "cp "
         + output_path
-        + "/instrain/compared_samples/output/compared_samples_comparisonsTable.tsv "
+        + "/instrain/comparison/output/comparison_comparisonsTable.tsv "
         + output_path
-        + "/statistics/compared_samples_comparisonsTable.tsv "
+        + "/statistics/comparison_comparisonsTable.tsv "
     )
 
 
