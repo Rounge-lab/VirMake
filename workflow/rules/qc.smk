@@ -80,8 +80,8 @@ rule move_qc_for_fastqc:
         R2 = temp(config["path"]["output"] + "/qc/tmp/{sample}_2.fastq"),
     shell:
         """
-            cp {input.R1} {output.R1}
-            cp {input.R2} {output.R2}
+            ln -s {input.R1} {output.R1}
+            ln -s {input.R2} {output.R2}
         """
 
 rule fastqc:
