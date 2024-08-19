@@ -38,6 +38,7 @@ rule virsorter:
         cutoff_score=config["virsorter2"]["id"]["min_score"],
         groups=config["virsorter2"]["id"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
+        dummy_boundary=config["path"]["virmake"]+"/resources/dummy/viral-boundary-dummy.tsv",
     message:
         "[virsorter2] Executing viral identification..."
     conda:
@@ -57,7 +58,11 @@ rule virsorter:
             --min-length {params.cutoff_length} \
             --min-score {params.cutoff_score} \
             --db-dir {params.db_dir}\
-            -i {input.assembly_output} &> {log}
+            -i {input.assembly_output} &> {log} ||\
+
+            cp {params.dummy_boundary} {output.viral_boundary} &&\
+            touch {output.viral_combined}
+        
         cp {output.viral_combined} {output.virus_predictions}
         cp {output.viral_boundary} {output.virus_table}
         """
