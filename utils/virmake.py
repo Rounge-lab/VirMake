@@ -79,7 +79,8 @@ def get_dbs(threads, dryrun):
 
 @cli.command(
     "run",
-    context_settings=dict(ignore_unknown_options=True),
+    context_settings=dict(ignore_unknown_options=True,
+                          allow_extra_args=True),
     short_help="Runs the main workflow",
 )
 @click.argument(
@@ -146,9 +147,11 @@ def get_dbs(threads, dryrun):
     type=int,
     help="number of jobs to add to queue at once",
 )
+@click.pass_context
 
 #add cli command for the pipeline argument in make_virmake.py
 def run_workflow(
+    ctx,
     workflow,
     dryrun,
     workflow_dir,
@@ -179,6 +182,8 @@ def run_workflow(
         workflow_dir = virmake_path / "workflow"
     else:
         workflow_dir = pathlib.Path(workflow_dir).resolve()
+    
+    extra_args = " ".join(ctx.args)
 
     cmd = (
         "mkdir -p '{benchmark}' && "
@@ -189,6 +194,7 @@ def run_workflow(
         "-c{threads} -T {jobs_at_once} "
         "{slurm} -j{threads} "
         "{dryrun} "
+        "{extra_args}"
     ).format(
         benchmark=pathlib.Path(config["path"]["benchmark"]),
         workflow_dir=workflow_dir,
@@ -200,6 +206,7 @@ def run_workflow(
         if slurm
         else "--use-conda --rerun-incomplete --nolock --conda-frontend mamba",
         jobs_at_once=jobs_at_once,
+        extra_args=extra_args
     )
 
     print("Starting workflow...")
