@@ -22,4 +22,5 @@ working_dir
 *.log
 *fasterq*/
 venv/
-resources/
+resources/db
+resources/input

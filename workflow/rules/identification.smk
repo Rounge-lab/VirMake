@@ -149,6 +149,8 @@ rule checkv:
         combined=config["path"]["output"] + "/checkv/{id_tool}/{sample}/combined.fna",
     params:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
+        dummy_quality_summary=config["path"]["virmake"]+"/resources/dummy/quality_summary_dummy.tsv",
+        dummy_contamination=config["path"]["virmake"]+"/resources/dummy/contamination_dummy.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
     message:
@@ -168,8 +170,13 @@ rule checkv:
             {output.dir} -t {threads} -d {params.db_dir} &> {log}
         touch {output.dir}/proviruses.fna
         touch {output.dir}/viruses.fna
-        touch {output.summary}
         cat {output.dir}/proviruses.fna {output.dir}/viruses.fna > {output.combined}
+        if [ ! -e {output.contamination} ] ; then
+            cp {params.dummy_contamination} {output.contamination}
+        fi
+        if [ ! -e {output.summary} ] ; then
+            cp {params.dummy_quality_summary} {output.summary}
+        fi
         """
 
 rule reformat_virus_prediction:
