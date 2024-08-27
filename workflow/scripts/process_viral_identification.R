@@ -6,13 +6,19 @@ id_tool <- snakemake@wildcards[["id_tool"]]
 
 if (id_tool == "virsorter") {
   vir_id_res <-
-    read_tsv(snakemake@input[["virus_id_table"]]) %>%
-    rename(contig_id = seqname,
-           vir_id_name = seqname_new) %>%
+    read_tsv(snakemake@input[["virus_id_table"]],
+              col_select = c(contig_id = seqname,
+                              vir_id_name = seqname_new,
+                              start_position = trim_bp_start,
+                              end_position = trim_bp_end),
+              col_types = cols(seqname = "c",
+                              seqname_new = "c",
+                              trim_bp_start = "d",
+                              trim_bp_end = "d")) %>%
     mutate(vir_id_provirus_assignment = str_detect(vir_id_name, "partial")) %>%
     select(contig_id,
-           start_position = trim_bp_start,
-           end_position = trim_bp_end,
+           start_position,
+           end_position,
            vir_id_name,
            vir_id_provirus_assignment)
 }
@@ -36,11 +42,22 @@ if (id_tool == "genomad") {
 
 
 checkv_res_cont <-
-  read_tsv(snakemake@input[["checkv_contamination"]]) %>%
-  select(provirus, region_types, region_coords_bp, vir_id_name = contig_id)
+  read_tsv(snakemake@input[["checkv_contamination"]],
+            col_select = c(provirus,
+                            region_types,
+                            region_coords_bp,
+                            vir_id_name = contig_id),
+            col_types = cols(provirus = "c",
+                              region_types = "c",
+                              region_coords_bp = "c",
+                              contig_id = "c"))
 
 checkv_res <-
-  read_tsv(snakemake@input[["checkv_res"]]) %>%
+  read_tsv(snakemake@input[["checkv_res"]],
+            col_types = cols(provirus = "c",
+                              contig_length = "d",
+                              proviral_length = "d",
+                              contig_id = "c")) %>%
   rename(vir_id_name = contig_id)
 
 checkv_res_cont <-
@@ -66,7 +83,7 @@ checkv_res_cont <-
   mutate(vir_id_tool = id_tool) %>%
   group_by(vir_id_name) %>%
   mutate(n_v = sum(vir_id_name == vir_id_name)) %>%
-  mutate(vir_id_name = case_when(n_v > 1 ~ paste(vir_id_name, seq(max(n_v)), sep = "_"),
+  mutate(vir_id_name = case_when(n_v > 1 ~ paste(vir_id_name, seq(max(c(n_v, 1), na.rm = TRUE)), sep = "_"),
                                  TRUE ~ vir_id_name)) %>%
   ungroup()
 
