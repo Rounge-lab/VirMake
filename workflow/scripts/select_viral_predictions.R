@@ -8,81 +8,91 @@ tool_combination <- snakemake@params[["tool_combination"]] ## all or any
 
 sample_id <- snakemake@wildcards[["sample"]]
 
-viral_predictions <- lapply(snakemake@input[["virus_pred_tables"]], function(x) read_tsv(x)) %>%
+viral_predictions <- 
+  lapply(snakemake@input[["virus_pred_tables"]], function(x) {
+    read_tsv(x, col_types = cols(start = "d", end = "d"))
+  }) %>%
   bind_rows() %>%
   filter(checkv_quality %in% accepted_quals) %>%
   mutate(id = paste(vir_id_tool, vir_id_name, sep = "_"))
 
-detected_overlaps <-
-  viral_predictions %>%
-  group_by(contig_id) %>%
-  group_split() %>%
-  lapply(function(tmp) {
-    if (nrow(tmp) < 2) {
-      ## Only one viral prediction tool used, or no predictions of high enough quality
-      tmp
-    } else {
-      ## More than one prediction tool used: Identify overlapping predictions
-      tmp %>%
-        group_by(vir_id_tool) %>%
-        mutate(overlap_start = sapply(start, function(x) {
-          tmp_ <-
-            c(tmp$id[tmp$start <= x & tmp$end >= x &
-                       !tmp$vir_id_tool %in% vir_id_tool[1]],
-              tmp$id[tmp$start == x &
-                       tmp$vir_id_tool %in% vir_id_tool[1]]) %>%
-            sort() %>%
-            unique() %>%
-            paste(collapse=":")
-          ifelse(tmp_ == "" | !str_detect(tmp_, ":"), NA, tmp_)
-        }),
-        overlap_end = sapply(end, function(x) {
-          tmp_ <-
-            c(tmp$id [tmp$start <= x & tmp$end >= x &
-                        !tmp$vir_id_tool %in% vir_id_tool[1]],
-              tmp$id[tmp$end == x &
-                       tmp$vir_id_tool %in% vir_id_tool[1]]) %>%
-            sort() %>%
-            unique() %>%
-            paste(collapse = ":")
-          ifelse(tmp_ == "" | !str_detect(tmp_, ":"), NA, tmp_)
-        })) %>%
-        ungroup() %>%
-        pivot_longer(c(overlap_start, overlap_end)) %>%
-        group_by(vir_id_name) %>%
-        filter((any(is.na(value)) & any(!is.na(value)) & !is.na(value)) | ## Remove those with overlaps in the other end
-                 all(is.na(value)) | ## And keep any with either no overlaps
-                 all(!is.na(value))) %>% ## Or overlaps in both ends
-        ungroup() %>%
-        distinct(vir_id_name, value, .keep_all = TRUE) %>%
-        select(-name) %>%
-        group_by(vir_id_name) %>%
-        group_split() %>%
-        lapply(function(su){
-          if (all(is.na(su$value))) {
-            su
-          } else {
-            ids <- str_split(su$value, ":")[[1]]
-            su <-
-              su %>%
-              mutate(full_overlap_length = (min(tmp$end[ tmp$id %in% ids]) - max(tmp$start[ tmp$id %in% ids])),
-                     full_length = (max(tmp$end[ tmp$id %in% ids]) - min(tmp$start[ tmp$id %in% ids])),
-                     full_overlap_frac = full_overlap_length/full_length)
-            if (length(ids == 2)) {
-              tmp_range = c(tmp$start[ tmp$id %in% ids & !tmp$id %in% su$id],
-                            tmp$end[ tmp$id %in% ids & !tmp$id %in% su$id])
-              su %>%
-                mutate(frac_overlap = full_overlap_length/(tmp_range[2]-tmp_range[1]))
+if (nrow(viral_predictions) == 0) {
+  detected_overlaps <-
+    viral_predictions %>%
+    mutate(value = logical())
+} else {
+  detected_overlaps <-
+    viral_predictions %>%
+    group_by(contig_id) %>%
+    group_split() %>%
+    lapply(function(tmp) {
+      if (nrow(tmp) < 2) {
+        ## Only one viral prediction tool used, or no predictions of high enough quality
+        tmp
+      } else {
+        ## More than one prediction tool used: Identify overlapping predictions
+        tmp %>%
+          group_by(vir_id_tool) %>%
+          mutate(overlap_start = sapply(start, function(x) {
+            tmp_ <-
+              c(tmp$id[tmp$start <= x & tmp$end >= x &
+                         !tmp$vir_id_tool %in% vir_id_tool[1]],
+                tmp$id[tmp$start == x &
+                         tmp$vir_id_tool %in% vir_id_tool[1]]) %>%
+              sort() %>%
+              unique() %>%
+              paste(collapse=":")
+            ifelse(tmp_ == "" | !str_detect(tmp_, ":"), NA, tmp_)
+          }),
+          overlap_end = sapply(end, function(x) {
+            tmp_ <-
+              c(tmp$id [tmp$start <= x & tmp$end >= x &
+                          !tmp$vir_id_tool %in% vir_id_tool[1]],
+                tmp$id[tmp$end == x &
+                         tmp$vir_id_tool %in% vir_id_tool[1]]) %>%
+              sort() %>%
+              unique() %>%
+              paste(collapse = ":")
+            ifelse(tmp_ == "" | !str_detect(tmp_, ":"), NA, tmp_)
+          })) %>%
+          ungroup() %>%
+          pivot_longer(c(overlap_start, overlap_end)) %>%
+          group_by(vir_id_name) %>%
+          filter((any(is.na(value)) & any(!is.na(value)) & !is.na(value)) | ## Remove those with overlaps in the other end
+                   all(is.na(value)) | ## And keep any with either no overlaps
+                   all(!is.na(value))) %>% ## Or overlaps in both ends
+          ungroup() %>%
+          distinct(vir_id_name, value, .keep_all = TRUE) %>%
+          select(-name) %>%
+          group_by(vir_id_name) %>%
+          group_split() %>%
+          lapply(function(su){
+            if (all(is.na(su$value))) {
+              su
             } else {
-              su %>%
-                mutate(frac_overlap = NA)
+              ids <- str_split(su$value, ":")[[1]]
+              su <-
+                su %>%
+                mutate(full_overlap_length = (min(tmp$end[ tmp$id %in% ids]) - max(tmp$start[ tmp$id %in% ids])),
+                       full_length = (max(tmp$end[ tmp$id %in% ids]) - min(tmp$start[ tmp$id %in% ids])),
+                       full_overlap_frac = full_overlap_length/full_length)
+              if (length(ids == 2)) {
+                tmp_range = c(tmp$start[ tmp$id %in% ids & !tmp$id %in% su$id],
+                              tmp$end[ tmp$id %in% ids & !tmp$id %in% su$id])
+                su %>%
+                  mutate(frac_overlap = full_overlap_length/(tmp_range[2]-tmp_range[1]))
+              } else {
+                su %>%
+                  mutate(frac_overlap = NA)
+              }
             }
-          }
-        }) %>%
-        bind_rows()
-    }
-  }) %>%
-  bind_rows()
+          }) %>%
+          bind_rows()
+      }
+    }) %>%
+    bind_rows()
+}
+
 
 
 if (length(unique(viral_predictions$vir_id_tool)) > 1) {
