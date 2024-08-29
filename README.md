@@ -17,9 +17,9 @@ VirMake is a Snakemake based pipeline that offers viral metagenomic data analysi
 
 ### Prerequisites:
 
-•  Git
-•  Conda (such as Miniconda or Anaconda) installation with write permissions is required. Make sure the Conda base environment is activated.
-•  System Requirements: At least 125 GB of RAM and 180 GB of free disk space.
+   Git
+   Conda (such as Miniconda or Anaconda) installation with write permissions is required. Make sure the Conda base environment is activated.
+   System Requirements: At least 125 GB of RAM and 180 GB of free disk space.
 
 
 ### To install VirMake follow these steps:
