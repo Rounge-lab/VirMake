@@ -16,68 +16,41 @@ VirMake is a Snakemake based pipeline that offers viral metagenomic data analysi
 ## Installation
 
 ### Prerequisites:
-- Git
-- Conda (Miniconda or Anaconda) installation with write permissions. Conda must be activated with its base environment.
-- To run all modules, at least 125 GB of RAM and 180 GB of free disk space is required.
+•  Git
+•  Conda (either Miniconda or Anaconda) installation with write permissions. Ensure that Conda's base environment is activated.
+•  System Requirements: At least 125 GB of RAM and 180 GB of free disk space.
+
 
 ### To install VirMake follow these steps:
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
-2. Run the VirMake setup script `python setup.py`. This script will set up a conda environment, config files and a table specifying the location of input files.
-    * Running the setup script with the option `--working-dir` will set the output directory where config files are written to. The default is `./working_dir/`.
-    * Running the setup script with options `--reads`, `--reads-qc`, and `--contigs` allows you to specify the location of any input files.
+2. Run the VirMake setup script `python setup.py`.
+   This script will set up a conda environment, config files and a table specifying the location of input files.
+    * Use the `--working-dir` option to specify the output directory for configuration files (default is `./working_dir/`).
+    * Use the `--reads`, `--reads-qc`, and `--contigs` options to specify the location of any input files.
 
-Following setup, the directory structure should look like this:
-
-```
-VirMake
-├── config
-├── img
-├── resources
-│   ├── databases
-│   │   ├── DRAM
-│   │   ├── INPHARED
-│   │   ├── RefSeq
-|   │   ├── checkv
-│   │   ├── genomad
-│   │   ├── vcontact2
-│   │   ├── vibrant
-│   │   └── virsorter2
-│   └── input
-├── results
-├── utils
-├── venv
-└── workflow
-    ├── .snakemake
-    ├── Snakefile
-    ├── envs
-    ├── rules
-    └── scripts
-```
 
 ## Usage
 
-Before you do anything, make sure that `virmake` conda environment that was created during the installation is activated. You can do this by running:
-
+1. Activate the `virmake` conda environment: you do anything:
 ```
 conda activate ./venv
 ```
+Ensure all commands are run from the root directory of the repository.
 
-Also make sure to run all commands from the root directory of the repository.
-
-Please note that `virmake` has inbuilt help that can be accessed by running:
+2.Access help for the `virmake`:
 
 ```
 ./virmake -h
 ```
 
-To run a dry-run of the pipeline run the following command:
+3.Run a dry-run of the pipeline:
 
 ```
 ./virmake run -n
 ```
 
-This should produce a snakemake output with the steps to run.
+This will output the steps required for execution.
 
 ### Environments preparation
 
