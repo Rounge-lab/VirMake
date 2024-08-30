@@ -10,17 +10,20 @@ if (id_tool == "virsorter") {
               col_select = c(contig_id = seqname,
                               vir_id_name = seqname_new,
                               start_position = trim_bp_start,
-                              end_position = trim_bp_end),
+                              end_position = trim_bp_end,
+                              shape),
               col_types = cols(seqname = "c",
                               seqname_new = "c",
                               trim_bp_start = "d",
-                              trim_bp_end = "d")) %>%
+                              trim_bp_end = "d",
+                              shape = "c")) %>%
     mutate(vir_id_provirus_assignment = str_detect(vir_id_name, "partial")) %>%
     select(contig_id,
            start_position,
            end_position,
            vir_id_name,
-           vir_id_provirus_assignment)
+           vir_id_provirus_assignment,
+           shape)
 }
 
 if (id_tool == "genomad") {
@@ -59,6 +62,17 @@ checkv_res <-
                               proviral_length = "d",
                               contig_id = "c")) %>%
   rename(vir_id_name = contig_id)
+
+if ("shape" %in% names(vir_id_res)) {
+  vir_id_res <-
+    vir_id_res %>%
+    left_join(checkv_res %>% select(vir_id_name, contig_length), by = "vir_id_name") %>%
+    mutate(start_position = case_when(shape == "circular" ~ 1,
+                                      TRUE ~ start_position),
+           end_position = case_when(shape == "circular" ~ contig_length,
+                                    TRUE ~ end_position)) %>%
+    rename(vir_id_name)
+}
 
 checkv_res_cont <-
   checkv_res_cont %>%
