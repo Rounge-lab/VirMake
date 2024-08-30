@@ -16,6 +16,12 @@ viral_predictions <-
   filter(checkv_quality %in% accepted_quals) %>%
   mutate(id = paste(vir_id_tool, vir_id_name, sep = "_"))
 
+if (snakemake@params[["remove_lt2gene"]]) {
+  viral_predictions <-
+    viral_predictions %>%
+    filter(!str_detect(vir_id_name, "lt2gene"))
+}
+
 if (nrow(viral_predictions) == 0) {
   detected_overlaps <-
     viral_predictions %>%

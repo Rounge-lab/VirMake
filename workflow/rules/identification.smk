@@ -204,7 +204,8 @@ rule filter_predicted_viruses:
         checkv_quality = ["Complete", "High-quality", "Medium-quality"],
         overlap_threshold = 0.1,
         length_selection = "min_length", ## min_length or max_length
-        tool_combination = "all" ## any or all
+        tool_combination = "all", ## any or all
+        remove_lt2gene = True
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
     threads:
