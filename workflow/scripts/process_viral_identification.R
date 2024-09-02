@@ -71,7 +71,7 @@ if ("shape" %in% names(vir_id_res)) {
                                       TRUE ~ start_position),
            end_position = case_when(shape == "circular" ~ contig_length,
                                     TRUE ~ end_position)) %>%
-    rename(vir_id_name)
+    select(-c(shape, contig_length))
 }
 
 checkv_res_cont <-
