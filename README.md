@@ -122,110 +122,11 @@ This will launch shiny app within your browser.
 ### Workflow params file
 
 To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/config/params.yaml`.
-The file contains the following adjustable settings (default values are provided in square brackets):
-
-```
-assembler: [metaSpades]                     # assembler being used
-                                            # currently only metaSpades is supported
-cd-hit-est:
-    coverage: [0.85]                        # coverage threshold for cd-hit-est
-    identity_threshold: [0.95]              # identity threshold for cd-hit-est
-job_type:
-    big: [bigmem]
-    normal: [normal]
-    small: [normal]
-memory:                                     # memory requirements for each job type in megabytes
-    big: [32000]
-    metaquast: [63000]
-    normal: [16000]
-    small: [8000]
-    tiny: [1000]
-    vcontact2: [63000]
-min_contig_size: [1000]                     # minimum contig size for DRAMv annotate
-min_coverage: [75]                          # minimum coverage for combine_coverage.R script
-
-###############################################################################################
-
-# absolute paths to various folders being used by the pipeline
-# we do not recommend changing these unless you know what you are doing!
-path:
-    benchmark: [/.../VirMake/results/benchmark]
-    database:
-        DRAM: [/.../VirMake/resources/databases/DRAM]
-        INPHARED: [/.../VirMake/resources/databases/INPHARED]
-        RefSeq: [/.../VirMake/resources/databases/RefSeq]
-        checkv: [/.../VirMake/resources/databases/checkv]
-        vcontact2: [/.../VirMake/resources/databases/vcontact2]
-        vibrant: [/.../VirMake/resources/databases/vibrant]
-        virsorter2: [/.../VirMake/resources/databases/virsorter2]
-    envs: [/.../VirMake/workflow/envs]
-    input: [/.../VirMake/resources/input]
-    log: [/.../VirMake/results/log]
-    output: [/.../VirMake/results/output]
-    profile: []
-    scripts: [/.../VirMake/workflow/scripts]
-    temp: [/.../VirMake/results/temp]
-    virmake: [/.../VirMake]
-
-###############################################################################################
-
-quality_threshold: [medium]                 # quality threshold for fastp
-threads: [24]                               # minimum number of threads to use for parallelized jobs
-time:                                       # time requirements for each job type
-    big: [13 h]
-    metaquast: [24 h]
-    normal: [6 h]
-    small: [1 h]
-    tiny: [30 min]
-    vcontact2: [24 h]
-trim_percentage: [0.95]
-vibrant:
-    is_virome: ['no']                       # is the sample a virome? ('yes' or 'no')
-virsorter2:
-    pass1:
-        min_length: [3000]                  # minimum contig length for virsorter2
-                                            # contigs with length < 3000 will be discarded
-
-        min_score: [0.5]                    # minimum quality score for virsorter2
-
-        # viral groups searched for by virsorter2
-        viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
-    pass2:
-        min_length: [1000]
-        min_score: [0.5]
-        viral_groups: [dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae]
-```
 
 ### HPC profile file
 
 You can adjust the HPC profile file to suit your needs. The file is located in `./config/config.yaml`
 
-The profile file should look like this:
-
-```
----
-reason: True
-show-failed-logs: True
-keep-going: True
-printshellcmds: True
-
-# Cluster submission
-
-# Provide a custom name for the jobscript that is submitted to the cluster
-jobname: "{rule}.{jobid}"
-
-# Maximal number of cluster/drmaa jobs per second, fractions allowed
-max-jobs-per-second: 20
-
-# Maximal number of job status checks per second
-max-status-checks-per-second: 10
-
-cluster: "sbatch -A [INSTER_ACCOUNT] --output=slurm_out/slurm-%j.out -J {rule}_{wildcards} --mem={resources.mem_mb} --time={resources.runtime} --cpus-per-task={threads} --partition={resources.partition}"
-default-resources:
-  - mem_mb=4000
-  - runtime="0-00:30:00"
-  - partition=normal
-```
 
 ## Output explained
 
