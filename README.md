@@ -5,8 +5,10 @@
 1. [About VirMake](#about-virmake)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Output explained](#output-explained)
+4. [Customization](#customization)
+5. [Output explained](#output-explained)
 
+   
 ## About VirMake
 
 VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on x86_64-based Linux and with SLURM cluster execution.
@@ -117,13 +119,16 @@ Once the workflow is finished you can inspect the results by running:
 
 and click on the link that will be provided in the terminal.
 The link should look like `http://127.0.0.1:8888`.
-This will launch shiny app within your browser.
 
-### Workflow params file
+## Customisation
+
+### Workflow parameters
 
 To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/config/params.yaml`.
+Parameters include: Assembler choice, Memory allocation,Job execution time, Minimum contig size.
+Adjust these settings as needed to suit your specific analysis requirements.
 
-### HPC profile file
+### HPC configuration
 
 You can adjust the HPC profile file to suit your needs. The file is located in `./config/config.yaml`
 
