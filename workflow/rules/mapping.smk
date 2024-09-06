@@ -1,4 +1,5 @@
 from scripts.workflow_utils import get_samples, get_qc_reads_loc
+from scripts.get_sample_stats import process_mapping_stats
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -53,8 +54,6 @@ rule read_mapping:
     performs read mapping between original sample and vOTUs
     """
     input:
-        # R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
-        # R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
         R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
         R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
         index_dir=rules.build_index.output.index_dir,
@@ -146,7 +145,7 @@ rule pileup:
             bincov={output.bincov} &> {log}
         """
 
-rule combine_coverage:
+checkpoint combine_coverage:
     """
     Combines all the coverages into one file,
     prepeares for making the relative abundance
@@ -204,16 +203,20 @@ rule instrain_profile:
         inStrain profile {input.mapping} {input.genome} -o {output} &> {log}
         """
 
+def samples_for_instrain(wildcards):
+    rel_abundance_file = checkpoints.combine_coverage.get(**wildcards).output.rel_abundance
+    abundance_summary = process_abundance_data(rel_abundance_file)
+
+    inst_samples = abundance_summary.loc[abundance_summary["n_present"] > 0, "sample_id"]
+    return [config["path"]["output"]+f"/instrain/{sa}/" for sa in inst_samples]
+
 
 rule instrain_compare:
     """
     Compare inStrain profiles
     """
     input:
-        expand(
-            config["path"]["output"] + "/instrain/{sample}/",
-            sample=SAMPLE,
-        ),
+        lambda w: samples_for_instrain(w)
     output:
         instrain_genome_summary=config["path"]["output"] + "/instrain/comparison/output/comparison_comparisonsTable.tsv",
     params:
