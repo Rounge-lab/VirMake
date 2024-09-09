@@ -13,28 +13,23 @@
 
 VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and support for HPC cluster execution. It is made for Linux based systems and has been tested on x86_64-based Linux and with SLURM cluster execution.
 
-### Features
-Taxonomic and Functional Annotation: Provides detailed annotation of viral sequences.
-Offline Capability: Allows for data processing without an internet connection after initial setup.
-HPC Support: Optimized for SLURM and other HPC environments.
-Easy Installation and Setup: Automated scripts for setting up the environment and configuring the pipeline.
 
 ## Installation
 
 ### Prerequisites:
 
-Git
-Conda (either Miniconda or Anaconda) installation with write permissions. Ensure that Conda's base environment is activated.
-System Requirements: At least 125 GB of RAM and 180 GB of free disk space.
+* Git
+* Conda (either Miniconda or Anaconda)
+* System Requirements: At least 125 GB of RAM and 180 GB of free disk space.
 
 
 ### Installation steps:
 
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
 2. Run the VirMake setup script `python setup.py`.
-   This script will set up a conda environment, config files and a table specifying the location of input files.
-    * Use the `--working-dir` option to specify the output directory for configuration files (default is `./working_dir/`).
-    * Use the `--reads`, `--reads-qc`, and `--contigs` options to specify the location of any input files.
+   This script will set up a conda environment (./venv/), config files and a table specifying the location of input files.
+    * Use the `--working-dir` option to specify the output directory (default is `./results/`).
+    * Use the `--reads`, `--qc-reads`, and `--contigs` options to specify the directories where input files are found.
 
 ### Directory Structure:
 After installation, your directory should look like this:
@@ -42,7 +37,7 @@ After installation, your directory should look like this:
 
 ## Usage
 
-1. Activate the `virmake` conda environment: you do anything:
+1. Activate the `virmake` conda environment:
 ```
 conda activate ./venv
 ```
@@ -53,7 +48,7 @@ Ensure all commands are run from the root directory of the repository.
 ```
 ./virmake run -n
 ```
-   Optional Help: For additional help and command options, you can access the built-in help system: 
+Optional Help: For additional help and command options, you can access the built-in help system: 
 
 ```
 ./virmake -h
@@ -62,13 +57,13 @@ This will output the steps required for execution.
 
 ### Environments preparation
 
-VirMake uses conda environments to run separate rules. These environments will be set up on the first run and will be stored in `./workflow/.snakemake/` folder for subsequent runs. This takes a substantial amount of time on the first run. If you want to set up the environments before running the workflow use:
+Running VirMake requires the preparation of software and databases, which may take a substantial amount of time. To prepare a run by downloading and setting up environments and databases, use the `prep` command:
 
 ```
 ./virmake prep
 ```
 
-After that you can run the workflow offline.
+This command will set up all requirements for running the pipeline, including any steps specified in the config file (`config/params.yaml`) under `rule_inclusion`.
 
 ### Getting samples
 
