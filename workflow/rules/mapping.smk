@@ -1,5 +1,5 @@
 from scripts.workflow_utils import get_samples, get_qc_reads_loc
-from scripts.get_sample_stats import process_mapping_stats
+from scripts.get_sample_stats import process_abundance_data
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
