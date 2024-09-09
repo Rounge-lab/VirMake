@@ -57,37 +57,23 @@ This will output the steps required for execution.
 
 ### Environments preparation
 
-Running VirMake requires the preparation of software and databases, which may take a substantial amount of time. To prepare a run by downloading and setting up environments and databases, use the `prep` command:
+Running VirMake requires the preparation of software and databases, which may take a substantial amount of time. To prepare a run by downloading and setting up environments, use the `prep` command:
 
 ```
 ./virmake prep
 ```
-
-This command will set up all requirements for running the pipeline, including any steps specified in the config file (`config/params.yaml`) under `rule_inclusion`.
-
-### Getting samples
-
-To run the workflow you will need to provide input files. The input files should be placed in `./resources/input/` folder. These need to be in `.fastq.gz` format. The input files should be named in the following format: `<sample_name>_1.fastq.gz` and `<sample_name>_2.fastq.gz`. VirMake only works for paired-end reads. You need at least two samples to be able to complete the pipeline with a comparison of the samples.
-
-You can also download samples from SRA database by using:
+To prepare a run by downloading and setting up databases, use the `db` command:
 
 ```
-./virmake get SRA <accession_number>
+./virmake db
 ```
 
-This command will download the samples from SRA database, place them in `VirMake/resources/input/` folder, `gzip` them and rename them accordingly.
+These commands will set up all requirements for running the virmake pipeline, including the prerequisites for any steps specified in the config file (`config/params.yaml`) under `rule_inclusion`.
 
-You can get example files from [1] by running:
 
-```
-./virmake get SRA PRJNA524703
-```
-
-[1] Liang, G., Zhao, C., Zhang, H. et al. The stepwise assembly of the neonatal virome is modulated by breastfeeding. Nature 581, 470–474 (2020). [https://doi.org/10.1038/s41586-020-2192-1](https://doi.org/10.1038/s41586-020-2192-1)
 
 ### Running the workflow
 
-**Before running the workflow, add all your samples to the input folder in the resources folder.**
 
 To run the workflow use:
 
