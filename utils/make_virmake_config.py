@@ -96,20 +96,6 @@ def make_config(virmake_path,
         "metaquast": "24 h",
         "metaspades": "2 h",
     }
-    config["include_tables"] = [
-        "raw_coverage_table.tsv",
-        "trimmed_mean_coverage.tsv",
-        "amg_summary.tsv",
-        "quality_summary.tsv",
-        "quality_summary.tsv",
-        "quality_summary.tsv",
-        "contig_plasmid_summary",
-        "results_vcontact2",
-        "comparison_comparisonsTable.tsv",
-        "transposed_report.tsv",
-        "viral_genomes_combined.csv",
-        "derep95_combined.fasta.clstr",
-    ]
     config["rule_inclusion"] = {
         "all": {
             "qc": True,
