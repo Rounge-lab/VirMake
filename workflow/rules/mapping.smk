@@ -236,6 +236,6 @@ rule instrain_compare:
     shell:
         """
         mkdir -p {params.dir}
-        inStrain compare -i {input} -o {params.dir} &> {log}
-        [ -f {output.instrain_genome_summary}.gz ] && gzip -d {output.instrain_genome_summary}.gz
+        inStrain compare --force_compress -i {input} -o {params.dir} &> {log}
+        gzip -d {output.instrain_genome_summary}.gz
         """
