@@ -27,7 +27,7 @@ VirMake is a Snakemake based pipeline that offers viral metagenomic data analysi
 1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
 2. Run the VirMake setup script `python setup.py`.
    This script will set up a conda environment (in `./venv/`), config files and a table specifying the location of input files.
-    * Use the `--working-dir` option to specify the output directory (default is `./results/`).
+    * Use the `--working-dir` option to specify the output directory (default is `./results`).
     * Use the `--reads`, `--qc-reads`, or `--contigs` options to specify the directories where input files are found.
 
 Reads specified with the `--reads` option or the `--qc_reads` option must be paired-end reads and found in the specified folder in files named either `{sample}_1.fastq` and `{sample}_2.fastq` (for uncompressed reads), or `{sample}_1.fastq.gz` and `{sample}_2.fastq.gz` (for gzip compressed reads), where `{sample}` is the sample name. Multiple samples may be present.
@@ -45,7 +45,7 @@ conda activate ./venv
 
 Ensure all commands are run from the root directory of the repository.
 
-2.Run a dry-run of the pipeline:
+2. Run a dry-run of the pipeline:
 
 ```
 ./virmake run -n
