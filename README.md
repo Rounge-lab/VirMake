@@ -90,25 +90,6 @@ To run the workflow with more personalized options please use `./virmake run -h`
 Please note that the `-c` (or `--threads`) option controls both the number of jobs and the number of threads in each job when running without using Slurm. Multiple jobs are used for assembly and other steps that can be run separately for each sample. For example, running `./virmake run -c 8` will start 8 jobs using 8 threads each (for a total of 64 threads) during assembly.
 
 
-### Inspecting results
-
-If you are working on a remote server do not forget to **log in with port tunnelling enabled**.
-To do this run:
-
-```
-ssh -L 8888:localhost:8888 username@server_address
-```
-
-Once the workflow is finished you can inspect the results by running:
-
-```
-./virmake inspect
-```
-
-and click on the link that will be provided in the terminal.
-The link should look like `http://127.0.0.1:8888`.
-
-
 ## Customisation
 
 ### Workflow parameters

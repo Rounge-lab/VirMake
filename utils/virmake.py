@@ -310,29 +310,5 @@ def clean(target, yes):
         exit(1)
 
 
-@cli.command(
-    "inspect",
-    context_settings=dict(ignore_unknown_options=True),
-    short_help="Show VirMake Results.",
-)
-@click.option(
-    "-p",
-    "--port",
-    default=8888,
-    type=int,
-)
-def show(port):
-    cmd = "Rscript utils/app.R {output_path} {port}".format(
-        output_path=config["path"]["output"],
-        port=port,
-    )
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        # removes the traceback
-        logging.critical(e)
-        exit(1)
-
-
 if __name__ == "__main__":
     cli()
