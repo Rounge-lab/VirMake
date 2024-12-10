@@ -62,7 +62,7 @@ def create_venv(logger, virmake_path):
     logger.info("\nAttempting to use mamba...\n")
     try:
         cmd = (
-            f"mamba env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
+            f"mamba env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p ./venv"
         )
         subprocess.run(cmd.split())
     except FileNotFoundError:
@@ -70,7 +70,7 @@ def create_venv(logger, virmake_path):
             "Mamba was not available in base environment, using conda.\n"
         )
         cmd = (
-            f"conda env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p venv"
+            f"conda env create -f {virmake_path / 'workflow' / 'envs' / 'virmake.yaml'} -p ./venv"
         )
         subprocess.run(cmd.split())
 
