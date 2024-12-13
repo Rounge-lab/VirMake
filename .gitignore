@@ -23,4 +23,5 @@ working_dir
 *fasterq*/
 venv/
 resources/db
+resources/databases
 resources/input
