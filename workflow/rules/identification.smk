@@ -201,7 +201,7 @@ rule filter_predicted_viruses:
         representative_selection = config["path"]["output"]+"/virus_identification/{sample}/representative_virus_predictions.tsv",
         regions = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.bed"
     params:
-        checkv_quality = ["Complete", "High-quality", "Medium-quality"],
+        checkv_quality = get_min_quality(config["quality_threshold"]),
         overlap_threshold = 0.1,
         length_selection = "min_length", ## min_length or max_length
         tool_combination = "all", ## any or all

@@ -31,20 +31,21 @@ def get_assembly_loc(wildcards,
 # GLOBAL FUNCTIONS #
 def get_min_quality(threshold):
     """
-    Gets the threshold for checkv wuality control.
+    Gets the threshold for checkv quality control.
     """
     if threshold.lower() == "complete":
-        return "$8~/(Complete)/"
+        return ["Complete"]
     elif threshold.lower() == "high":
-        return "$8~/(High-quality|Complete)/"
+        return ["Complete", "High-quality"]
     elif threshold.lower() == "medium":
-        return "$8~/(Medium-quality|High-quality|Complete)/"
+        return ["Complete", "High-quality", "Medium-quality"]
     elif threshold.lower() == "low":
-        return "$8~/(Low-quality|Medium-quality|High-quality|Complete)/"
+        return ["Complete", "High-quality", "Medium-quality", "Low-quality"]
     elif threshold.lower() == "not-determined":
-        return "$8~/(Not-determined|Low-quality|Medium-quality|High-quality|Complete)/"
+        return ["Complete", "High-quality", "Medium-quality", "Low-quality", "Not-determined"]
     else:
-        return "$8~/(Medium-quality|High-quality|Complete)/"
+        print("Quality threshold not defined properly. Using medium.")
+        return ["Complete", "High-quality", "Medium-quality"]
 
 def vibrant_virome(is_virome):
     """
