@@ -1,7 +1,7 @@
 name: checkv
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - checkv=1.0.3

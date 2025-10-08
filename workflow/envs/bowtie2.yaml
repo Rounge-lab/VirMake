@@ -1,7 +1,7 @@
 name: bowtie2
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bbmap=39.01

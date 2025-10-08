@@ -1,7 +1,7 @@
 name: genomad
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - genomad=1.7.0
