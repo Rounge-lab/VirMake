@@ -12,7 +12,7 @@ def get_qc_reads_loc(wildcards,
     qc_r1_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'qc_r1'].iloc[0]
     qc_r2_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'qc_r2'].iloc[0]
     if pd.isna(qc_r1_loc) or pd.isna(qc_r2_loc) or qc_r1_loc == "" or qc_r2_loc == "":
-        return standard_output+"/fastp_pe/"+wildcards.sample+f"_{r}.fastq"
+        return standard_output+"/fastp_pe/"+wildcards.sample+f"_{r}.fastq.gz"
     else:
         if r == "1":
             return qc_r1_loc

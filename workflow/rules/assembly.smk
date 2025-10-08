@@ -29,8 +29,6 @@ rule metaSpades:
     input:
         R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
         R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
-        # R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
-        # R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
     output:
         dir=directory(
             config["path"]["output"] + "/metaSpades/{sample}/",

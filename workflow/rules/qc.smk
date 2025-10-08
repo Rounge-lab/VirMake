@@ -7,11 +7,11 @@ FRAC = ["1", "2"]
 rule QC:
     input:
         expand(
-            config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
+            config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
             sample=SAMPLE,
         ),
         expand(
-            config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
+            config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
             sample=SAMPLE,
         ),
         expand(
@@ -49,8 +49,8 @@ rule fastp_pe:
         R1=config["path"]["input_reads"] + "/{sample}_1.fastq.gz",
         R2=config["path"]["input_reads"] + "/{sample}_2.fastq.gz",
     output:
-        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq",
-        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq",
+        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
+        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
         html=config["path"]["output"] + "/fastp_pe/{sample}.html",
         json=config["path"]["output"] + "/fastp_pe/{sample}.json",
     log:
@@ -76,8 +76,8 @@ rule move_qc_for_fastqc:
         R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
         R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
     output:
-        R1 = temp(config["path"]["output"] + "/qc/tmp/{sample}_1.fastq"),
-        R2 = temp(config["path"]["output"] + "/qc/tmp/{sample}_2.fastq"),
+        R1 = temp(config["path"]["output"] + "/qc/tmp/{sample}_1.fastq.gz"),
+        R2 = temp(config["path"]["output"] + "/qc/tmp/{sample}_2.fastq.gz"),
     shell:
         """
             ln -s {input.R1} {output.R1}
