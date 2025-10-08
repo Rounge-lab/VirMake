@@ -100,10 +100,11 @@ def get_dbs(threads, dryrun):
     default="all",
 )
 @click.option(
-    "-p",
-    "--profile",
-    default=None,
-    help="snakemake profile e.g. for cluster execution.",
+    "--wf_profile",
+    type=click.Path(exists=True, resolve_path=True),
+    default=virmake_path / "config" / "",
+    help="directory with config file for command line arguments \n"
+    "(generated during virmake setup)",
 )
 @click.option(
     "-d",
@@ -127,25 +128,18 @@ def get_dbs(threads, dryrun):
 )
 @click.option(
     "-c",
-    "--threads",
+    "--cores",
     default=24,
     type=int,
-    help="maximum number of threads used on multithreaded jobs",
+    help="maximum number of cores used on multithreaded jobs",
 )
 @click.option(
-    "-s",
     "--slurm",
     is_flag=True,
     default=False,
     show_default=True,
-    help="use slurm cluster to run parallel jobs",
-)
-@click.option(
-    "-T",
-    "--jobs_at_once",
-    default=3,
-    type=int,
-    help="number of jobs to add to queue at once",
+    help="use slurm cluster to run parallel jobs \n" \
+    "Parameters in the slurm profile located at config/slurm/config.yaml may need to be set.",
 )
 @click.pass_context
 
@@ -155,11 +149,10 @@ def run_workflow(
     workflow,
     dryrun,
     workflow_dir,
-    profile,
+    wf_profile,
     config_file,
-    threads,
+    cores,
     slurm,
-    jobs_at_once,
 ):
     """Runs the main workflow"""
 
@@ -174,14 +167,18 @@ def run_workflow(
             "generate one by running `python setup.py`"
         )
         exit(1)
-    if not profile:
-        profile = virmake_path / "config"
+    if not wf_profile:
+        wf_profile = virmake_path / "config"
     else:
-        profile = pathlib.Path(profile).resolve()
+        wf_profile = pathlib.Path(wf_profile).resolve()
     if not workflow_dir:
         workflow_dir = virmake_path / "workflow"
     else:
         workflow_dir = pathlib.Path(workflow_dir).resolve()
+    if slurm:
+        slurm_profile = virmake_path / "config" / "slurm" / ""
+    else:
+        slurm_profile = ""
     
     extra_args = " ".join(ctx.args)
 
@@ -191,21 +188,20 @@ def run_workflow(
         "snakemake --directory '{workflow_dir}' "
         "--configfile '{config_file}' "
         "--until {target_rule} "
-        "-c{threads} -T {jobs_at_once} "
-        "{slurm} -j{threads} "
+        "--workflow-profile {wf_profile} "
+        "{slurm} "
+        "-c{cores} "
         "{dryrun} "
         "{extra_args}"
     ).format(
         benchmark=pathlib.Path(config["path"]["benchmark"]),
         workflow_dir=workflow_dir,
+        wf_profile=wf_profile,
         config_file=config_file,
         dryrun="-n" if dryrun else "",
         target_rule=workflow.upper(),
-        threads=threads,
-        slurm=f"--profile {profile} --slurm --default-resources slurm_account={config['slurm_account']}"
-        if slurm
-        else "--use-conda --rerun-incomplete --nolock --conda-frontend mamba",
-        jobs_at_once=jobs_at_once,
+        cores=cores,
+        slurm=f"--profile {slurm_profile} " if slurm else "",
         extra_args=extra_args
     )
 

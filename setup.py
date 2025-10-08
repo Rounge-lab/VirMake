@@ -78,7 +78,7 @@ def create_venv(logger, virmake_path):
 def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
     """create params.yaml"""
     logger.info(f"\nCreating configuration file...\n")
-    cmd = f"mkdir {virmake_path}/config"
+    cmd = f"mkdir -p {virmake_path}/config/slurm"
     subprocess.run(cmd.split())
     cmd = f"conda run -p venv/ python utils/make_virmake_config.py {virmake_path} -w {work_dir}"
     if not reads == "":
@@ -88,11 +88,11 @@ def create_virmake_config(logger, virmake_path, work_dir, reads, contigs):
     subprocess.run(cmd.split())
 
 
-def create_slurm_profile(logger, virmake_path):
+def create_profiles(logger, virmake_path):
     """create config.yaml"""
     logger.info(f"\nCreating SLURM profile...\n")
     cmd = (
-        f"conda run -p venv/ python utils/make_slurm_profile.py {virmake_path}"
+        f"conda run -p venv/ python utils/make_profiles.py {virmake_path}"
     )
     subprocess.run(cmd.split())
 
@@ -157,7 +157,7 @@ def main():
     check_conda(logger)
     create_venv(logger, virmake_path)
     create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
-    create_slurm_profile(logger, virmake_path)
+    create_profiles(logger, virmake_path)
     create_dirs(logger, virmake_path, args.work_dir)
     prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
     prep_script(logger, virmake_path)
