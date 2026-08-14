@@ -116,7 +116,8 @@ def get_dbs(threads, dryrun):
     "-C",
     "--config-file",
     type=click.Path(exists=True, resolve_path=True),
-    help="config file generated during virmake setup",
+    help="config file with virmake parameters. \n" \
+    "Generated during virmake setup",
 )
 @click.option(
     "-n",
@@ -126,13 +127,13 @@ def get_dbs(threads, dryrun):
     show_default=True,
     help="test execution",
 )
-@click.option(
-    "-c",
-    "--cores",
-    default=24,
-    type=int,
-    help="maximum number of cores used on multithreaded jobs",
-)
+# @click.option(
+#     "-c",
+#     "--cores",
+#     default=24,
+#     type=int,
+#     help="maximum number of cores used on multithreaded jobs",
+# )
 @click.option(
     "--slurm",
     is_flag=True,
@@ -190,7 +191,7 @@ def run_workflow(
         "--until {target_rule} "
         "--workflow-profile {wf_profile} "
         "{slurm} "
-        "-c{cores} "
+        # "-c{cores} "
         "{dryrun} "
         "{extra_args}"
     ).format(
@@ -200,7 +201,7 @@ def run_workflow(
         config_file=config_file,
         dryrun="-n" if dryrun else "",
         target_rule=workflow.upper(),
-        cores=cores,
+        # cores=cores,
         slurm=f"--profile {slurm_profile} " if slurm else "",
         extra_args=extra_args
     )

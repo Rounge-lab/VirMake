@@ -20,6 +20,7 @@ def make_slurm_config():
             "runtime": 1
         },
     }
+    config["slurm-efficiency-report"] = True
     return config
 
 def make_workflow_config():
