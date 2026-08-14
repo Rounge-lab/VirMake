@@ -21,10 +21,11 @@ def get_qc_reads_loc(wildcards,
 
 def get_assembly_loc(wildcards,
                      sample_table,
+                     assembler,
                      standard_output):
     assembly_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'contigs'].iloc[0]
     if pd.isna(assembly_loc) or assembly_loc == "":
-        return standard_output + "/metaSpades/"+wildcards.sample+"/contigs.fasta"
+        return standard_output + "/" + assembler + "/"+wildcards.sample+"/contigs.fasta"
     else:
         return assembly_loc
 
