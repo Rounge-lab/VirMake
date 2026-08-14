@@ -25,7 +25,7 @@ rule virsorter:
     performs viral identification with virsorter2
     """
     input:
-        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"]),
         flag=config["path"]["database"]["virsorter2"] + "/flag"
     output:
         dir=directory(config["path"]["output"]+"/virsorter/{sample}/"),
@@ -39,8 +39,6 @@ rule virsorter:
         groups=config["virsorter2"]["id"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
         dummy_boundary=config["path"]["virmake"]+"/resources/dummy/viral-boundary-dummy.tsv",
-    message:
-        "[virsorter2] Executing viral identification..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:
@@ -50,7 +48,7 @@ rule virsorter:
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
+        runtime=config["time"]["big"],
     shell:
         """
         virsorter run -w {output.dir} \
@@ -72,7 +70,7 @@ rule genomad:
     performs viral identification using geNomad
     """
     input:
-        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+        assembly_output = lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"]),
         flag=config["path"]["database"]["genomad"] + "/flag",
     output:
         dir=directory(config["path"]["output"] + "/genomad/{sample}/"),
@@ -84,8 +82,6 @@ rule genomad:
         db_dir=config["path"]["database"]["genomad"] + "/genomad_db",
     conda:
         config["path"]["envs"] + "/genomad.yaml"
-    message:
-        "[genomad] Executing viral identification..."
     log:
         config["path"]["log"] + "/genomad/{sample}.log",
     benchmark:
@@ -106,7 +102,7 @@ rule genomad:
 #     performs the first pass of viral identification with VIBRANT
 #     """
 #     input:
-#         assembly_output = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+#         assembly_output = lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"]),
 #         flag=config["path"]["database"]["vibrant"] + "/flag",
 #     output:
 #     params:
@@ -153,8 +149,6 @@ rule checkv:
         dummy_contamination=config["path"]["virmake"]+"/resources/dummy/contamination_dummy.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
-    message:
-        "[checkv_virsorter2] Executing quality control on identified sequences..."
     log:
         config["path"]["log"] + "/checkv/{id_tool}/{sample}.log",
     benchmark:
@@ -215,13 +209,13 @@ rule filter_predicted_viruses:
 
 rule extract_predicted_viruses:
     input:
-        contigs = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+        contigs = lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"]),
         regions = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.bed"
     output:
         pred_vir_to_rename = temp(config["path"]["output"]+"/virus_identification/{sample}/tmp_pred_vir.fasta"),
         predicted_viruses = config["path"]["output"]+"/virus_identification/{sample}/predicted_viruses.fasta"
     params:
-        index_file = lambda w: get_assembly_loc(w, sample_table, config["path"]["output"])+".fai",
+        index_file = lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"])+".fai",
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     threads:
@@ -361,8 +355,6 @@ rule virsorter_for_dram:
         cutoff_score=config["virsorter2"]["for_dramv"]["min_score"],
         groups=config["virsorter2"]["for_dramv"]["viral_groups"],
         db_dir=config["path"]["database"]["virsorter2"],
-    # message:
-    #     "[virsorter_for_dram] Running virsorter2 on the vOTUs..."
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
     log:
@@ -404,8 +396,6 @@ rule checkv_vOTU_virsorter2:
         summary=config["path"]["output"]+ "/checkv/virsorter_for_dram/quality_summary.tsv",
     conda:
         config["path"]["envs"] + "/checkv.yaml"
-    message:
-        "[checkv_vOTU_virsorter2] Running checkv on the vOTUs after virsorter2..."
     log:
         config["path"]["log"] + "/checkv_virsorter_for_dram.log",
     benchmark:
