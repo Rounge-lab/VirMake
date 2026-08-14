@@ -37,8 +37,6 @@ rule metaSpades:
         scaffolds=config["path"]["output"] + "/metaSpades/{sample}/scaffolds.fasta",
     params:
         temp_dir=config["path"]["temp"] + "/metaSpades/",
-    message:
-        "[metaSpades] Performing assembly of paired end reads..."
     conda:
         config["path"]["envs"] + "/metaSpades.yaml"
     log:
@@ -55,9 +53,30 @@ rule metaSpades:
         --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_mb} &> {log}
         """
 
+
+rule run_megahit:
+    input:
+        reads=lambda w: [ get_qc_reads_loc(w, sample_table, config["path"]["output"],r=rd) for rd in ["1", "2"]],
+    output:
+        contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
+    benchmark:
+        config["path"]["benchmark"] + "/megahit/{sample}.txt"
+    params:
+        # all parameters are optional
+        extra="--min-count 10 --k-list 21,29,39,59,79,99,119,141",
+    log:
+        config["path"]["log"] + "/megahit/{sample}.log",
+    threads: 8
+    resources:
+        mem_mb=250000,
+        runtime=1440
+    wrapper:
+        "v7.4.0/bio/megahit"
+
+
 rule get_contigs_for_metaquast:
     input:
-        contigs=lambda w: get_assembly_loc(w, sample_table, config["path"]["output"]),
+        contigs=lambda w: get_assembly_loc(w, sample_table, config["assembler"], config["path"]["output"]),
     output:
         contigs=temp(config["path"]["output"]+"/assembly/tmp/{sample}.fasta")
     shell:
