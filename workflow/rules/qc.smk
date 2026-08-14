@@ -49,8 +49,8 @@ rule fastp_pe:
         R1=config["path"]["input_reads"] + "/{sample}_1.fastq.gz",
         R2=config["path"]["input_reads"] + "/{sample}_2.fastq.gz",
     output:
-        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
-        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
+        R1=temp(config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz"),
+        R2=temp(config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz"),
         html=config["path"]["output"] + "/fastp_pe/{sample}.html",
         json=config["path"]["output"] + "/fastp_pe/{sample}.json",
     log:
@@ -62,8 +62,6 @@ rule fastp_pe:
         runtime=config["time"]["normal"],
     conda:
         config["path"]["envs"] + "/fastp.yaml"
-    message:
-        "[fastp_pe] Executing FASTP quality control/pre-processing (trimming) on raw reads..."
     threads: 1
     shell:
         """
@@ -101,8 +99,6 @@ rule fastqc:
     threads: config["threads"]
     conda:
         config["path"]["envs"] + "/fastqc.yaml"
-    message:
-        "[fastqc] Executing FASTQC quality control on trimmed reads..."
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],

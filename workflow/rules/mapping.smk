@@ -58,7 +58,7 @@ rule read_mapping:
         R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
         index_dir=rules.build_index.output.index_dir,
     output:
-        config["path"]["output"] + "/mapping/BAM/{sample}.map.bam",
+        temp(config["path"]["output"] + "/mapping/BAM/{sample}.map.bam"),
     conda:
         config["path"]["envs"] + "/bowtie2.yaml"
     log:
@@ -68,8 +68,8 @@ rule read_mapping:
         config["path"]["benchmark"] + "/bowtie2_mapping/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
     shell:
         """
         bowtie2 -p {threads} -x {input.index_dir}/mapping_index \
@@ -91,6 +91,8 @@ rule flagstat:
         config["path"]["log"] + "/mapping/flagstat/{sample}.log",
     benchmark:
         config["path"]["benchmark"] + "/mapping/flagstat/{sample}.txt"
+    priority:
+        1
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["small"],
@@ -126,6 +128,8 @@ rule pileup:
         config["path"]["log"] + "/mapping/pileup/{sample}.log",
     benchmark:
         config["path"]["benchmark"] + "/mapping/pileup/{sample}.txt"
+    priority:
+        2
     message:
         "[contig_stats] Creating coverage statistics for each sample..."
     threads: config["threads"]

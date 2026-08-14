@@ -43,7 +43,7 @@ rule prodigal:
         "[prodigal] Predicting genes..."
     resources:
         mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
+        runtime=config["time"]["normal"],
     shell:
         """
         prodigal -i {input} -o {output.proteins} -a {output.orf} -p meta\
