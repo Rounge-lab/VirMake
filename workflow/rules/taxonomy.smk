@@ -3,14 +3,15 @@
 # TAXONOMIC ANALYSIS
 rule TAXONOMY:
     input:
-        config["path"]["output"] + "/prodigal/proteins.faa",
-        config["path"]["output"] + "/prodigal/ORFs.genes",
-        config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
-        config["path"]["output"]
-        + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
-        config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
-        config["path"]["output"] + "/vcontact2/taxonomic_annotation/",
-        config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
+        # config["path"]["output"] + "/prodigal/proteins.faa",
+        # config["path"]["output"] + "/prodigal/ORFs.genes",
+        config["path"]["output"] + "/vcontact3/exports/final_assignments.csv"
+        # config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
+        # config["path"]["output"]
+        # + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+        # config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
+        # config["path"]["output"] + "/vcontact2/taxonomic_annotation/",
+        # config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
     output:
         config["path"]["temp"] + "/finished_TAXONOMY",
     threads: 1
@@ -184,3 +185,60 @@ rule graphanalyzer:
         &> {log}
         # cat {output.vOTU_results}
         """
+
+
+rule vcontact3:
+    """
+    Performs Taxonomic annotation with vConTACT3
+    """
+    input:
+        genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
+        # proteins=config["path"]["output"]+ "/vcontact2/genes_2_genomes/combined_proteins.faa",
+        # g2g=config["path"]["output"]+ "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
+        db_flag=config["path"]["database"]["vcontact3"] + "/flag",
+    output:
+        final_assignments=config["path"]["output"] + "/vcontact3/exports/final_assignments.csv",
+        performance_metrics=config["path"]["output"] + "/vcontact3/exports/performance_metrics.csv",
+        exports=directory(config["path"]["output"] + "/vcontact3/exports/networks")
+    params:
+        db_domain="prokaryotes",
+        db_path=config["path"]["database"]["vcontact3"],
+        exports=("--exports " + config.get("vcontact3", {}).get("exports")) if config.get("vcontact3", {}).get("exports") else "",
+        output_path=config["path"]["output"] + "/vcontact3"
+    benchmark:
+        config["path"]["benchmark"] + "/vcontact3.txt"
+    conda:
+        config["path"]["envs"] + "/vcontact3.yaml"
+    log:
+        config["path"]["log"] + "/vcontact3.log",
+    resources:
+        mem_mb=config["memory"]["vcontact3"],
+        runtime=config["time"]["vcontact3"],
+    threads: config["threads"]
+    shadow: "minimal"
+    shell:
+        """
+
+        db_version=$(basename {params.db_path}/*.json .json)
+
+        vcontact3 run \
+            --nucleotide {input.genomes} \
+            --output {params.output_path} \
+            --threads {threads} \
+            --db-path {params.db_path} \
+            --db-domain {params.db_domain} \
+            --db-version "$db_version" \
+            {params.exports} \
+            --no-progress \
+            --verbose \
+            &> {log}
+        """
+            # --proteins {input.proteins} \
+            # --gene2genome {input.g2g} \
+        # rm -rdf {output.dir}/combined*
+            # --rel-mode 'Diamond' \
+            # --proteins-fp {input.g2g} \
+            # --db 'None' \
+            # --pcs-mode MCL \
+            # --vcs-mode ClusterONE \
+            # --output-dir {output.dir} \

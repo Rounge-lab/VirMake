@@ -15,6 +15,7 @@ def make_config(virmake_path,
     db_path = virmake_path / "resources" / "databases"
 
     config["slurm_account"] = "default"
+    config["keep_qc_reads"] = False
     config["assembler"] = "metaSpades" # may be changed to megahit
     config["identifier"] = "virsorter2" # may be changed to genomad
     config["trim_percentage"] = 0.05
@@ -36,7 +37,11 @@ def make_config(virmake_path,
             "min_score": 0.01,
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
-    }
+    },
+    config["vcontact3"] = {
+        "db": "latest",
+        "exports": "cytoscape",
+    },
 
 
     config["path"] = {
@@ -58,6 +63,7 @@ def make_config(virmake_path,
             "checkv": str(db_path / "checkv"),
             "INPHARED": str(db_path / "INPHARED"),
             "vcontact2": str(db_path / "vcontact2"),
+            "vcontact3": str(db_path / "vcontact3"),
             "DRAM": str(db_path / "DRAM" / "DRAM_data"),
         },
     }
@@ -84,6 +90,7 @@ def make_config(virmake_path,
         "normal": 16000,
         "big": 32000,
         "vcontact2": 63000,
+        "vcontact3": 63000,
         "metaquast": 63000,
         "metaspades": 63000,
     }
@@ -93,6 +100,7 @@ def make_config(virmake_path,
         "normal": "6 h",
         "big": "13 h",
         "vcontact2": "72 h",
+        "vcontact3": "72 h",
         "metaquast": "24 h",
         "metaspades": "2 h",
     }

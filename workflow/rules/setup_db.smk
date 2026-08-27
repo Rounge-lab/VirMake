@@ -127,6 +127,18 @@ rule Vcontact2:
     shell:
         "touch {output}"
 
+rule vcontact3_db:
+    conda:
+        config["path"]["envs"] + "/vcontact3.yaml"
+    output:
+        config["path"]["database"]["vcontact3"] + "/flag"
+    params:
+        version=config["vcontact3"]["db_version"],
+        db_path=config["path"]["database"]["vcontact3"]
+    threads: 1
+    shell:
+        "vcontact3 prepare_databases --get-version {params.version} -s {params.db_path} && touch {output}"
+
 rule inphared_db:
     output:
         dir=directory(config["path"]["database"]["INPHARED"]),
