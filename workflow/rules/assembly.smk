@@ -27,8 +27,8 @@ rule metaSpades:
     Assembles all sequences with metaSpades
     """
     input:
-        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
-        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
+        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1", keep_qc_reads=config["keep_qc_reads"]),
+        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2", keep_qc_reads=config["keep_qc_reads"]),
     output:
         dir=directory(
             config["path"]["output"] + "/metaSpades/{sample}/",
@@ -56,7 +56,7 @@ rule metaSpades:
 
 rule run_megahit:
     input:
-        reads=lambda w: [ get_qc_reads_loc(w, sample_table, config["path"]["output"],r=rd) for rd in ["1", "2"]],
+        reads=lambda w: [ get_qc_reads_loc(w, sample_table, config["path"]["output"],r=rd, keep_qc_reads=config["keep_qc_reads"]) for rd in ["1", "2"]],
     output:
         contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
     benchmark:

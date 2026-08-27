@@ -6,27 +6,27 @@ FRAC = ["1", "2"]
 # QUALITY CONTROL #
 rule QC:
     input:
-        expand(
-            config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/fastp_pe/{sample}.html",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/fastp_pe/{sample}.json",
-            sample=SAMPLE,
-        ),
-        expand(
-            config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",
-            sample=SAMPLE,
-            frac=FRAC,
-        ),
+        # expand(
+        #     config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
+        #     sample=SAMPLE,
+        # ),
+        # expand(
+        #     config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
+        #     sample=SAMPLE,
+        # ),
+        # expand(
+        #     config["path"]["output"] + "/fastp_pe/{sample}.html",
+        #     sample=SAMPLE,
+        # ),
+        # expand(
+        #     config["path"]["output"] + "/fastp_pe/{sample}.json",
+        #     sample=SAMPLE,
+        # ),
+        # expand(
+        #     config["path"]["output"] + "/fastqc/{sample}_{frac}_fastqc.html",
+        #     sample=SAMPLE,
+        #     frac=FRAC,
+        # ),
         config["path"]["output"] + "/multiqc/multiqc.html",
     output:
         config["path"]["temp"] + "/finished_QC",
@@ -69,10 +69,23 @@ rule fastp_pe:
         -h {output.html} -j {output.json} &> {log}
         """
 
+rule keep_qc_reads:
+    input:
+        R1=config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz",
+        R2=config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz",
+    output:
+        R1=config["path"]["output"] + "/fastp_pe/qc_reads/{sample}_1.fastq.gz",
+        R2=config["path"]["output"] + "/fastp_pe/qc_reads/{sample}_2.fastq.gz",
+    shell:
+        """
+        cp {input.R1} {output.R1}
+        cp {input.R2} {output.R2}
+        """
+
 rule move_qc_for_fastqc:
     input:
-        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1"),
-        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2"),
+        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1", keep_qc_reads=config["keep_qc_reads"]),
+        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2", keep_qc_reads=config["keep_qc_reads"]),
     output:
         R1 = temp(config["path"]["output"] + "/qc/tmp/{sample}_1.fastq.gz"),
         R2 = temp(config["path"]["output"] + "/qc/tmp/{sample}_2.fastq.gz"),
