@@ -152,7 +152,7 @@ def run_workflow(
     workflow_dir,
     wf_profile,
     config_file,
-    cores,
+#    cores,
     slurm,
 ):
     """Runs the main workflow"""
