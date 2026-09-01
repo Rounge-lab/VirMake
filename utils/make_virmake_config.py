@@ -37,12 +37,12 @@ def make_config(virmake_path,
             "min_score": 0.01,
             "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
         },
-    },
+    }
+
     config["vcontact3"] = {
         "db": "latest",
         "exports": "cytoscape",
-    },
-
+    }
 
     config["path"] = {
         "virmake": str(virmake_path),
