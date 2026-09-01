@@ -40,7 +40,7 @@ def make_config(virmake_path,
     }
 
     config["vcontact3"] = {
-        "db": "latest",
+        "db_version": "latest",
         "exports": "cytoscape",
     }
 
