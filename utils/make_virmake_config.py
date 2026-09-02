@@ -15,7 +15,7 @@ def make_config(virmake_path,
     db_path = virmake_path / "resources" / "databases"
 
     config["slurm_account"] = "default"
-    config["keep_qc_reads"] = False
+    config["keep_qc_reads"] = True
     config["assembler"] = "metaSpades" # may be changed to megahit
     config["identifier"] = "virsorter2" # may be changed to genomad
     config["trim_percentage"] = 0.05
