@@ -6,3 +6,5 @@ channels:
 dependencies:
   - dram=1.5.0
   - trnascan-se=2.0.11
+  - setuptools<81
+  
