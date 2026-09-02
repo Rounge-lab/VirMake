@@ -9,3 +9,5 @@ dependencies:
   - python=3.12.3
   - snakemake=8.10.7
   - snakemake-executor-plugin-slurm
+  - setuptools<81
+  
