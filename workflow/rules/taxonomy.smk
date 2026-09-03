@@ -39,7 +39,7 @@ rule prodigal:
         config["path"]["log"] + "/prodigal.log",
     benchmark:
         config["path"]["benchmark"] + "/prodigal.txt"
-    threads: config["threads"]
+    threads: 1
     message:
         "[prodigal] Predicting genes..."
     resources:
