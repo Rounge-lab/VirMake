@@ -87,31 +87,54 @@ rule checkv_db:
 
 rule DRAMv_db:
     """
-    Downloads DRAMv.
+    Downloads DRAMv databases.
+
     If Users want to skip this simply add a # symbol in front of:
     directory(config["path"]["database"]["DRAM"]+"/DRAM_data"),
     Keep in mind that the pipeline needs this to run.
     If downloaded independantly, simply add it to the config with same folder structure
     include the DRAM.config from DRAMv here also.
+
+    VOGDB is repacked because DRAM 1.5.0 expects the .hmm files at the top
+    level of the tarball, while the release nests them in hmm/ (DRAM #340).
+    dbCAN needs no handling here: the dead bcb.unl.edu host is rewritten by
+    workflow/envs/DRAMv.post-deploy.sh.
     """
+
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     output:
         dram_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
         dram_dir=directory(config["path"]["database"]["DRAM"]),
-    threads: 1
+    params:
+        dl_dir=config["path"]["database"]["DRAM"] + "_downloads",
+        vog_url="https://fileshare.lisc.univie.ac.at/vog/latest/vog.hmm.tar.gz",
     shell:
         """
-        # Temporary fix for vogdb
-        # Recreate vog.hmm.tar.gz file without the enclosing hmm folder
-        mkdir -p {output.dram_dir}/vogdb
-        wget -nv "https://fileshare.lisc.univie.ac.at/vog/latest/vog.hmm.tar.gz"
-        tar xzf vog.hmm.tar.gz
-        cd hmm
-        tar czf vog.hmm.tar.gz *.hmm
-        mv vog.hmm.tar.gz {output.dram_dir}/vogdb
-        cd ..
-        rm -rf vog.hmm.tar.gz hmm
+        mkdir -p {output.dram_dir}/vogdb {params.dl_dir}
+
+        wget -nv --tries=3 --timeout=60 \
+            -O {params.dl_dir}/vog.hmm.tar.gz "{params.vog_url}"
+        if ! gzip -t {params.dl_dir}/vog.hmm.tar.gz; then
+            echo "ERROR: VOGDB download is not a valid gzip archive - URL moved?" >&2
+            exit 1
+        fi
+        rm -rf {params.dl_dir}/vog_unpack
+        mkdir -p {params.dl_dir}/vog_unpack
+        tar xzf {params.dl_dir}/vog.hmm.tar.gz -C {params.dl_dir}/vog_unpack
+        if [ -d {params.dl_dir}/vog_unpack/hmm ]; then
+            hmm_dir={params.dl_dir}/vog_unpack/hmm
+        else
+            hmm_dir={params.dl_dir}/vog_unpack
+        fi
+        n_hmm=$(find "$hmm_dir" -maxdepth 1 -name '*.hmm' | wc -l)
+        if [ "$n_hmm" -eq 0 ]; then
+            echo "ERROR: no .hmm files found in the VOGDB archive" >&2
+            exit 1
+        fi
+        echo "VOGDB: repacking $n_hmm HMM profiles"
+        tar czf {output.dram_dir}/vogdb/vog.hmm.tar.gz -C "$hmm_dir" .
+        rm -rf {params.dl_dir}/vog_unpack {params.dl_dir}/vog.hmm.tar.gz
 
         DRAM-setup.py prepare_databases --output_dir {output.dram_dir} \
             --verbose --skip_uniref --threads {threads} \
