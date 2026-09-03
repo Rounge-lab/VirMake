@@ -99,7 +99,7 @@ rule DRAMv_db:
     output:
         dram_config=config["path"]["database"]["DRAM"] + "/DRAM.config",
         dram_dir=directory(config["path"]["database"]["DRAM"]),
-    threads: 24
+    threads: 1
     shell:
         """
         # Temporary fix for vogdb
