@@ -38,7 +38,7 @@ rule build_index:
         config["path"]["benchmark"] + "/build_index.txt"
     log:
         config["path"]["log"] + "/bowtie2_build_index.log",
-    threads: config["threads"]
+    threads: 1
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
