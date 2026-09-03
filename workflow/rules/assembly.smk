@@ -48,9 +48,11 @@ rule metaSpades:
         mem_mb=config["memory"]["metaspades"],
         runtime=config["time"]["metaspades"],
     shell:
-        """
-        metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir}\
-        --tmp-dir {params.temp_dir} -t {threads} -m {resources.mem_mb} &> {log}
+        # SPAdes -m is in GIGABYTES; snakemake resources.mem_mb is in megabytes
+        mem_gb=$(( {resources.mem_mb} / 1024 ))
+        if [ "$mem_gb" -lt 1 ]; then mem_gb=1; fi
+        metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir} \
+        --tmp-dir {params.temp_dir} -t {threads} -m $mem_gb &> {log}
         """
 
 
