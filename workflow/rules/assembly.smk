@@ -48,6 +48,7 @@ rule metaSpades:
         mem_mb=config["memory"]["metaspades"],
         runtime=config["time"]["metaspades"],
     shell:
+        """
         # SPAdes -m is in GIGABYTES; snakemake resources.mem_mb is in megabytes
         mem_gb=$(( {resources.mem_mb} / 1024 ))
         if [ "$mem_gb" -lt 1 ]; then mem_gb=1; fi
