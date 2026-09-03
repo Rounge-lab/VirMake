@@ -6,13 +6,17 @@ from pathlib import Path
 
 
 def process_taxonomy_info(taxonomy_file):
-    taxonomy_cols = ["Scaffold","Closer","Accession","Status","VC","Level",
-                     "Host","BaltimoreGroup","Realm","Kingdom","Phylum","Class",
-                     "Order","Family","Subfamily","Genus"]
+    # taxonomy_cols = ["Scaffold","Closer","Accession","Status","VC","Level",
+    #                  "Host","BaltimoreGroup","Realm","Kingdom","Phylum","Class",
+    #                  "Order","Family","Subfamily","Genus"]
+    taxonomy_cols = ["Genome", "realm_prediction","kingdom_prediction",
+                     "phylum_prediction","class_prediction",
+                     "order_prediction","family_prediction",
+                     "subfamily_prediction","genus_prediction"]
 
-    taxonomy = pd.read_csv(taxonomy_file, index_col=0)
+    taxonomy = pd.read_csv(taxonomy_file, index_col=False)
     taxonomy = taxonomy[taxonomy_cols]
-    taxonomy = taxonomy.rename(columns={"Scaffold": "vOTU"})
+    taxonomy = taxonomy.rename(columns={"Genome": "vOTU"})
 
     return taxonomy
 

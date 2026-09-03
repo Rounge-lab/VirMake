@@ -23,7 +23,8 @@ rule get_vOTU_stats:
     Gathers info on vOTUs.
     """
     input:
-        taxonomy=config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
+        # taxonomy=config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
+        taxonomy=config["path"]["output"] + "/vcontact3/vOTU_assignments.csv",
         gathered_specs=config["path"]["output"]+"/dereplication/checkV_summary.tsv",
         derep_file=config["path"]["output"]+"/dereplication/galah_clusters.tsv",
         contig_id_file=config["path"]["output"]+"/dereplication/old_to_new_ids.tsv",
