@@ -3,14 +3,7 @@
 # TAXONOMIC ANALYSIS
 rule TAXONOMY:
     input:
-        # config["path"]["output"] + "/prodigal/proteins.faa",
-        # config["path"]["output"] + "/prodigal/ORFs.genes",
-        config["path"]["output"] + "/vcontact3/exports/final_assignments.csv"
-        # config["path"]["output"] + "/vcontact2/genes_2_genomes/g2g.csv",
-        # config["path"]["output"]
-        # + "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
-        # config["path"]["output"] + "/vcontact2/genes_2_genomes/combined_proteins.faa",
-        # config["path"]["output"] + "/vcontact2/taxonomic_annotation/",
+        config["path"]["output"] + "/vcontact3/vOTU_assignments.csv",
         # config["path"]["output"] + "/graphanalyzer/results_vcontact2_vOTU_results.csv",
     output:
         config["path"]["temp"] + "/finished_TAXONOMY",
@@ -193,18 +186,17 @@ rule vcontact3:
     """
     input:
         genomes=config["path"]["output"]+"/dereplication/repr_viral_seqs.fasta",
-        # proteins=config["path"]["output"]+ "/vcontact2/genes_2_genomes/combined_proteins.faa",
-        # g2g=config["path"]["output"]+ "/vcontact2/genes_2_genomes/viral_genomes_combined.csv",
         db_flag=config["path"]["database"]["vcontact3"] + "/flag",
     output:
         final_assignments=config["path"]["output"] + "/vcontact3/exports/final_assignments.csv",
+        vOTU_assignments=config["path"]["output"] + "/vcontact3/vOTU_assignments.csv",
         performance_metrics=config["path"]["output"] + "/vcontact3/exports/performance_metrics.csv",
-        exports=directory(config["path"]["output"] + "/vcontact3/exports/networks")
     params:
         db_domain="prokaryotes",
         db_path=config["path"]["database"]["vcontact3"],
-        exports=("--exports " + config.get("vcontact3", {}).get("exports")) if config.get("vcontact3", {}).get("exports") else "",
-        output_path=config["path"]["output"] + "/vcontact3"
+        output_path=config["path"]["output"] + "/vcontact3",
+        vOTU_prefix=config["dereplication"]["vOTU_prefix"],
+        vOTU_suffix=config["dereplication"]["vOTU_suffix"],
     benchmark:
         config["path"]["benchmark"] + "/vcontact3.txt"
     conda:
@@ -228,17 +220,10 @@ rule vcontact3:
             --db-path {params.db_path} \
             --db-domain {params.db_domain} \
             --db-version "$db_version" \
-            {params.exports} \
             --no-progress \
+            --force-overwrite \
             --verbose \
             &> {log}
+        
+        awk -F',' 'NR==1 || $1 ~ /^{params.vOTU_prefix}.*{params.vOTU_suffix}$/' {output.final_assignments} > {output.vOTU_assignments}
         """
-            # --proteins {input.proteins} \
-            # --gene2genome {input.g2g} \
-        # rm -rdf {output.dir}/combined*
-            # --rel-mode 'Diamond' \
-            # --proteins-fp {input.g2g} \
-            # --db 'None' \
-            # --pcs-mode MCL \
-            # --vcs-mode ClusterONE \
-            # --output-dir {output.dir} \
