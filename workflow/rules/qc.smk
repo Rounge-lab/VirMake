@@ -3,6 +3,9 @@ from scripts.workflow_utils import get_samples, get_qc_reads_loc
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 FRAC = ["1", "2"]
 
+wildcard_constraints:
+    sample="[^/]+",
+
 # QUALITY CONTROL #
 rule QC:
     input:
