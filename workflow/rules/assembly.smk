@@ -4,6 +4,13 @@ sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
 # ASSEMBLY #
 
+METASPADES_MEM = [90000, 240000, 960000]     # MB, one entry per attempt
+METASPADES_TIME = ["4 h", "24 h", "120 h" ]
+
+def _ladder(values, attempt):
+    return values[min(attempt, len(values)) - 1]
+
+
 rule ASSEMBLY:
     input:
         expand(config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",sample=SAMPLE),
@@ -45,8 +52,8 @@ rule metaSpades:
         config["path"]["benchmark"] + "/metaSpades/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["metaspades"],
-        runtime=config["time"]["metaspades"],
+        mem_mb=lambda wc, attempt: _ladder(METASPADES_MEM, attempt),
+        runtime=lambda wc, attempt: _ladder(METASPADES_TIME, attempt),
     shell:
         """
         # SPAdes -m is in GIGABYTES; snakemake resources.mem_mb is in megabytes
@@ -110,9 +117,12 @@ rule metaQUAST:
     resources:
         mem_mb=config["memory"]["metaquast"],
         runtime=config["time"]["metaquast"],
+    params:
+        min_contig=config["min_contig_size"]
     shell:
         """
         mkdir -p {output.dir}
-        metaquast.py {input.contigs} -o {output.dir}\
-            -r {input.reference} --threads {threads} --max-ref-number 0 &> {log}
+        metaquast.py {input.contigs} -o {output.dir} \
+            -r {input.reference} --threads {threads} --max-ref-number 0 \
+            --min-contig {params.min_contig} --no-icarus --space-efficient &> {log}
         """
