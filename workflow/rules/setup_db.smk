@@ -47,7 +47,7 @@ rule genomad_db:
         flag=config["path"]["database"]["genomad"] + "/flag",
     conda:
         config["path"]["envs"] + "/genomad.yaml"
-    threads: 24
+    threads: 1
     shell:
         """
         genomad download-database {output.dir}/.
@@ -60,10 +60,10 @@ rule vs2_db:
         flag=config["path"]["database"]["virsorter2"] + "/flag",
     conda:
         config["path"]["envs"] + "/virsorter2.yaml"
-    threads: 24
+    threads: 4
     shell:
         """
-        virsorter setup -d {output.dir}
+        virsorter setup -d {output.dir} -j {threads}
         touch {output.flag}
         """
 
@@ -77,11 +77,12 @@ rule checkv_db:
         db_dir=config["path"]["database"]["checkv"] + "/checkv-db-v1.5",
     log:
         config["path"]["log"] + "/checkv_db/checkv_db.log",
+    threads: 8
     shell:
         """
         checkv download_database {output.dir}
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-            --db {params.db_dir}/genome_db/checkv_reps &> {log}
+            --db {params.db_dir}/genome_db/checkv_reps --threads {threads} &> {log}
         touch {output.flag}
         """
 
@@ -109,6 +110,7 @@ rule DRAMv_db:
     params:
         dl_dir=config["path"]["database"]["DRAM"] + "_downloads",
         vog_url="https://fileshare.lisc.univie.ac.at/vog/latest/vog.hmm.tar.gz",
+    threads: 16
     shell:
         """
         mkdir -p {output.dram_dir}/vogdb {params.dl_dir}
