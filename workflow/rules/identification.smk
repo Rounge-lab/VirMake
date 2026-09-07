@@ -408,7 +408,7 @@ rule checkv_vOTU_virsorter2:
         """
         mkdir -p {output.dir}
         diamond makedb --in {params.db_dir}/genome_db/checkv_reps.faa \
-        --db {params.db_dir}/genome_db/checkv_reps &> {log}
+        --db {params.db_dir}/genome_db/checkv_reps --threads {threads} &> {log}
         checkv end_to_end {input.dir}/final-viral-combined.fa {output.dir}\
         -t {threads} -d {params.db_dir} &>> {log}
         """
