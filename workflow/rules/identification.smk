@@ -45,7 +45,7 @@ rule virsorter:
         config["path"]["log"] + "/virsorter/{sample}.log",
     benchmark:
         config["path"]["benchmark"] + "/virsorter/{sample}.txt"
-    threads: config["threads"]
+    threads: 4
     resources:
         mem_mb=config["memory"]["big"],
         runtime=config["time"]["big"],
@@ -363,10 +363,10 @@ rule virsorter_for_dram:
         config["path"]["log"] + "/virsorter_for_dram.log",
     benchmark:
         config["path"]["benchmark"] + "/virsorter_for_dram.txt"
-    threads: config["threads"]
+    threads: 4
     resources:
         mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
+        runtime=config["time"]["big"],
     shell:
         """
         mkdir -p {output.dir}
