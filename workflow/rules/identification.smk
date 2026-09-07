@@ -92,7 +92,7 @@ rule genomad:
         runtime=config["time"]["normal"],
     shell:
         """
-        genomad end-to-end {input.assembly_output} {output.dir} {params.db_dir} &> {log}
+        genomad end-to-end {input.assembly_output} {output.dir} {params.db_dir} --threads {threads} &> {log}
         cp {output.viruses} {output.virus_predictions}
         cp {output.virus_tab} {output.virus_table}
         """
@@ -156,7 +156,7 @@ rule checkv:
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["small"],
+        runtime=config["time"]["normal"],
     shell:
         """
         mkdir -p {output.dir}
@@ -293,8 +293,10 @@ rule dereplication:
         config["path"]["log"] + "/dereplication/dereplication.log"
     conda:
         config["path"]["envs"] + "/galah.yaml"
-    threads:
-        20
+    threads: config["threads"]
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["big"],
     shell:
         """
             galah cluster \
