@@ -38,14 +38,14 @@ rule build_index:
         config["path"]["benchmark"] + "/build_index.txt"
     log:
         config["path"]["log"] + "/bowtie2_build_index.log",
-    threads: 1
+    threads: 4
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
     shell:
         """
         mkdir -p {output.index_dir}
-        bowtie2-build {input} {output.index_dir}/mapping_index &> {log}
+        bowtie2-build --thread {threads} {input} {output.index_dir}/mapping_index &> {log}
         """
 
 
@@ -74,7 +74,7 @@ rule read_mapping:
         """
         bowtie2 -p {threads} -x {input.index_dir}/mapping_index \
         -1 {input.R1} -2 {input.R2} 2> {log.bowtie2} | \
-        samtools view -b -o {output} - &> {log.samtools}
+        samtools view --threads 4 -b -o {output} - &> {log.samtools}
         """
 
 rule flagstat:
@@ -93,7 +93,7 @@ rule flagstat:
         config["path"]["benchmark"] + "/mapping/flagstat/{sample}.txt"
     priority:
         1
-    threads: config["threads"]
+    threads: 2
     resources:
         mem_mb=config["memory"]["small"],
         runtime=config["time"]["tiny"],
@@ -138,9 +138,10 @@ rule pileup:
         runtime=config["time"]["tiny"],
     shell:
         """
+        mem_heap=$(( {resources.mem_mb} * 85 / 100 ))
         pileup.sh ref={input.genomes} in={input.bam} \
             threads={threads} \
-            -Xmx{resources.mem_mb}m \
+            -Xmx${{mem_heap}}m \
             covstats={output.covstats} \
             hist={output.covhist} \
             basecov={output.basecov} \
@@ -198,13 +199,13 @@ rule instrain_profile:
         config["path"]["benchmark"] + "/instrain/{sample}.txt"
     message:
         "[instrain_profile] Creating inStrain profiles..."
-    threads: config["threads"]
+    threads: 8
     resources:
         mem_mb=config["memory"]["big"],
         runtime=config["time"]["normal"],
     shell:
         """
-        inStrain profile {input.mapping} {input.genome} -o {output} &> {log}
+        inStrain profile {input.mapping} {input.genome} -o {output} -p {threads} &> {log}
         """
 
 def samples_for_instrain(wildcards):
@@ -233,13 +234,13 @@ rule instrain_compare:
         config["path"]["benchmark"] + "/instrain/compare.txt"
     message:
         "[instrain_compare] Comparing inStrain profiles..."
-    threads: config["threads"]
+    threads: 8
     resources:
         mem_mb=config["memory"]["big"],
         runtime=config["time"]["normal"],
     shell:
         """
         mkdir -p {params.dir}
-        inStrain compare --force_compress -i {input} -o {params.dir} &> {log}
+        inStrain compare --force_compress -i {input} -o {params.dir} -p {threads} &> {log}
         gzip -d {output.instrain_genome_summary}.gz
         """
