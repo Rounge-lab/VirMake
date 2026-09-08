@@ -85,14 +85,14 @@ def make_config(virmake_path,
         "big": "bigmem",
     }
     config["memory"] = {
-        "tiny": 1000,
-        "small": 8000,
-        "normal": 16000,
-        "big": 32000,
-        "vcontact2": 63000,
-        "vcontact3": 63000,
-        "metaquast": 63000,
-        "metaspades": 63000,
+        "tiny": 3750,
+        "small": 7500,
+        "normal": 15000,
+        "big": 30000,
+        "vcontact2": 60000,
+        "vcontact3": 60000,
+        "metaquast": 180000,
+        "metaspades": 480000,
     }
     config["time"] = {
         "tiny": "30 m",
@@ -101,8 +101,8 @@ def make_config(virmake_path,
         "big": "13 h",
         "vcontact2": "72 h",
         "vcontact3": "72 h",
-        "metaquast": "24 h",
-        "metaspades": "2 h",
+        "metaquast": "2 h",
+        "metaspades": "24 h",
     }
     config["rule_inclusion"] = {
         "all": {

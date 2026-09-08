@@ -61,8 +61,8 @@ rule fastp_pe:
     benchmark:
         config["path"]["benchmark"] + "/fastp_pe/{sample}.txt"
     resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["tiny"],
+        runtime=config["time"]["tiny"],
     conda:
         config["path"]["envs"] + "/fastp.yaml"
     threads: 1

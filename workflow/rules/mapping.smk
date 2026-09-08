@@ -40,7 +40,7 @@ rule build_index:
         config["path"]["log"] + "/bowtie2_build_index.log",
     threads: 4
     resources:
-        mem_mb=config["memory"]["small"],
+        mem_mb=config["memory"]["tiny"],
         runtime=config["time"]["tiny"],
     shell:
         """
@@ -68,8 +68,8 @@ rule read_mapping:
         config["path"]["benchmark"] + "/bowtie2_mapping/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         bowtie2 -p {threads} -x {input.index_dir}/mapping_index \
@@ -134,7 +134,7 @@ rule pileup:
         "[contig_stats] Creating coverage statistics for each sample..."
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["small"],
+        mem_mb=config["memory"]["normal"],
         runtime=config["time"]["tiny"],
     shell:
         """

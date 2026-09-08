@@ -36,8 +36,8 @@ rule dramv_annotate:
     benchmark:
         config["path"]["benchmark"] + "/DRAMv.txt"
     resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["big"],
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
     threads: config["threads"]
     shell:
         """
@@ -69,8 +69,8 @@ rule dramv_distill:
     conda:
         config["path"]["envs"] + "/DRAMv.yaml"
     resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["tiny"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         rm -rd {output.dir}

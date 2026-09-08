@@ -9,17 +9,12 @@ def make_slurm_config():
     config["executor"] = "slurm"
     config["default-resources"] = {
         "slurm_account": "",
-        "runtime": 120,
-        "mem_mb": 20000,
+        "runtime": 120 * attempt,
+        "mem_mb": 7500 * attempt,
     }
     config["max-status-checks-per-second"] = 0.1
     config["latency-wait"] = 60
-    config["set-resources"] = {
-        "out_of_memory": {
-            "mem_mb": 50,
-            "runtime": 1
-        },
-    }
+    config["restart-times"] = 2
     config["slurm-efficiency-report"] = True
     return config
 

@@ -47,8 +47,8 @@ rule virsorter:
         config["path"]["benchmark"] + "/virsorter/{sample}.txt"
     threads: 4
     resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["big"],
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
     shell:
         """
         virsorter run -w {output.dir} \
@@ -155,8 +155,8 @@ rule checkv:
         config["path"]["benchmark"] + "/checkv/{id_tool}/{sample}.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["small"],
+        runtime=config["time"]["tiny"],
     shell:
         """
         mkdir -p {output.dir}
@@ -293,6 +293,8 @@ rule dereplication:
         config["path"]["log"] + "/dereplication/dereplication.log"
     conda:
         config["path"]["envs"] + "/galah.yaml"
+    benchmark:
+        config["path"]["benchmark"] + "/dereplication.txt"
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["big"],
@@ -365,8 +367,8 @@ rule virsorter_for_dram:
         config["path"]["benchmark"] + "/virsorter_for_dram.txt"
     threads: 4
     resources:
-        mem_mb=config["memory"]["big"],
-        runtime=config["time"]["big"],
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
     shell:
         """
         mkdir -p {output.dir}
@@ -405,7 +407,7 @@ rule checkv_vOTU_virsorter2:
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["small"],
+        runtime=config["time"]["normal"],
     shell:
         """
         mkdir -p {output.dir}
