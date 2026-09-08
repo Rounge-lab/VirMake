@@ -116,8 +116,8 @@ rule fastqc:
     conda:
         config["path"]["envs"] + "/fastqc.yaml"
     resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
+        mem_mb=config["memory"]["normal"],
+        runtime=config["time"]["normal"],
     log:
         config["path"]["log"] + "/fastqc.log",
     benchmark:
