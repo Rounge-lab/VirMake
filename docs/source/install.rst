@@ -58,7 +58,10 @@ Synopsis
 
 .. code-block:: console
 
-    usage: python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads QC_READS] [--contigs CONTIGS]
+    python setup.py -h
+
+usage: python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
+QC_READS] [--contigs CONTIGS]
 
 Options
 """""""
