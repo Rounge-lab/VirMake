@@ -19,6 +19,15 @@ Dependencies
 System Requirements
 ^^^^^^^^^^^^^^^^^^^
 
+**VirMake** is designed for the *Linux* operating system.
+
+The following OS versions have been explicitly tested:
+
+* x86_64 Red Hat Enterprise Linux 9.8 (Plow)
+
+Hardware
+""""""""
+
 * RAM: minimum 64 GB
 * Storage: minimum 200 GB of free disk space
 * Additional memory and disk space will be needed depending on the data to be
@@ -42,6 +51,48 @@ From Source
 
 #. Run the VirMake setup script
 
+.. program:: setup.py
+
+Synopsis
+""""""""
+
 .. code-block:: console
 
-    python setup.py
+    usage: python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads QC_READS] [--contigs CONTIGS]
+
+Options
+"""""""
+
+.. cmdoption:: -h, --help
+
+    Show the help message and exit.
+
+.. cmdoption:: --work-dir WORK_DIR
+
+    Use this option to specify the output directory (default: ``./results``).
+
+.. cmdoption:: --reads READS
+
+   Path where reads can be found.
+
+.. cmdoption:: --qc-reads QC_READS
+
+    Path where QC reads can be found.
+
+.. cmdoption:: --contigs CONTIGS
+
+    Path where contigs can be found.
+
+Use :cmdoption:`--reads`, :cmdoption:`--qc-reads`, or :cmdoption:`--contigs` to
+specify the directories where input files are found.
+
+Reads specified with the :cmdoption:`--reads` option or the
+:cmdoption:`--qc-reads` option must be paired-end reads and found in the
+specified folder in files named either
+``{sample}_1.fastq`` and ``{sample}_2.fastq`` (for uncompressed reads), or
+``{sample}_1.fastq.gz`` and ``{sample}_2.fastq.gz`` (for gzip compressed
+reads), where ``{sample}`` is the sample name. Multiple samples may be present.
+
+If contigs are specified with the :cmdoption:`--contigs` option, they must be
+found in the specified folder in files named ``{sample}.fasta``, where
+``{sample}`` is the sample name. Multiple samples may be present.
