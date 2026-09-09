@@ -101,7 +101,7 @@ def make_config(virmake_path,
         "big": "13 h",
         "vcontact2": "72 h",
         "vcontact3": "72 h",
-        "metaquast": "2 h",
+        "metaquast": "6 h",
         "metaspades": "24 h",
     }
     config["rule_inclusion"] = {
