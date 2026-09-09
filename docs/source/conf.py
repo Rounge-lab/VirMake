@@ -3,6 +3,7 @@
 # -- Project information
 
 project = 'VirMake'
+copyright = '2023, CRCbiome'
 
 release = '0.1'
 version = '0.1.0'
