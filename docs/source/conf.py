@@ -2,9 +2,7 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'VirMake'
 
 release = '0.1'
 version = '0.1.0'
@@ -17,6 +15,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx_copybutton',
 ]
 
 intersphinx_mapping = {
@@ -33,3 +32,7 @@ html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+# -- Sphinx copybutton
+copybutton_prompt_text = r">>> |\$ "
+copybutton_prompt_is_regexp = True
