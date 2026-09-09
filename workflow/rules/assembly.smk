@@ -116,7 +116,7 @@ rule metaQUAST:
     threads: config["threads"]
     resources:
         mem_mb=config["memory"]["metaquast"],
-        runtime=config["time"]["metaquast"],
+        runtime=config["time"]["normal"],
     params:
         min_contig=config["min_contig_size"]
     shell:
