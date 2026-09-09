@@ -157,10 +157,8 @@ Options
 
 .. option:: -s, --slurm
 
-    Use *Slurm*_ cluster to run parallel jobs.
-
-.. _Slurm: https://slurm.schedmd.com/overview.html
-
+    Use `*Slurm* <https://slurm.schedmd.com/overview.html>`_ cluster to run
+    parallel jobs.
 
 .. option:: -T, --jobs_at_once INTEGER
 
