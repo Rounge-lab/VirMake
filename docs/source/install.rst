@@ -1,13 +1,15 @@
+============
 Installation
-===
+============
 
 .. _prerequisites:
 
+
 Prerequisites
----
+-------------
 
 Dependencies
-^^^
+^^^^^^^^^^^^
 
 * `git <https://git-scm.com/>`_
 * Conda (eithe `Miniconda
@@ -15,7 +17,7 @@ Dependencies
   `Anaconda <https://www.anaconda.com/docs/getting-started/installation>`_)
 
 System Requirements
-^^^
+^^^^^^^^^^^^^^^^^^^
 
 * RAM: minimum 64 GB
 * Storage: minimum 200 GB of free disk space
@@ -25,12 +27,12 @@ System Requirements
 .. _installation:
 
 Installation
----
+------------
 
 .. _source_installation:
 
 From Source
-^^^
+^^^^^^^^^^^
 
 #. Clone the git repository
 

@@ -1,5 +1,6 @@
+=================================================================
 VirMake: a Snakemake pipeline for viral metagenomic data analysis
-===
+=================================================================
 
 **VirMake** is a `Snakemake <https://snakemake.readthedocs.io/en/stable/>`_
 based pipeline that offers viral metagenomic data analysis on paired-end data.
@@ -8,7 +9,7 @@ support for HPC cluster execution. It is made for Linux based systems and has
 been tested on x86_64-based Linux.
 
 Citation
----
+--------
 
 When using **VirMake**, please cite our paper
 

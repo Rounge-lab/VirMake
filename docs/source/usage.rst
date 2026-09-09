@@ -1,8 +1,9 @@
+=====
 Usage
 =====
 
 Basic Usage
----
+-----------
 
 .. note::
 
