@@ -63,36 +63,36 @@ Synopsis
 Options
 """""""
 
-.. cmdoption:: -h, --help
+.. option:: -h, --help
 
     Show the help message and exit.
 
-.. cmdoption:: --work-dir WORK_DIR
+.. option:: --work-dir WORK_DIR
 
     Use this option to specify the output directory (default: ``./results``).
 
-.. cmdoption:: --reads READS
+.. option:: --reads READS
 
    Path where reads can be found.
 
-.. cmdoption:: --qc-reads QC_READS
+.. option:: --qc-reads QC_READS
 
     Path where QC reads can be found.
 
-.. cmdoption:: --contigs CONTIGS
+.. option:: --contigs CONTIGS
 
     Path where contigs can be found.
 
-Use :cmdoption:`--reads`, :cmdoption:`--qc-reads`, or :cmdoption:`--contigs` to
+Use :option:`--reads`, :option:`--qc-reads`, or :option:`--contigs` to
 specify the directories where input files are found.
 
-Reads specified with the :cmdoption:`--reads` option or the
-:cmdoption:`--qc-reads` option must be paired-end reads and found in the
+Reads specified with the :option:`--reads` option or the
+:option:`--qc-reads` option must be paired-end reads and found in the
 specified folder in files named either
 ``{sample}_1.fastq`` and ``{sample}_2.fastq`` (for uncompressed reads), or
 ``{sample}_1.fastq.gz`` and ``{sample}_2.fastq.gz`` (for gzip compressed
 reads), where ``{sample}`` is the sample name. Multiple samples may be present.
 
-If contigs are specified with the :cmdoption:`--contigs` option, they must be
+If contigs are specified with the :option:`--contigs` option, they must be
 found in the specified folder in files named ``{sample}.fasta``, where
 ``{sample}`` is the sample name. Multiple samples may be present.
