@@ -114,7 +114,7 @@ Options
 These commands will set up all requirements for running the **VirMake**
 pipeline, including the prerequisites for any steps specified in the workflow
 configuration file ``config/params.yaml`` under ``rule_inclusion`` (See
-:ref:`config_workflow`).
+:ref:`config-workflow`).
 
 Running the workflow
 ^^^^^^^^^^^^^^^^^^^^

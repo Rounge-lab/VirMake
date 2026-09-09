@@ -2,12 +2,12 @@
 Configuration
 =============
 
-.. _config_workflow:
+.. _config-workflow:
 
 Workflow parameters
 -------------------
 
-.. _config_hpc:
+.. _config-hpc:
 
 HPC configuration
 -----------------
