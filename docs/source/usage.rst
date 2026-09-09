@@ -54,6 +54,7 @@ Commands
     Downloads and creates all environments needed to run the workflow offline.
 
 .. option:: run
+
     Runs the main workflow.
 
 Environment preparation
@@ -111,8 +112,9 @@ Options
     Test execution of the command
 
 These commands will set up all requirements for running the **VirMake**
-pipeline, including the prerequisites for any steps specified in the config
-file ``config/params.yaml`` under ``rule_inclusion`` (See :ref:config).
+pipeline, including the prerequisites for any steps specified in the workflow
+configuration file ``config/params.yaml`` under ``rule_inclusion`` (See
+:ref:`config_workflow`).
 
 Running the workflow
 ^^^^^^^^^^^^^^^^^^^^
@@ -135,11 +137,11 @@ Options
 
 .. option:: -c, --threads INTEGER
 
-    Number of threads to use per multi-threaded job
+    Number of threads to use per multi-threaded job.
 
 .. option:: -n, --dryrun
 
-    Test execution of the command
+    Test execution of the command.
 
 .. option:: -p, --profile TEXT
 
@@ -155,8 +157,10 @@ Options
 
 .. option:: -s, --slurm
 
-    Use `Slurm <https://slurm.schedmd.com/overview.html>`_ cluster to run
-    parallel jobs.
+    Use *Slurm*_ cluster to run parallel jobs.
+
+.. _Slurm: https://slurm.schedmd.com/overview.html
+
 
 .. option:: -T, --jobs_at_once INTEGER
 
