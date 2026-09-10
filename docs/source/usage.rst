@@ -82,8 +82,8 @@ Options
 
 .. option:: -c, --threads
 
-    **Type:** `int`
-    **Default:** 24
+    :Type: ``int``
+    :Default: 24
 
     Number of threads to use per multi-threaded job.
 
@@ -115,8 +115,8 @@ Options
 
 .. option:: -c, --threads
 
-    **Type:** `int`
-    **Default:** 24
+    :Type: ``int``
+    :Default: 24
 
     Maximum number of threads to use per multi-threaded job.
 
@@ -172,8 +172,8 @@ Options
 
 .. option:: -c, --threads
 
-    **Type:** `int`
-    **Default:** 24
+    :Type: ``int``
+    :Default: 24
 
     Maximum number of threads to use per multi-threaded job.
 
@@ -182,15 +182,15 @@ Options
     paths?
 .. option:: -p, --profile
 
-    **Type:** `str`
-    **Default:** ``./config``
+    :Type: ``str``
+    :Default: ``./config``
 
     Snakemake profile *e.g.* for cluster execution.
 
 .. option:: -d, --workflow-dir
 
-    **Type:** `path`
-    **Default:** ``./workflow``
+    :Type: ``path``
+    :Default: ``./workflow``
 
     Location to run virmake.
 
@@ -198,15 +198,15 @@ Options
    config file?
 .. option:: -C, --config-file
 
-    **Type:** `path`
-    **Default:** ``./config/params.yaml``
+    :Type: ``path``
+    :Default: ``./config/params.yaml``
 
     Config file generated during virmake setup (See :ref:`config-workflow`).
 
 .. option:: -T, --jobs_at_once
 
-    **Type:** `int`
-    **Default:** 3
+    :Type: ``int``
+    :Default: 3
 
     Number of jobs to add to queue at once.
 
