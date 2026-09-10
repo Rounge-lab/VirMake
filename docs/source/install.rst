@@ -11,7 +11,7 @@ Prerequisites
 Dependencies
 ^^^^^^^^^^^^
 
-* `git <https://git-scm.com/>`_
+* `Git <https://git-scm.com/>`_
 * Conda (either `Miniconda
   <https://continuumio-docs.readthedocs-hosted.com/miniconda/install/>`_ or
   `Anaconda <https://www.anaconda.com/docs/getting-started/installation>`_)
