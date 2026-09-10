@@ -12,7 +12,7 @@ Dependencies
 ^^^^^^^^^^^^
 
 * `git <https://git-scm.com/>`_
-* Conda (eithe `Miniconda
+* Conda (either `Miniconda
   <https://continuumio-docs.readthedocs-hosted.com/miniconda/install/>`_ or
   `Anaconda <https://www.anaconda.com/docs/getting-started/installation>`_)
 

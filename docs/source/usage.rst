@@ -16,7 +16,7 @@ Basic Usage
 
     conda activate ./venv
 
-#. Run the **VirMake** the pipeline:
+#. Run the **VirMake** pipeline:
 
 Command-line interface
 ^^^^^^^^^^^^^^^^^^^^^^

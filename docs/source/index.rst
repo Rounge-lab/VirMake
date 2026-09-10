@@ -36,3 +36,4 @@ Contents
     usage
     config
     modules
+    test
