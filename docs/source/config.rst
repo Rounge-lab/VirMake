@@ -8,7 +8,103 @@ Configuration
 Workflow parameters
 -------------------
 
-.. program:: params.yaml
+These workflow parameters are stored in ``config/params.yaml`` unless another
+parameters file is provided using the :option:`virmake run --config-file`
+option.
+
+.. option:: assembler
+
+    :Type: ``str``
+    :Default: "metaspades"
+
+.. option:: identifier
+
+    :Type: ``str`
+    :Default: "virsorter2"
+
+.. option:: min_contig_size
+
+    :Type: ``int``
+    :Default: 1000
+
+.. option:: min_coverage
+
+    :Type: ``int``
+    :Default: 75
+
+.. option:: quality_threshold
+
+    :Type: ``str``
+    :Default: "medium"
+
+.. option:: slurm_account
+
+    :Type: ``str``
+    :Default: "default"
+
+.. option:: threads
+
+    :Type: ``int``
+    :Default: 24
+
+.. option:: trim_percentage
+
+    :Type: ``float``
+    :Default: 0.05
+
+dereplication:
+^^^^^^^^^^^^^^
+
+.. option:: ani
+
+    :Type: ``int``
+    :Default: 97
+
+.. option:: min_aligned_fraction
+
+    :Type: ``int``
+    :Default: 70
+
+.. option:: precluster_ani
+
+    :Type: ``int``
+    :Default: 95
+
+.. option:: vOTU_num_len
+
+    :Type: ``int``
+    :Default: 5
+
+.. option:: vOTU_num_start
+
+    :Type: ``int``
+    :Default: 1
+
+.. option:: vOTU_prefix
+
+    :Type: ``str``
+    :Default "vOTU"
+
+.. option:: vOTU_suffix
+
+    :Type: ``str``
+    :Default: ""
+
+..identifier: virsorter2$
+    job_type:$
+      big: bigmem$
+      normal: normal$
+      small: normal$
+    memory:$
+      big: 32000$
+      metaquast: 63000$
+      metaspades: 63000$
+      normal: 16000$
+      small: 8000$
+      tiny: 1000$
+      vcontact2: 63000$
+    min_contig_size: 1000$
+    min_coverage: 75$
 
 path:
 ^^^^^
@@ -90,7 +186,7 @@ path:
 
     The **VirMake** repository root directory.
 
-database:
+path.database:
 """""""""
 
 .. option:: DRAM
@@ -137,60 +233,76 @@ database:
 rule_inclusion:
 ^^^^^^^^^^^^^^^
 
-all:
-""""
+rule_inclusion.all:
+"""""""""""""""""""
 
-.. confval:: rule_inclusion.all.assembly
-   :type: bool
-   :default: true
+.. option:: assembly
 
-.. confval:: rule_inclusion.all.function
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.all.identification
-   :type: bool
-   :default: true
+.. option:: function
 
-.. confval:: rule_inclusion.all.instrain
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.all.mapping
-   :type: bool
-   :default: true
+.. option:: identification
 
-.. confval:: rule_inclusion.all.metaquast
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.all.qc
-   :type: bool
-   :default: true
+.. option:: instrain
 
-.. confval:: rule_inclusion.all.stats
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.all.taxonomy
-   :type: bool
-   :default: true
+.. option:: mapping
 
-.. confval:: rule_inclusion.stats.dramv
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.stats.instrain
-   :type: bool
-   :default: false
+.. option:: metaquast
 
-.. confval:: rule_inclusion.stats.mapping
-   :type: bool
-   :default: true
+   :Type: ``bool``
+   :Default: True
 
-.. confval:: rule_inclusion.stats.metaquast
-   :type: bool
-   :default: true
+.. option:: qc
+
+   :Type: ``bool``
+   :Default: True
+
+.. option:: stats
+
+   :Type: ``bool``
+   :Default: True
+
+.. option:: taxonomy
+
+   :Type: ``bool``
+   :Default: True
+
+rule_inclusion.stats:
+"""""""""""""""""""""
+
+.. option:: dramv
+
+   :Type: ``bool``
+   :Default: True
+
+.. option:: instrain
+
+   :Type: ``bool``
+   :Default: false
+
+.. option:: mapping
+
+   :Type: ``bool``
+   :Default: True
+
+.. option:: metaquast
+
+   :Type: ``bool``
+   :Default: True
 
 
 .. _config-hpc:
