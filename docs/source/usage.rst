@@ -24,11 +24,11 @@ Command-line interface
 Synopsis
 """"""""
 
+.. program:: virmake
+
 .. code-block:: console
 
-    virmake -h
-
-usage: virmake [OPTIONS] COMMAND [ARGS]...
+    virmake [OPTIONS] COMMAND [ARGS]...
 
 Options
 """""""
@@ -81,8 +81,9 @@ Options
     Show the help message and exit.
 
 .. option:: -c, --threads
-   **Type:** `int`
-   **Default:** 24
+
+    **Type:** `int`
+    **Default:** 24
 
     Number of threads to use per multi-threaded job.
 
@@ -113,8 +114,9 @@ Options
     Test execution of the command.
 
 .. option:: -c, --threads
-   **Type:** `int`
-   **Default:** 24
+
+    **Type:** `int`
+    **Default:** 24
 
     Maximum number of threads to use per multi-threaded job.
 
@@ -169,6 +171,7 @@ Options
     parallel jobs.
 
 .. option:: -c, --threads
+
     **Type:** `int`
     **Default:** 24
 
@@ -178,12 +181,14 @@ Options
     NOTE! Why is this parsed as a string while other file options are parsed as
     paths?
 .. option:: -p, --profile
+
     **Type:** `str`
     **Default:** ``./config``
 
     Snakemake profile *e.g.* for cluster execution.
 
 .. option:: -d, --workflow-dir
+
     **Type:** `path`
     **Default:** ``./workflow``
 
@@ -192,12 +197,14 @@ Options
 ..  NOTE! Should the help message mention that this is the Workflow parameters
    config file?
 .. option:: -C, --config-file
+
     **Type:** `path`
     **Default:** ``./config/params.yaml``
 
     Config file generated during virmake setup (See :ref:`config-workflow`).
 
 .. option:: -T, --jobs_at_once
+
     **Type:** `int`
     **Default:** 3
 
