@@ -4,6 +4,8 @@ Test
 
 .. program:: virmake run
 
+.. describe::
+
     Usage: virmake run [OPTIONS]
 
 .. option:: -h, --help
