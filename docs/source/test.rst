@@ -4,10 +4,6 @@ Test
 
 .. program:: virmake run
 
-.. describe::
-
-    Usage: virmake run [OPTIONS]
-
 .. option:: -h, --help
 
     Show the help message and exit.
