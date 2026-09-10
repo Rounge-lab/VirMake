@@ -12,6 +12,15 @@ It offers taxonomic and functional annotation, supports offline running and has
 support for HPC cluster execution. It is made for Linux based systems and has
 been tested on x86_64-based Linux.
 
+License
+-------
+
+**VirMake** is provided under the GNU `General Public License v3.0
+<https://www.gnu.org/licenses/gpl-3.0.en.html>`_ (GPLv3). It is free software,
+and you are welcome to redistribute and/or modify it under the conditions of
+the GPLv3 terms. This software is provided 'As is' and comes with ABSOLUTELY
+NO WARRANTY.
+
 Citation
 --------
 
@@ -36,4 +45,3 @@ Contents
     usage
     config
     modules
-    test
