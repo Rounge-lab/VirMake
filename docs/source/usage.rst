@@ -10,13 +10,13 @@ Basic Usage
     When installing from source, make sure to run all commands from the root
     directory of the repository.
 
-#. Activate the **VirMake** conda environment:
+1. Activate the **VirMake** conda environment:
 
 .. code-block:: console
 
     conda activate ./venv
 
-#. Run the **VirMake** pipeline:
+2. Run the **VirMake** pipeline:
 
 Command-line interface
 ^^^^^^^^^^^^^^^^^^^^^^
