@@ -43,5 +43,5 @@ Contents
 
     install
     usage
+    workflow
     config
-    modules
