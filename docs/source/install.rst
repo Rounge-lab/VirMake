@@ -49,7 +49,7 @@ From Source
 
     git clone https://github.com/Rounge-lab/VirMake.git
 
-2. Run the VirMake setup script
+2. Run the **VirMake** setup script
 
 .. program:: setup.py
 
@@ -70,26 +70,26 @@ Options
 
 .. option:: --work-dir
 
-    **Type:** `path`
-    **Default:** ``./results```
+    :Type: ``path``
+    :Default: ``./results```
 
     Use this option to specify the output directory.
 
 .. option:: --reads
 
-    **Type:** `path`
+    :Type: ``path``
 
     Path where reads can be found.
 
 .. option:: --qc-reads
 
-    **Type:** `path`
+    :Type: ``path``
 
     Path where QC reads can be found.
 
 .. option:: --contigs
 
-    **Type:** `path`
+    :Type: ``path``
 
     Path where contigs can be found.
 
