@@ -43,13 +43,13 @@ Installation
 From Source
 ^^^^^^^^^^^
 
-#. Clone the git repository
+1. Clone the git repository
 
 .. code-block:: console
 
     git clone https://github.com/Rounge-lab/VirMake.git
 
-#. Run the VirMake setup script
+2. Run the VirMake setup script
 
 .. program:: setup.py
 
