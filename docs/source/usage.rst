@@ -64,15 +64,14 @@ Running VirMake requires the preparation of software and databases, which may
 take a substantial amount of time. To prepare a run by downloading and setting
 up environments, use the :option:`prep` command:
 
+.. program:: virmake prep
 
 Synopsis
 """"""""
 
 .. code-block:: console
 
-    virmake prep -h
-
-Usage: virmake prep [OPTIONS]
+    virmake prep [OPTIONS]
 
 Options
 """""""
@@ -81,20 +80,26 @@ Options
 
     Show the help message and exit.
 
-.. option:: -c, --threads INTEGER
+.. confval:: -c, --threads
+   :type: `int`
+   :default: 24
 
-    Number of threads to use per multi-threaded job
+    Number of threads to use per multi-threaded job.
 
-To prepare a run by downloading and setting up databases, use the db command:
+Database download
+^^^^^^^^^^^^^^^^^
+
+To prepare a run by downloading and setting up databases, use the :option:`db`
+command:
+
+.. program:: virmake db
 
 Synopsis
 """"""""
 
 .. code-block:: console
 
-    virmake db -h
-
-Usage: virmake db [OPTIONS]
+    virmake db [OPTIONS]
 
 Options
 """""""
@@ -102,14 +107,16 @@ Options
 .. option:: -h, --help
 
     Show the help message and exit.
-
-.. option:: -c, --threads INTEGER
-
-    Number of threads to use per multi-threaded job
 
 .. option:: -n, --dryrun
 
-    Test execution of the command
+    Test execution of the command.
+
+.. confval:: -c, --threads
+   :type: `int`
+   :default: 24
+
+    Maximum number of threads to use per multi-threaded job.
 
 These commands will set up all requirements for running the **VirMake**
 pipeline, including the prerequisites for any steps specified in the workflow
@@ -119,14 +126,31 @@ configuration file ``config/params.yaml`` under :confval:`rule_inclusion` (See
 Running the workflow
 ^^^^^^^^^^^^^^^^^^^^
 
+.. program:: virmake run
+
 Synopsis
 """"""""
 
 .. code-block:: console
 
-    virmake run -h
+    virmake run [OPTIONS] <WORKFLOW>
 
-Usage: virmake run [OPTIONS]
+Positional arguments
+""""""""""""""""""""
+
+.. describe:: <WORKFLOW>
+
+    - all (default)
+    - qc
+    - assembly
+    - identification
+    - mapping
+    - taxonomy
+    - function
+    - stats
+
+    Specify which part of the workflow to execute.
+    For more details on the workflow, see :ref:`workflow`.
 
 Options
 """""""
@@ -135,32 +159,47 @@ Options
 
     Show the help message and exit.
 
-.. option:: -c, --threads INTEGER
-
-    Number of threads to use per multi-threaded job.
-
 .. option:: -n, --dryrun
 
     Test execution of the command.
 
-.. option:: -p, --profile TEXT
+.. option:: -s, --slurm
 
-    Snakemake profile e.g. for cluster execution.
+    Use `Slurm <https://slurm.schedmd.com/overview.html>`_ cluster to run
+    parallel jobs.
 
-.. option:: -d, --workflow-dir PATH
+.. confval:: -c, --threads
+    :type: `int`
+    :default: 24
+
+    Maximum number of threads to use per multi-threaded job.
+
+..  NOTE! Is this supposed to be config/config.yaml ?
+    NOTE! Why is this parsed as a string while other file options are parsed as
+    paths?
+.. confval:: -p, --profile
+    :type: `str`
+    :default: ``./config``
+
+    Snakemake profile *e.g.* for cluster execution.
+
+.. confval:: -d, --workflow-dir
+    :type: `path`
+    :default: ``./workflow``
 
     Location to run virmake.
 
-.. option:: -C, --config-file PATH
+..  NOTE! Should the help message mention that this is the Workflow parameters
+   config file?
+.. confval:: -C, --config-file
+    :type: `path`
+    :default: ``./config/params.yaml``
 
-    Config file generated during virmake setup.
+    Config file generated during virmake setup (See :ref:`config-workflow`).
 
-.. option:: -s, --slurm
-
-    Use `*Slurm* <https://slurm.schedmd.com/overview.html>`_ cluster to run
-    parallel jobs.
-
-.. option:: -T, --jobs_at_once INTEGER
+.. confval:: -T, --jobs_at_once
+    :type: `int`
+    :default: 3
 
     Number of jobs to add to queue at once.
 
