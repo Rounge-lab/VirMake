@@ -150,7 +150,7 @@ Positional arguments
     - stats
 
     Specify which part of the workflow to execute.
-    For more details on the workflow, see :ref:`workflow`.
+    For more details on the workflow, see :ref:`header-workflow`.
 
 Options
 """""""
