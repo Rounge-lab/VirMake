@@ -19,7 +19,7 @@ option.
 
 .. option:: identifier
 
-    :Type: ``str`
+    :Type: ``str``
     :Default: virsorter2
 
 .. option:: min_contig_size
