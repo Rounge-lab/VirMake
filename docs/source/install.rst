@@ -58,10 +58,8 @@ Synopsis
 
 .. code-block:: console
 
-    python setup.py -h
-
-usage: python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
-QC_READS] [--contigs CONTIGS]
+    python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
+    QC_READS] [--contigs CONTIGS]
 
 Options
 """""""
@@ -70,19 +68,28 @@ Options
 
     Show the help message and exit.
 
-.. option:: --work-dir WORK_DIR
+.. option:: --work-dir
 
-    Use this option to specify the output directory (default: ``./results``).
+    **Type:** `path`
+    **Default:** ``./results```
 
-.. option:: --reads READS
+    Use this option to specify the output directory.
 
-   Path where reads can be found.
+.. option:: --reads
 
-.. option:: --qc-reads QC_READS
+    **Type:** `path`
+
+    Path where reads can be found.
+
+.. option:: --qc-reads
+
+    **Type:** `path`
 
     Path where QC reads can be found.
 
-.. option:: --contigs CONTIGS
+.. option:: --contigs
+
+    **Type:** `path`
 
     Path where contigs can be found.
 
