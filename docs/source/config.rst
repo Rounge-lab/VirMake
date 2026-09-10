@@ -1,10 +1,10 @@
 =============
 Configuration
 =============
+.. ./config/params.yaml
 
 .. _config-workflow:
 
-.. ./config/params.yaml
 Workflow parameters
 -------------------
 
@@ -14,11 +14,13 @@ path:
 ^^^^^
 
 .. option:: benchmark
+
     :Type: ``dir``
     :Default: ``./results/benchmark/``
 
 
 .. option:: envs
+
    :Type: ``dir``
    :Default: ``./workflow/envs/``
 
@@ -26,6 +28,7 @@ path:
     **VirMake** workflow.
 
 .. option:: input_contigs
+
     :Type: ``path``
 
     This parameter is set when contigs were specified during setup using
@@ -33,20 +36,24 @@ path:
 
 
 .. option:: input_reads
+
     :Type: ``path``
 
     This parameter is set when paired-end reads were specified during setup
     using :option:`setup.py --reads`.
 
 .. option:: log
+
     :Type: ``dir``
     :Default: ``./results/log/``
 
 .. option:: output
+
     :Type: ``dir``
     :Default: ``./results/output/``
 
 .. option:: samples
+
     :Type: ``path``
     :Default: ``./results/samples.tsv``
 
@@ -59,12 +66,14 @@ path:
     - contigs
 
 .. option:: scripts
+
     :Type: ``dir``
     :Default: ``./workflow/scripts/``
 
     This directory contains scripts needed to run the **VirMake** workflow.
 
 .. option:: temp
+
     :Type: ``dir``
     :Default: ``./results/temp/``
 
@@ -72,6 +81,7 @@ path:
     **VirMake** workflow.
 
 .. option:: virmake
+
     :Type: ``dir``
     :Default: ``./``
 
@@ -81,34 +91,42 @@ database:
 """""""""
 
 .. option:: DRAM
+
     :Type: ``path``
     :Default: ``./resources/databases/DRAM/DRAM_data``
 
 .. option:: INPHARED
+
     :Type: ``path``
     :Default: ``./resources/databases/INPHARED``
 
 .. option:: RefSeq
+
     :Type: ``path``
     :Default: ``./resources/databases/RefSeq/viral.q.q.genomic.fna``
 
 .. option:: checkv
+
     :Type: ``path``
     :Default: ``./resources/databases/checkv``
 
 .. option:: genomad
+
     :Type: ``path``
     :Default: ``./resources/databases/genomad``
 
 .. option:: vcontact2
+
     :Type: ``path``
     :Default: ``./resources/databases/vcontact2``
 
 .. option:: vibrant
+
     :Type: ``path``
     :Default: ``./resources/databases/vibrant/vibrant-1.2.1``
 
 .. option:: virsorter2
+
     :Type: ``path``
     :Default: ``./resources/databases/virsorter2``
 
