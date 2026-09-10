@@ -62,7 +62,7 @@ Environment preparation
 
 Running VirMake requires the preparation of software and databases, which may
 take a substantial amount of time. To prepare a run by downloading and setting
-up environments, use the :option:`prep` command:
+up environments, use the :program:`virmake prep` command:
 
 .. program:: virmake prep
 
@@ -80,16 +80,16 @@ Options
 
     Show the help message and exit.
 
-.. confval:: -c, --threads
-   :type: `int`
-   :default: 24
+.. option:: -c, --threads
+   **Type:** `int`
+   **Default:** 24
 
     Number of threads to use per multi-threaded job.
 
 Database download
 ^^^^^^^^^^^^^^^^^
 
-To prepare a run by downloading and setting up databases, use the :option:`db`
+To prepare a run by downloading and setting up databases, use the :program:`virmake db`
 command:
 
 .. program:: virmake db
@@ -112,9 +112,9 @@ Options
 
     Test execution of the command.
 
-.. confval:: -c, --threads
-   :type: `int`
-   :default: 24
+.. option:: -c, --threads
+   **Type:** `int`
+   **Default:** 24
 
     Maximum number of threads to use per multi-threaded job.
 
@@ -168,38 +168,38 @@ Options
     Use `Slurm <https://slurm.schedmd.com/overview.html>`_ cluster to run
     parallel jobs.
 
-.. confval:: -c, --threads
-    :type: `int`
-    :default: 24
+.. option:: -c, --threads
+    **Type:** `int`
+    **Default:** 24
 
     Maximum number of threads to use per multi-threaded job.
 
 ..  NOTE! Is this supposed to be config/config.yaml ?
     NOTE! Why is this parsed as a string while other file options are parsed as
     paths?
-.. confval:: -p, --profile
-    :type: `str`
-    :default: ``./config``
+.. option:: -p, --profile
+    **Type:** `str`
+    **Default:** ``./config``
 
     Snakemake profile *e.g.* for cluster execution.
 
-.. confval:: -d, --workflow-dir
-    :type: `path`
-    :default: ``./workflow``
+.. option:: -d, --workflow-dir
+    **Type:** `path`
+    **Default:** ``./workflow``
 
     Location to run virmake.
 
 ..  NOTE! Should the help message mention that this is the Workflow parameters
    config file?
-.. confval:: -C, --config-file
-    :type: `path`
-    :default: ``./config/params.yaml``
+.. option:: -C, --config-file
+    **Type:** `path`
+    **Default:** ``./config/params.yaml``
 
     Config file generated during virmake setup (See :ref:`config-workflow`).
 
-.. confval:: -T, --jobs_at_once
-    :type: `int`
-    :default: 3
+.. option:: -T, --jobs_at_once
+    **Type:** `int`
+    **Default:** 3
 
     Number of jobs to add to queue at once.
 
