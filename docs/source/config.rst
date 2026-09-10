@@ -34,6 +34,7 @@ path:
     This parameter is set when contigs were specified during setup using
     :option:`setup.py --contigs`.
 
+.. _params-input-reads:
 
 .. option:: input_reads
 
@@ -46,6 +47,8 @@ path:
 
     :Type: ``dir``
     :Default: ``./results/log/``
+
+.. _params-output:
 
 .. option:: output
 
