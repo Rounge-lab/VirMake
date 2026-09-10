@@ -15,12 +15,12 @@ option.
 .. option:: assembler
 
     :Type: ``str``
-    :Default: "metaspades"
+    :Default: metaspades
 
 .. option:: identifier
 
     :Type: ``str`
-    :Default: "virsorter2"
+    :Default: virsorter2
 
 .. option:: min_contig_size
 
@@ -35,12 +35,12 @@ option.
 .. option:: quality_threshold
 
     :Type: ``str``
-    :Default: "medium"
+    :Default: medium
 
 .. option:: slurm_account
 
     :Type: ``str``
-    :Default: "default"
+    :Default: default
 
 .. option:: threads
 
@@ -83,28 +83,12 @@ dereplication:
 .. option:: vOTU_prefix
 
     :Type: ``str``
-    :Default "vOTU"
+    :Default: vOTU
 
 .. option:: vOTU_suffix
 
     :Type: ``str``
-    :Default: ""
-
-..identifier: virsorter2$
-    job_type:$
-      big: bigmem$
-      normal: normal$
-      small: normal$
-    memory:$
-      big: 32000$
-      metaquast: 63000$
-      metaspades: 63000$
-      normal: 16000$
-      small: 8000$
-      tiny: 1000$
-      vcontact2: 63000$
-    min_contig_size: 1000$
-    min_coverage: 75$
+    :Default: ''
 
 path:
 ^^^^^
@@ -187,7 +171,7 @@ path:
     The **VirMake** repository root directory.
 
 path.database:
-"""""""""
+""""""""""""""
 
 .. option:: DRAM
 
