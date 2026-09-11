@@ -1,3 +1,5 @@
+.. _workflow-config:
+
 ======================
 Workflow Configuration
 ======================
