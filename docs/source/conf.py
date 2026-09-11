@@ -45,11 +45,15 @@ copybutton_prompt_text = r">>> |\$ "
 copybutton_prompt_is_regexp = True
 
 # -- Styling
+html_theme_options = {
+        'logo_only': False,
+}
+
 html_static_path = ["_static"]
 
 html_css_files = [
     "virmake.css",
 ]
 
-html_logo = "_static/virmake_emblem_white.svg"
+html_logo = "_static/virmake_logo_white.svg"
 html_favicon = "_static/virmake_favicon.svg"
