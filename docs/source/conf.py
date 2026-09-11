@@ -51,5 +51,5 @@ html_css_files = [
     "virmake.css",
 ]
 
-html_logo = "virmake_emblem_white.svg"
-html_favicon = "virmake_favicon.svg"
+html_logo = "_static/virmake_emblem_white.svg"
+html_favicon = "_static/virmake_favicon.svg"
