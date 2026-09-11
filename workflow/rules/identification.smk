@@ -368,7 +368,7 @@ rule virsorter_for_dram:
     threads: 4
     resources:
         mem_mb=config["memory"]["normal"],
-        runtime=config["time"]["normal"],
+        runtime=config["time"]["big"],
     shell:
         """
         mkdir -p {output.dir}
