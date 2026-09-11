@@ -79,19 +79,27 @@ Options
 
     :Type: ``path``
 
-    Path where reads can be found.
+    Path where reads can be found. This option automatically sets the
+    :confval:`path.input_reads` option in the `Workflow Configuration`_ and
+    populates the ``r1`` and ``r2`` columns in the samples table
+    :confval:`path.samples`.
 
 .. option:: --qc-reads
 
     :Type: ``path``
 
-    Path where QC reads can be found.
+    Path where QC reads can be found. This option automatically populates the
+    ``qc_r1`` and ``qc_r2`` columns in the samples table
+    :confval:`path.samples`.
 
 .. option:: --contigs
 
     :Type: ``path``
 
-    Path where contigs can be found.
+    Path where contigs can be found. This option automatically sets the
+    :confval:`path.input_contigs` option in the `Workflow Configuration`_ and
+    populates the ``contigs`` column in the samples table
+    :confval:`path.samples`.
 
 Use :option:`--reads`, :option:`--qc-reads`, or :option:`--contigs` to
 specify the directories where input files are found.

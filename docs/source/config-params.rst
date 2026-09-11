@@ -2,11 +2,6 @@
 Workflow Configuration
 ======================
 
-.. _config-workflow:
-
-Workflow parameters
--------------------
-
 These workflow parameters are stored in ``config/params.yaml`` unless another
 parameters file is provided using the :option:`virmake run --config-file`
 option.
