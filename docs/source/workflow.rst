@@ -2,6 +2,11 @@
 Workflow
 ========
 
+.. warning::
+
+    This page is under construction and may contain incorrect and/or incomplete
+    information.
+
 .. _header-workflow:
 
 Overview
@@ -31,7 +36,7 @@ used for trimming using default options:
 :--disable_adapter_trimming: False
 
 Input file location is specified in <:confval:`path.input_reads`> (for more
-info, see :ref:`config-workflow`).
+info, see :doc:`config-params`).
 
 Output files are stored in <:confval:`path.output`>/fastp_pe/.  For each
 sample, paired trimmed reads are stored in ``{sample}_1.fastq`` and

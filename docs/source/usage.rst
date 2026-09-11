@@ -2,6 +2,11 @@
 Usage
 =====
 
+.. warning::
+
+    This page is under construction and may contain incorrect and/or incomplete
+    information.
+
 Basic Usage
 -----------
 
@@ -123,7 +128,7 @@ Options
 These commands will set up all requirements for running the **VirMake**
 pipeline, including the prerequisites for any steps specified in the workflow
 configuration file ``config/params.yaml`` under :confval:`rule_inclusion` (See
-:ref:`config-workflow`).
+:doc:`config-params`).
 
 Running the workflow
 ^^^^^^^^^^^^^^^^^^^^
@@ -201,7 +206,7 @@ Options
     :Type: ``path``
     :Default: ``./config/params.yaml``
 
-    Config file generated during virmake setup (See :ref:`config-workflow`).
+    Config file generated during virmake setup (See :doc:`config-params`).
 
 .. option:: -T, --jobs_at_once
 
