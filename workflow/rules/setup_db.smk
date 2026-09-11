@@ -110,7 +110,10 @@ rule DRAMv_db:
     params:
         dl_dir=config["path"]["database"]["DRAM"] + "_downloads",
         vog_url="https://fileshare.lisc.univie.ac.at/vog/latest/vog.hmm.tar.gz",
-    threads: 16
+    threads: 2
+    resources:
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["normal"],
     shell:
         """
         mkdir -p {output.dram_dir}/vogdb {params.dl_dir}
