@@ -58,11 +58,8 @@ class YamlConfigDirective(Directive):
                 if not value:
                     lines.extend(
                         [
-                            f".. confval:: {name}",
-                            "",
-                            "   :Type: list",
-                            "   :Default: ``[]``",
-                            "",
+                            f".. object:: {name}",
+                            ""
                         ]
                     )
                     continue
@@ -74,7 +71,7 @@ class YamlConfigDirective(Directive):
                     [
                         f".. confval:: {name}",
                         "",
-                        f"   :Type: {_type_name(default)}",
+                        f"   :Type: ``{_type_name(default)}``",
                         f"   :Default: ``{default!r}``",
                     ]
                 )
@@ -97,7 +94,7 @@ class YamlConfigDirective(Directive):
                 [
                     f".. confval:: {name}",
                     "",
-                    f"   :Type: {_type_name(value)}",
+                    f"   :Type: ``{_type_name(value)}``",
                     f"   :Default: ``{value!r}``",
                     "",
                 ]
