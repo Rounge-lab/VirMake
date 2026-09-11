@@ -147,20 +147,20 @@ Positional arguments
 
 .. describe:: <WORKFLOW>
 
-    :Type: ``str``
-    :Default: ``all``
-    :Alternatives:
+   :Type: ``str``
+   :Default: ``all``
+   :Alternatives:
 
-    * ``qc``
-    * ``assembly``
-    * ``identification``
-    * ``mapping``
-    * ``taxonomy``
-    * ``function``
-    * ``stats``
+      * ``qc``
+      * ``assembly``
+      * ``identification``
+      * ``mapping``
+      * ``taxonomy``
+      * ``function``
+      * ``stats``
 
-    Specify which part of the workflow to execute.
-    For more details on the workflow, see :ref:`header-workflow`.
+   Specify which part of the workflow to execute.
+   For more details on the workflow, see :ref:`header-workflow`.
 
 Options
 """""""

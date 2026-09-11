@@ -61,7 +61,7 @@ Assembly
 After QC, the reads are assembled. The choice of assembler is specified in
 :confval:`assembler`, though currently, only `MetaSpades
 <https://github.com/ablab/spades>`_ is supported.  Assembly is performed with
-default parameters and `Metaquast <https://quast.sourceforge.net/metaquast>`_
+default parameters and `MetaQuast <https://quast.sourceforge.net/metaquast>`_
 is subsequently used with the ``--max-ref-number`` option set to ``0`` to
 evaluate the assembly quality and generate the quality report.
 
@@ -74,5 +74,17 @@ Viral Identification
 
 Viral sequences are then identified from the resulting contigs. Alternatively,
 pre-assembled contigs can be provided to **VirMake** during setup with
-:option:`setup.py --contigs`.
+:option:`setup.py --contigs`. **VirMake** supports two methods for
+identification of viral sequences; `VirSorter2
+<https://github.com/jiarong/VirSorter2>`_, or `geNomad
+<https://github.com/apcamargo/genomad/>`_, as specified in
+:confval:`identifier`. 
+
+Databases
+can be pre-downloaded using :option:`virmake db` and their location is specified
+in :confval:`path.database.virsorter2` and :confval:`path.database.genomad` for
+VirSorter2 and geNomad respectively.
+
+.. databases automatically
+    options min_contig_size
 
