@@ -12,15 +12,22 @@ These workflow parameters are stored in ``config/params.yaml`` unless another
 parameters file is provided using the :option:`virmake run --config-file`
 option.
 
+..  NOTE! Is there actually another supported assembler choice?
+
+.. _params-assembler:
+
 .. option:: assembler
 
     :Type: ``str``
     :Default: metaspades
 
+.. _params-identifier:
+
 .. option:: identifier
 
     :Type: ``str``
     :Default: virsorter2
+    :Alternative: genomad
 
 .. option:: min_contig_size
 
@@ -90,6 +97,39 @@ dereplication:
     :Type: ``str``
     :Default: ''
 
+job_type:
+^^^^^^^^^
+
+.. option:: big
+
+    :Type: ``str``
+    :Default: bigmem
+
+.. option:: normal
+
+    :Type: ``str``
+    :Default: normal
+
+.. option:: small
+
+    :Type: ``str``
+    :Default: normal
+
+memory:
+^^^^^^^
+..  big: 32000$
+    metaquast: 63000$
+    metaspades: 63000$
+    normal: 16000$
+    small: 8000$
+    tiny: 1000$
+    vcontact2: 63000$
+
+.. option:: big:
+
+    :Type: ``str``
+    :Default: 32000
+
 path:
 ^^^^^
 
@@ -101,8 +141,8 @@ path:
 
 .. option:: envs
 
-   :Type: ``dir``
-   :Default: ``./workflow/envs/``
+    :Type: ``dir``
+    :Default: ``./workflow/envs/``
 
     Folder containing the environment.yaml files for each tool included in the
     **VirMake** workflow.

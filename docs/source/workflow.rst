@@ -14,14 +14,11 @@ Overview
 
     Overview of the **VirMake** workflow.
 
-QC
---
-
-Raw read pre-processing and quality control
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Pre-processing & QC
+-------------------
 
 1) Trimming
-"""""""""""
+^^^^^^^^^^^
 ..  NOTE! fastp has 1 thread hardcoded
 
 If raw paired-end reads were specified during setup using
@@ -43,7 +40,7 @@ stored in ``html`` and ``json`` format in ``{sample}.html`` and
 ``{sample}.json`` respectively.
 
 2) Quality summary
-""""""""""""""""""
+^^^^^^^^^^^^^^^^^^
 
 After quality trimming, or alternatively, if quality-trimmed reads were
 provided using the :option:`setup.py --qc-reads` option,
@@ -53,3 +50,26 @@ quality assessment. Finally, a summary is made using
 
 The output quality report is stored at <:ref:`params.yaml output
 <params-output>`>/multiqc/multiqc.html.
+
+Assembly
+--------
+
+After QC, the reads are assembled. The choice of assembler is specified in
+:ref:`params.yaml assembler <params-assembler>`, though currently, only
+`MetaSpades <https://github.com/ablab/spades>`_ is supported.
+Assembly is performed with default parameters and `Metaquast
+<https://quast.sourceforge.net/metaquast>`_ is subsequently used with the
+``--max-ref-number`` option set to ``0`` to evaluate the assembly quality and
+generate the quality report.
+
+Assemblies for each sample are stored in <:ref:`params.yaml output
+<params-output>`>/metaSpades/``{sample}``/contigs.fasta. The assembly quality
+report is kept at <:ref:`params.yaml output <params-output>`>/metaQUAST/report.html.
+
+Viral Identification
+--------------------
+
+Viral sequences are then identified from the resulting contigs. Alternatively,
+pre-assembled contigs can be provided to **VirMake** during setup with
+:option:`setup.py --contigs`.
+
