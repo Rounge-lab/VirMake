@@ -47,7 +47,7 @@ Commands
 
 .. option:: clean
 
-    Clean VirMake directory.
+    Clean **VirMake** directory.
 
 .. option:: db
 
@@ -65,7 +65,7 @@ Commands
 Environment preparation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Running VirMake requires the preparation of software and databases, which may
+Running **VirMake** requires the preparation of software and databases, which may
 take a substantial amount of time. To prepare a run by downloading and setting
 up environments, use the :program:`virmake prep` command:
 
@@ -147,14 +147,17 @@ Positional arguments
 
 .. describe:: <WORKFLOW>
 
-    - all (default)
-    - qc
-    - assembly
-    - identification
-    - mapping
-    - taxonomy
-    - function
-    - stats
+    :Type: ``str``
+    :Default: ``all``
+    :Alternatives:
+
+    * ``qc``
+    * ``assembly``
+    * ``identification``
+    * ``mapping``
+    * ``taxonomy``
+    * ``function``
+    * ``stats``
 
     Specify which part of the workflow to execute.
     For more details on the workflow, see :ref:`header-workflow`.
