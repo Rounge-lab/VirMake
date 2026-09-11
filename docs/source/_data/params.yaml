@@ -1,0 +1,85 @@
+assembler: metaspades
+dereplication:
+  ani: 97
+  min_aligned_fraction: 70
+  precluster_ani: 95
+  vOTU_num_len: 5
+  vOTU_num_start: 1
+  vOTU_prefix: vOTU
+  vOTU_suffix: ''
+identifier:
+  - virsorter2
+  - genomad
+job_type:
+  big: bigmem
+  normal: normal
+  small: normal
+memory:
+  big: 32000
+  metaquast: 63000
+  metaspades: 63000
+  normal: 16000
+  small: 8000
+  tiny: 1000
+  vcontact2: 63000
+min_contig_size: 1000
+min_coverage: 75
+path:
+  benchmark: ./results/benchmark
+  database:
+    DRAM: ./resources/databases/DRAM/DRAM_data
+    INPHARED: ./resources/databases/INPHARED
+    RefSeq: ./resources/databases/RefSeq/viral.1.1.genomic.fna
+    checkv: ./resources/databases/checkv
+    genomad: ./resources/databases/genomad
+    vcontact2: ./resources/databases/vcontact2
+    vibrant: ./resources/databases/vibrant/vibrant-1.2.1
+    virsorter2: ./resources/databases/virsorter2
+  envs: ./workflow/envs
+  input_contigs: ""
+  input_reads: ""
+  log: ./results/log
+  output: ./results/output
+  samples: ./results/samples.tsv
+  scripts: ./workflow/scripts
+  temp: ./results/temp
+  virmake: <WORKING DIRECTORY>
+quality_threshold: medium
+rule_inclusion:
+  all:
+    assembly: true
+    function: true
+    identification: true
+    instrain: true
+    mapping: true
+    metaquast: true
+    qc: true
+    stats: true
+    taxonomy: true
+  stats:
+    dramv: true
+    instrain: false
+    mapping: true
+    metaquast: true
+slurm_account: default
+threads: 24
+time:
+  big: 13 h
+  metaquast: 24 h
+  metaspades: 2 h
+  normal: 6 h
+  small: 1 h
+  tiny: 30 m
+  vcontact2: 72 h
+trim_percentage: 0.05
+vibrant:
+  is_virome: 'no'
+virsorter2:
+  for_dramv:
+    min_length: 100
+    min_score: 0.01
+    viral_groups: dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae
+  id:
+    min_length: 3000
+    min_score: 0.5
+    viral_groups: dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae

@@ -30,14 +30,13 @@ used for trimming using default options:
 :--length_limit: 0
 :--disable_adapter_trimming: False
 
-Input file location is specified in <:ref:`params.yaml input_reads
-<params-input-reads>`> (for more info, see :ref:`config-workflow`).
+Input file location is specified in <:confval:`path.input_reads`> (for more
+info, see :ref:`config-workflow`).
 
-Output files are stored in <:ref:`params.yaml output
-<params-output>`>/fastp_pe/.  For each sample, paired trimmed reads are
-stored in ``{sample}_1.fastq`` and ``{sample}_2.fastq``. QC reports are
-stored in ``html`` and ``json`` format in ``{sample}.html`` and
-``{sample}.json`` respectively.
+Output files are stored in <:confval:`path.output`>/fastp_pe/.  For each
+sample, paired trimmed reads are stored in ``{sample}_1.fastq`` and
+``{sample}_2.fastq``. QC reports are stored in ``html`` and ``json`` format in
+``{sample}.html`` and ``{sample}.json`` respectively.
 
 2) Quality summary
 ^^^^^^^^^^^^^^^^^^
@@ -48,23 +47,22 @@ provided using the :option:`setup.py --qc-reads` option,
 quality assessment. Finally, a summary is made using
 `MultiQC <https://github.com/MultiQC/MultiQC>`_.
 
-The output quality report is stored at <:ref:`params.yaml output
-<params-output>`>/multiqc/multiqc.html.
+The output quality report is stored at
+<:confval:`path.output`>/multiqc/multiqc.html.
 
 Assembly
 --------
 
 After QC, the reads are assembled. The choice of assembler is specified in
-:ref:`params.yaml assembler <params-assembler>`, though currently, only
-`MetaSpades <https://github.com/ablab/spades>`_ is supported.
-Assembly is performed with default parameters and `Metaquast
-<https://quast.sourceforge.net/metaquast>`_ is subsequently used with the
-``--max-ref-number`` option set to ``0`` to evaluate the assembly quality and
-generate the quality report.
+:confval:`assembler`, though currently, only `MetaSpades
+<https://github.com/ablab/spades>`_ is supported.  Assembly is performed with
+default parameters and `Metaquast <https://quast.sourceforge.net/metaquast>`_
+is subsequently used with the ``--max-ref-number`` option set to ``0`` to
+evaluate the assembly quality and generate the quality report.
 
-Assemblies for each sample are stored in <:ref:`params.yaml output
-<params-output>`>/metaSpades/``{sample}``/contigs.fasta. The assembly quality
-report is kept at <:ref:`params.yaml output <params-output>`>/metaQUAST/report.html.
+Assemblies for each sample are stored in
+<:confval:`path.output`>/metaSpades/``{sample}``/contigs.fasta. The assembly
+quality report is kept at <:confval:`path.output`>/metaQUAST/report.html.
 
 Viral Identification
 --------------------

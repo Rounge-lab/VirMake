@@ -44,5 +44,5 @@ Contents
     install
     usage
     workflow
-    config
-    test
+    config-params
+    config-hpc
