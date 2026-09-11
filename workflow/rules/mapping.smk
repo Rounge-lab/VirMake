@@ -236,7 +236,7 @@ rule instrain_compare:
         "[instrain_compare] Comparing inStrain profiles..."
     threads: 8
     resources:
-        mem_mb=config["memory"]["big"],
+        mem_mb=config["memory"]["huge"],
         runtime=config["time"]["normal"],
     shell:
         """
