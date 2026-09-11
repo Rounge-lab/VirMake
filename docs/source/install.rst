@@ -2,6 +2,11 @@
 Installation
 ============
 
+.. warning::
+
+    This page is under construction and may contain incorrect and/or incomplete
+    information.
+
 .. _prerequisites:
 
 
@@ -80,7 +85,7 @@ Options
     :Type: ``path``
 
     Path where reads can be found. This option automatically sets the
-    :confval:`path.input_reads` option in the :ref:`workflow-conf` and
+    :confval:`path.input_reads` option in the :doc:`config-params` and
     populates the ``r1`` and ``r2`` columns in the samples table
     :confval:`path.samples`.
 
@@ -97,7 +102,7 @@ Options
     :Type: ``path``
 
     Path where contigs can be found. This option automatically sets the
-    :confval:`path.input_contigs` option in the :ref:`workflow-conf` and
+    :confval:`path.input_contigs` option in the :doc:`config-params` and
     populates the ``contigs`` column in the samples table
     :confval:`path.samples`.
 
