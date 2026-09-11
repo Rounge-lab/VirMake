@@ -43,3 +43,13 @@ epub_show_urls = 'footnote'
 # -- Sphinx copybutton
 copybutton_prompt_text = r">>> |\$ "
 copybutton_prompt_is_regexp = True
+
+# -- Styling
+html_static_path = ["_static"]
+
+html_css_files = [
+    "virmake.css",
+]
+
+html_logo = "virmake_emblem_white.svg"
+html_favicon = "virmake_favicon.svg"
