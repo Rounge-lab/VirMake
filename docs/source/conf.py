@@ -46,7 +46,7 @@ copybutton_prompt_is_regexp = True
 
 # -- Styling
 html_theme_options = {
-        'logo_only': False,
+        'logo_only': True,
 }
 
 html_static_path = ["_static"]
