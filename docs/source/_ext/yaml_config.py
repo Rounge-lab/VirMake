@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 from docutils import nodes
 from docutils.parsers.rst import Directive
+from docutils.statemachine import StringList
 from sphinx.util.nodes import nested_parse_with_titles
 
 
@@ -14,9 +15,14 @@ class YamlConfigDirective(Directive):
     required_arguments = 1
     has_content = False
 
+
     def run(self):
         env = self.state.document.settings.env
         filename = Path(env.srcdir) / self.arguments[0]
+
+        # Tell Sphinx that this document depends on the YAML file. This ensures
+        # the page is rebuilt if the YAML changes.
+        env.note_dependency(str(filename))
 
         with filename.open(encoding="utf-8") as f:
             config = yaml.safe_load(f) or {}
@@ -27,9 +33,14 @@ class YamlConfigDirective(Directive):
         container = nodes.section()
         container.document = self.state.document
 
+        content = StringList(
+            lines,
+            source=str(filename),
+        )
+
         nested_parse_with_titles(
             self.state,
-            "\n".join(lines),
+            content,
             container,
         )
 
