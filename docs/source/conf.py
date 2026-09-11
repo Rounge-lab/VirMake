@@ -1,4 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("_ext"))
 
 # -- Project information
 
@@ -18,6 +22,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx_copybutton',
     'sphinx_toolbox.confval',
+    'yaml_config',
 ]
 
 intersphinx_mapping = {
