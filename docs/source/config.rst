@@ -333,3 +333,5 @@ rule_inclusion.stats:
 
 HPC configuration
 -----------------
+
+.. yaml-config:: _data/config.yaml
