@@ -80,7 +80,7 @@ Options
     :Type: ``path``
 
     Path where reads can be found. This option automatically sets the
-    :confval:`path.input_reads` option in the `Workflow Configuration`_ and
+    :confval:`path.input_reads` option in the :ref:`workflow-conf` and
     populates the ``r1`` and ``r2`` columns in the samples table
     :confval:`path.samples`.
 
@@ -97,7 +97,7 @@ Options
     :Type: ``path``
 
     Path where contigs can be found. This option automatically sets the
-    :confval:`path.input_contigs` option in the `Workflow Configuration`_ and
+    :confval:`path.input_contigs` option in the :ref:`workflow-conf` and
     populates the ``contigs`` column in the samples table
     :confval:`path.samples`.
 
