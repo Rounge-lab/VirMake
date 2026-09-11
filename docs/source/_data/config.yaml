@@ -1,9 +1,9 @@
 cluster: sbatch --output=\"jobs/{rule}/slurm_%x_%j.out\" --error=\"jobs/{rule}/slurm_%x_%j.log\"
   --mem={resources.mem_mb} --time={resources.runtime}
 conda-frontend: mamba
-default-resources:
-- mem_mb=20000
-- runtime=02:00:00
+default-resources: >
+  mem_mb=20000
+  runtime=02:00:00
 jobname: '{rule}.{jobid}'
 jobs: 200
 keep-going: true
@@ -14,11 +14,10 @@ nolock: true
 printshellcmds: true
 reason: true
 rerun-incomplete: true
-set-resources:
-- out_of_memory:mem_mb=50
-- out_of_memory:runtime=00:01:00
-set-threads:
-- out_of_memory=1
+set-resources: >
+  out_of_memory:mem_mb=50
+  out_of_memory:runtime=00:01:00
+set-threads: out_of_memory=1
 show-failed-logs: true
 snakefile: Snakefile
 use-conda: true
