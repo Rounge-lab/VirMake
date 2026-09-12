@@ -90,6 +90,7 @@ def make_config(virmake_path,
         "normal": 15000,
         "big": 30000,
         "huge": 60000,
+        "enormous": 180000,
         "vcontact2": 60000,
         "vcontact3": 60000,
         "metaquast": 180000,
@@ -101,6 +102,7 @@ def make_config(virmake_path,
         "big": "24 h",
         "vcontact2": "72 h",
         "vcontact3": "72 h",
+        "long": "120 h",
     }
     config["rule_inclusion"] = {
         "all": {

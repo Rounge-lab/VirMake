@@ -234,10 +234,10 @@ rule instrain_compare:
         config["path"]["benchmark"] + "/instrain/compare.txt"
     message:
         "[instrain_compare] Comparing inStrain profiles..."
-    threads: 8
+    threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["huge"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["enormous"],
+        runtime=config["time"]["long"],
     shell:
         """
         mkdir -p {params.dir}
