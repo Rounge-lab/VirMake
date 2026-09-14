@@ -170,8 +170,10 @@ minimum contig size is specified in the :confval:`min_contig_size` option. The
 output is stored at
 <:confval:`path.output`>/``DRAMv/distilled/vMAG_stats.tsv``.
 
-functional annotation can be disabled by setting the
-:confval:`rule_inclusion.all.function` to ``false``.
+.. tip::
+   Required database construction is resource-intensive. Functional annotation
+   can be disabled by setting the :confval:`rule_inclusion.all.function` to
+   ``false``.
 
 Report Generation
 -----------------
