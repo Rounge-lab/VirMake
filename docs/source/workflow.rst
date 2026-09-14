@@ -172,3 +172,10 @@ output is stored at
 
 functional annotation can be disabled by setting the
 :confval:`rule_inclusion.all.function` to ``false``.
+
+Report Generation
+-----------------
+
+Finally, sample-wise and vOTU-wise summary reports are generated in
+<:confval:`path.output`>/``statistics/sample_stats.tsv`` and
+<:confval:`path.output`>/``statistics/vOTU_stats.tsv`` respectively.
