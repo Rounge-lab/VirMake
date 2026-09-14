@@ -78,11 +78,9 @@ pre-assembled contigs can be provided to **VirMake** during setup with
 identification of viral sequences; `VirSorter2
 <https://github.com/jiarong/VirSorter2>`_, or `geNomad
 <https://github.com/apcamargo/genomad/>`_. The :confval:`identifier` option
-specifies which method is used.
-
-..  NOTE! The min_contig_length parameters will be updated
-   to 3000, then DRAM-v will use 1000 since viruses can be shorter than
-   the contig they were identified in
+specifies which method is used. The following options for ``VirSorter`` can be
+configured: :confval:`virsorter.id.min_length`,
+:confval:`virsorter.id.min_score`, and :confval:`virsorter.id.viral_groups`.
 
 Databases can be pre-downloaded using :option:`virmake db` and their location
 is specified in :confval:`path.database.virsorter2` and
@@ -109,8 +107,8 @@ stored at
 Dereplication
 -------------
 
-..  NOTE! The virsorter_for_dram and checkv_vOTU_virsorter2 rules do not
-   seem to run in the pipeline unless I missed a rule that calls them.
+..  NOTE! Virsorter is run differently (virsorter_for_dram when functional
+   annotation is enabled.
 
 After viral identification, extracted viral genomes are clustered into vOTUs
 using `Galah <https://github.com/wwood/galah>`_ with an average nucleotide
@@ -148,3 +146,29 @@ Strain-level diversity analysis is then conducted using `InStrain
 <https://github.com/MrOlm/instrain>`_. The resulting diversity comparison is
 stored at
 <:confval:`path.output`>/``instrain/comparison/output/comparison_comparisonsTable.tsv``
+
+Taxonomy
+--------
+
+Taxonomic classification of dereplicated vOTUs is performed using `vConTACT3
+<bitbucket.org/MAVERICLab/vcontact3/src>`_ using the default ``prokaryotes``
+``--db-domain`` option. Results are stored at
+<:confval:`path.output`>/``vcontact3/vOTU_assignments.csv``.
+
+Functional Annotation
+---------------------
+
+..  NOTE! The min length for VirSorter2 is 100 while DRAM is 1000
+
+Before running functional annotation, dereplicated vOTUs are run through
+``VirSorter2`` with the ``--prep-for-dramv`` option, as well as more stringent
+cutoff values specified in :confval:`virsorter2.for_dramv.min_length` and
+:confval:`virsorter2.for_dramv.min_score`. The resulting contigs are then
+checked using ``CheckV``. Finally, vOTUs are annotated using `DRAM-v
+<https://github.com/BortonWrightonLabs/DRAM>`_ with the default databases. The
+minimum contig size is specified in the :conval:`min_contig_size` option. The
+output is stored at
+<:confval:`path.output`>/``DRAMv/distilled/vMAG_stats.tsv``.
+
+functional annotation can be disabled by setting the
+:confval:`rule_inclusion.all.function` to ``false``.
