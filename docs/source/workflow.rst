@@ -166,7 +166,7 @@ cutoff values specified in :confval:`virsorter2.for_dramv.min_length` and
 :confval:`virsorter2.for_dramv.min_score`. The resulting contigs are then
 checked using ``CheckV``. Finally, vOTUs are annotated using `DRAM-v
 <https://github.com/BortonWrightonLabs/DRAM>`_ with the default databases. The
-minimum contig size is specified in the :conval:`min_contig_size` option. The
+minimum contig size is specified in the :confval:`min_contig_size` option. The
 output is stored at
 <:confval:`path.output`>/``DRAMv/distilled/vMAG_stats.tsv``.
 
