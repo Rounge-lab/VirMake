@@ -136,8 +136,8 @@ as quality filtered reads using :option:`setup.py --qc-reads`, reads passing
 the quality control are mapped to the representative viral vOTUs using
 `Bowtie2 <https://github.com/BenLangmead/bowtie2>`_ and coverage is computed
 using `BBTools pileup <https://github.com/bbushnell/BBTools>`_. A genome is
-considered present if the coverage exceeds the specified :convfal:`min_coverage`
-threshold. The resulting relative abundance table is stored at 
+considered present if the coverage exceeds the specified :confval:`min_coverage`
+threshold. The resulting relative abundance table is stored at
 <:confval:`path.output`>/mapping/rel_abundance_table.tsv.
 
 .. tip::
