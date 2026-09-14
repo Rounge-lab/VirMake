@@ -38,7 +38,7 @@ used for trimming using default options:
 Input file location is specified in <:confval:`path.input_reads`> (for more
 info, see :doc:`config-params`).
 
-Output files are stored in <:confval:`path.output`>/fastp_pe/.  For each
+Output files are stored in <:confval:`path.output`>/``fastp_pe/``.  For each
 sample, paired trimmed reads are stored in ``{sample}_1.fastq`` and
 ``{sample}_2.fastq``. QC reports are stored in ``html`` and ``json`` format in
 ``{sample}.html`` and ``{sample}.json`` respectively.
@@ -53,7 +53,7 @@ quality assessment. Finally, a summary is made using
 `MultiQC <https://github.com/MultiQC/MultiQC>`_.
 
 The output quality report is stored at
-<:confval:`path.output`>/multiqc/multiqc.html.
+<:confval:`path.output`>/``multiqc/multiqc.html``.
 
 Assembly
 --------
@@ -66,8 +66,8 @@ is subsequently used with the ``--max-ref-number`` option set to ``0`` to
 evaluate the assembly quality and generate the quality report.
 
 Assemblies for each sample are stored in
-<:confval:`path.output`>/metaSpades/``{sample}``/contigs.fasta. The assembly
-quality report is kept at <:confval:`path.output`>/metaQUAST/report.html.
+<:confval:`path.output`>/``metaSpades/{sample}/contigs.fasta``. The assembly
+quality report is kept at <:confval:`path.output`>/``metaQUAST/report.html``.
 
 Viral Identification
 --------------------
@@ -77,8 +77,8 @@ pre-assembled contigs can be provided to **VirMake** during setup with
 :option:`setup.py --contigs`. **VirMake** supports two methods for
 identification of viral sequences; `VirSorter2
 <https://github.com/jiarong/VirSorter2>`_, or `geNomad
-<https://github.com/apcamargo/genomad/>`_, as specified in
-:confval:`identifier`.
+<https://github.com/apcamargo/genomad/>`_. The :confval:`identifier` option
+specifies which method is used.
 
 ..  NOTE! The min_contig_length parameters will be updated
    to 3000, then DRAM-v will use 1000 since viruses can be shorter than
@@ -89,22 +89,22 @@ is specified in :confval:`path.database.virsorter2` and
 :confval:`path.database.genomad` for VirSorter2 and geNomad respectively.
 
 When using ``VirSorter2`` for identification, output files will be stored in
-<:confval:`path.output`>/virsorter/``{sample}``. This includes the predicted
+<:confval:`path.output`>/``virsorter/{sample}/``. This includes the predicted
 viral sequences ``viruses.fasta``, the virus table ``virus_table.tsv``, and
 viral boundries ``final-viral-combined.fa`` and ``final-viral-boundary.tsv``.
 
 Similarly, when running ``geNomad``, output files will be stored in
-<:confval:`path.output`>/virsorter/``{sample}``, including the predicted
+<:confval:`path.output`>/``genomad/{sample}``, including the predicted
 viral sequences ``viruses.fasta``, the virus table ``virus_table.tsv``. Summary
 files will be stored in
-<:confval:`path.output`>/virsorter/``{sample}``/``{sample}_summary``/, including
+<:confval:`path.output`>/``virsorter/{sample}/{sample}_summary/``, including
 ``{sample}_virus.fna`` and ``{sample}_virus_summary.tsv``.
 
 Identified viral sequences are then quality checked using `CheckV
 <https://bitbucket.org/berkeleylab/CheckV>`_ and quality filtered to a minimum
 of :confval:`quality_threshold` and quality filtered viral sequences are
 stored at
-<:confval:`path.output`>/virus_identification/``{sample}``/predicted_viruses.fasta".
+<:confval:`path.output`>/``virus_identification/{sample}/predicted_viruses.fasta``.
 
 Dereplication
 -------------
@@ -113,14 +113,14 @@ Dereplication
    seem to run in the pipeline unless I missed a rule that calls them.
 
 After viral identification, extracted viral genomes are clustered into vOTUs
-using `Galah <https://github.com/wwood/galah>`_ with at average nucleotide
+using `Galah <https://github.com/wwood/galah>`_ with an average nucleotide
 identity (ANI) :confval:`dereplication.ani`, precluster ANI
 :confval:`dereplication.precluster_ani`, and with a minimal aligned fraction
 :confval:`dereplication.min_aligned_fraction`. The clusters are stored in
-<:confval:`path.output`>/dereplication/galah_clusters.tsv, representative
+<:confval:`path.output`>/``dereplication/galah_clusters.tsv``, representative
 sequences are stored in
-<:confval:`path.output`>/dereplication/repr_viral_seqs.fasta, and the
-<:confval:`path.output`>/dereplication/old_to_new_ids.tsv table details which
+<:confval:`path.output`>/``dereplication/repr_viral_seqs.fasta``, and the
+<:confval:`path.output`>/``dereplication/old_to_new_ids.tsv`` table details which
 sequences belong to which representative vOTU.
 
 Mapping & Microdiversity
@@ -138,13 +138,13 @@ the quality control are mapped to the representative viral vOTUs using
 using `BBTools pileup <https://github.com/bbushnell/BBTools>`_. A genome is
 considered present if the coverage exceeds the specified :confval:`min_coverage`
 threshold. The resulting relative abundance table is stored at
-<:confval:`path.output`>/mapping/rel_abundance_table.tsv.
+<:confval:`path.output`>/``mapping/rel_abundance_table.tsv``.
 
 .. tip::
    InStrain can lead to high resource usage. Disable InStrain by setting
-   :confval:`rule_inclusion.all.instrain` to false.
+   :confval:`rule_inclusion.all.instrain` to ``false``.
 
 Strain-level diversity analysis is then conducted using `InStrain
 <https://github.com/MrOlm/instrain>`_. The resulting diversity comparison is
 stored at
-<:confval:`path.output`>/instrain/comparison/output/comparison_comparisonsTable.tsv
+<:confval:`path.output`>/``instrain/comparison/output/comparison_comparisonsTable.tsv``
