@@ -1,7 +1,7 @@
 :root {
-    --color-brand-primary: #fbb4ae;
+    --color-brand-primary: #d2574c;
 }
 
 .wy-side-nav-search, .wy-nav-top {
-    background: var(--color-brand-primary, #fbb4ae);
+    background: var(--color-brand-primary, #d2574c);
 }
