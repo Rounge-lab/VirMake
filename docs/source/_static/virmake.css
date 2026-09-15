@@ -2,6 +2,10 @@
     --color-brand-primary: #fbb4ae;
 }
 
-.wy-side-nav-search, .wy-nav-top {
+.wy-nav-side {
     background: var(--color-brand-primary, #fbb4ae);
+}
+
+.wy-menu-vertical a:active {
+    background-color: #e89b96;
 }
