@@ -1,7 +1,17 @@
 :root {
-    --color-brand-primary: #d2574c;
+    --color-primary: #d2574c;
+    --color-overlay: #df8982;
 }
 
 .wy-side-nav-search, .wy-nav-top {
-    background: var(--color-brand-primary, #d2574c);
+    background: var(--color-primary, #d2574c);
 }
+
+.wy-side-nav-search {
+    border-color: var(--color-overlay, #df8982);
+}
+
+.wy-menu-vertical a:active {
+    background-color: var(--color-overlay, #df8982);
+}
+
