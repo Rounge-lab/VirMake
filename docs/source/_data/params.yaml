@@ -1,4 +1,4 @@
-assembler: metaspades
+assembler: metaSpades
 dereplication:
   ani: 97
   min_aligned_fraction: 70
@@ -14,14 +14,17 @@ job_type:
   big: bigmem
   normal: normal
   small: normal
+keep_qc_reads: true
 memory:
-  big: 32000
-  metaquast: 63000
-  metaspades: 63000
-  normal: 16000
-  small: 8000
-  tiny: 1000
-  vcontact2: 63000
+  big: 30000
+  enormous: 180000
+  huge: 60000
+  metaquast: 180000
+  normal: 15000
+  small: 7500
+  tiny: 3750
+  vcontact2: 60000
+  vcontact3: 60000
 min_contig_size: 1000
 min_coverage: 75
 path:
@@ -33,6 +36,7 @@ path:
     checkv: ./resources/databases/checkv
     genomad: ./resources/databases/genomad
     vcontact2: ./resources/databases/vcontact2
+    vcontact3: ./resources/databases/vcontact3
     vibrant: ./resources/databases/vibrant/vibrant-1.2.1
     virsorter2: ./resources/databases/virsorter2
   envs: ./workflow/envs
@@ -64,14 +68,17 @@ rule_inclusion:
 slurm_account: default
 threads: 24
 time:
-  big: 13 h
-  metaquast: 24 h
-  metaspades: 2 h
+  big: 24 h
+  long: 120 h
   normal: 6 h
   small: 1 h
   tiny: 30 m
   vcontact2: 72 h
+  vcontact3: 72 h
 trim_percentage: 0.05
+vcontact3:
+  db_version: latest
+  exports: cytoscape
 vibrant:
   is_virome: 'no'
 virsorter2:
