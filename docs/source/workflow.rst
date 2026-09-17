@@ -189,9 +189,9 @@ The ``rel_abundance_table.tsv`` table shows the relative abundance of each
 dereplicated vOTU per sample.
 
 .. table:: Relative abundance table example
-  :width: 75%
-  :widths: auto
-  :align: center
+    :width: 75%
+    :widths: auto
+    :align: center
 
     +--------+-----------+-----------+-----------+----+
     |vOTU    |Sample1    |Sample2    |Sample3    |... |
