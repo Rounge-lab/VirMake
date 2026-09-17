@@ -151,8 +151,8 @@ Taxonomy
 --------
 
 Taxonomic classification of dereplicated vOTUs is performed using `vConTACT3
-<bitbucket.org/MAVERICLab/vcontact3/src>`_ using the default ``prokaryotes``
-``--db-domain`` option. Results are stored at
+<https://bitbucket.org/MAVERICLab/vcontact3/src>`_ using the default
+``prokaryotes`` ``--db-domain`` option. Results are stored at
 <:confval:`path.output`>/``vcontact3/vOTU_assignments.csv``.
 
 Functional Annotation
@@ -181,3 +181,95 @@ Report Generation
 Finally, sample-wise and vOTU-wise summary reports are generated in
 <:confval:`path.output`>/``statistics/sample_stats.tsv`` and
 <:confval:`path.output`>/``statistics/vOTU_stats.tsv`` respectively.
+
+Output Files
+^^^^^^^^^^^^
+
+The ``rel_abundance_table.tsv`` table shows the relative abundance of each
+dereplicated vOTU per sample.
+
+.. table:: Relative abundance table example
+  :width: 75%
+  :widths: auto
+  :align: center
+
+    +--------+-----------+-----------+-----------+----+
+    |vOTU    |Sample1    |Sample2    |Sample3    |... |
+    +========+===========+===========+===========+====+
+    |vOTU001 |0.4        |0.1        |0          |    |
+    +--------+-----------+-----------+-----------+----+
+    |vOTU002 |0.6        |0.3        |0.1        |    |
+    +--------+-----------+-----------+-----------+----+
+    |vOTU003 |0          |0.2        |0          |    |
+    +--------+-----------+-----------+-----------+----+
+    |vOTU004 |0          |0.1        |0.2        |    |
+    +--------+-----------+-----------+-----------+----+
+    |vOTU005 |0          |0.3        |0          |    |
+    +--------+-----------+-----------+-----------+----+
+    |...     |           |           |           |    |
+    +--------+-----------+-----------+-----------+----+
+
+
+The ``sample_stats.tsv`` table shows genome, contig, and read-level statistics
+per sample. The following columns are included:
+
+.. describe:: Genome
+
+    * ``n_genomes``
+    * ``genome_median_length``
+    * ``genome_min_length``
+    * ``genome_max_length``
+    * ``genomes_N50``
+    * ``n_provirus``
+    * ``checkv_complete``
+    * ``checkv_high_quality``
+    * ``checkv_medium_quality``
+    * ``checkv_low_quality``
+
+.. describe:: Contig
+
+    * ``# contigs``
+    * ``Largest contig``
+    * ``Total length``
+    * ``N50``
+    * ``N90``
+    * ``n_present``
+
+.. describe:: Read
+
+    * ``total_reads``
+    * ``mapped_reads``
+    * ``mapped_percent``
+
+The ``vOTU_stats.tsv`` table shows statistics per dereplicated vOTU. The
+following columns are included:
+
+    * ``n_genomes``
+    * ``vOTU_length``
+    * ``vOTU_provirus``
+    * ``pangenome_median_length``
+    * ``pangenome_min_length``
+    * ``pangenome_max_length``
+    * ``pangenome_n_provirus``
+    * ``Closer``
+    * ``Accession``
+    * ``Status``
+    * ``VC``
+    * ``Level``
+    * ``Host``
+    * ``BaltimoreGroup``
+    * ``Realm``
+    * ``Kingdom``
+    * ``Phylum``
+    * ``Class``
+    * ``Order``
+    * ``Family``
+    * ``Subfamily``
+    * ``Genus``
+    * ``n_present``
+    * ``mean_present``
+    * ``Gene count``
+    * ``Strand switches``
+    * ``potential AMG count``
+    * ``Transposase present``
+    * ``Possible Non-Viral Contig``
