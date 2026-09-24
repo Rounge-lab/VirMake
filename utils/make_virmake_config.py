@@ -90,10 +90,8 @@ def make_config(virmake_path,
         "normal": 15000,
         "big": 30000,
         "huge": 60000,
-        "enormous": 180000,
-        "vcontact2": 60000,
-        "vcontact3": 60000,
-        "metaquast": 180000,
+        "gigantic": 120000,
+        "enormous": 240000,
     }
     config["time"] = {
         "tiny": "30 m",

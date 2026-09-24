@@ -123,8 +123,8 @@ rule vcontact2:
     log:
         config["path"]["log"] + "/vcontact2.log",
     resources:
-        mem_mb=config["memory"]["vcontact2"],
-        runtime=config["time"]["vcontact2"],
+        mem_mb=config["memory"]["huge"],
+        runtime=config["time"]["big"],
     threads: config["threads"]
     shell:
         """
@@ -204,8 +204,8 @@ rule vcontact3:
     log:
         config["path"]["log"] + "/vcontact3.log",
     resources:
-        mem_mb=config["memory"]["vcontact3"],
-        runtime=config["time"]["vcontact3"],
+        mem_mb=config["memory"]["big"],
+        runtime=config["time"]["big"],
     threads: config["threads"]
     shadow: "minimal"
     shell:

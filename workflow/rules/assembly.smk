@@ -4,8 +4,8 @@ sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
 # ASSEMBLY #
 
-METASPADES_MEM = [90000, 240000, 960000]     # MB, one entry per attempt
-METASPADES_TIME = ["4 h", "24 h", "120 h" ]
+METASPADES_MEM = [120000, 240000, 480000]     # MB, one entry per attempt
+METASPADES_TIME = ["6 h", "12 h", "24 h" ]
 
 def _ladder(values, attempt):
     return values[min(attempt, len(values)) - 1]
@@ -115,8 +115,8 @@ rule metaQUAST:
         config["path"]["benchmark"] + "/metaQUAST.txt"
     threads: config["threads"]
     resources:
-        mem_mb=config["memory"]["metaquast"],
-        runtime=config["time"]["normal"],
+        mem_mb=config["memory"]["enormous"],
+        runtime=config["time"]["big"],
     params:
         min_contig=config["min_contig_size"]
     shell:
