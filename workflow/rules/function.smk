@@ -37,7 +37,7 @@ rule dramv_annotate:
         config["path"]["benchmark"] + "/DRAMv.txt"
     resources:
         mem_mb=config["memory"]["big"],
-        runtime=config["time"]["big"],
+        runtime=config["time"]["long"],
     threads: config["threads"]
     shell:
         """
