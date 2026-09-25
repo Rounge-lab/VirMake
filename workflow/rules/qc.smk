@@ -36,7 +36,7 @@ rule QC:
     threads: 1
     resources:
         mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
+        runtime=config["time"]["small"],
     message:
         "[QC] Finished QC."
     shell:

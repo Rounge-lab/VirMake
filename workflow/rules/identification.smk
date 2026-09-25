@@ -47,7 +47,7 @@ rule virsorter:
         config["path"]["benchmark"] + "/virsorter/{sample}.txt"
     threads: 4
     resources:
-        mem_mb=config["memory"]["small"],
+        mem_mb=config["memory"]["tiny"],
         runtime=config["time"]["big"],
     shell:
         """

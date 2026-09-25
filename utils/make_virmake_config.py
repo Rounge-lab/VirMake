@@ -82,7 +82,7 @@ def make_config(virmake_path,
     config["job_type"] = {
         "small": "normal",
         "normal": "normal",
-        "big": "bigmem",
+        "big": "normal",
     }
     config["memory"] = {
         "tiny": 3750,
@@ -98,8 +98,6 @@ def make_config(virmake_path,
         "small": "1 h",
         "normal": "6 h",
         "big": "24 h",
-        "vcontact2": "72 h",
-        "vcontact3": "72 h",
         "long": "120 h",
     }
     config["rule_inclusion"] = {

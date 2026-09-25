@@ -45,7 +45,7 @@ rule build_index:
     shell:
         """
         mkdir -p {output.index_dir}
-        bowtie2-build --thread {threads} {input} {output.index_dir}/mapping_index &> {log}
+        bowtie2-build --threads {threads} {input} {output.index_dir}/mapping_index &> {log}
         """
 
 
