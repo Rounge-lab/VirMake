@@ -36,7 +36,7 @@ rule QC:
     threads: 1
     resources:
         mem_mb=config["memory"]["small"],
-        runtime=config["time"]["small"],
+        runtime=config["time"]["tiny"],
     message:
         "[QC] Finished QC."
     shell:
@@ -62,14 +62,14 @@ rule fastp_pe:
         config["path"]["benchmark"] + "/fastp_pe/{sample}.txt"
     resources:
         mem_mb=config["memory"]["tiny"],
-        runtime=config["time"]["tiny"],
+        runtime=config["time"]["small"],
     conda:
         config["path"]["envs"] + "/fastp.yaml"
-    threads: 1
+    threads: 4
     shell:
         """
         fastp -i {input.R1} -I {input.R2} -o {output.R1} -O {output.R2}\
-        -h {output.html} -j {output.json} &> {log}
+        -h {output.html} -j {output.json} -w {threads} &> {log}
         """
 
 rule keep_qc_reads:
