@@ -48,7 +48,7 @@ rule virsorter:
     threads: 4
     resources:
         mem_mb=config["memory"]["tiny"],
-        runtime=config["time"]["big"],
+        runtime=config["time"]["long"],
     shell:
         """
         virsorter run -w {output.dir} \
