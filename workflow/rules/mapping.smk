@@ -176,7 +176,7 @@ checkpoint combine_coverage:
         config["path"]["benchmark"] + "/combine_coverage.txt"
     threads: 1
     resources:
-        mem_mb=config["memory"]["huge"],
+        mem_mb=config["memory"]["normal"],
         runtime=config["time"]["tiny"],
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
