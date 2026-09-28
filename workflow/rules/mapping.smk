@@ -172,9 +172,11 @@ checkpoint combine_coverage:
         rel_abundance=config["path"]["output"] + "/mapping/rel_abundance_table.tsv",
     params:
         min_coverage=config["min_coverage"],
+    benchmark:
+        config["path"]["benchmark"] + "/combine_coverage.txt"
     threads: 1
     resources:
-        mem_mb=config["memory"]["small"],
+        mem_mb=config["memory"]["huge"],
         runtime=config["time"]["tiny"],
     conda:
         config["path"]["envs"] + "/tidyverse.yaml"
