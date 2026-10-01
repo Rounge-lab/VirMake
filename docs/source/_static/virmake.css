@@ -37,3 +37,6 @@ html[data-theme="dark"] .wy-nav-top {
     color: var(--color-primary) !important;
 }
 
+html[data-theme="dark"] .rst-content dl.std.option dt .sig-name.descname {
+    color: #bfbfbf !important;
+}
