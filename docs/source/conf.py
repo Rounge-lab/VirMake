@@ -20,6 +20,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx_rtd_dark_mode',
     'sphinx_copybutton',
     'sphinx_toolbox.confval',
     'yaml_config',
