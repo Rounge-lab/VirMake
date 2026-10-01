@@ -8,6 +8,11 @@
     background: var(--color-primary);
 }
 
+html[data-theme="dark"] .wy-side-nav-search,
+html[data-theme="dark"] .wy-nav-top {
+    background: var(--color-primary) !important;
+}
+
 .wy-side-nav-search input[type="text"],
 .wy-side-nav-search input[type="search"] {
     border: 1px solid var(--color-overlay);
@@ -23,3 +28,12 @@
 .wy-menu-vertical a:active {
     background-color: var(--color-overlay);
 }
+
+.wy-menu-vertical p.caption {
+    color: var(--color-primary);
+}
+
+.wy-breadcrumbs li a.icon {
+    color: var(--color-primary) !important;
+}
+
