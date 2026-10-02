@@ -37,21 +37,9 @@ html[data-theme="dark"] .wy-nav-top {
     color: var(--color-primary) !important;
 }
 
-html[data-theme="dark"] .rst-content dl.std.option dt .sig-name.descname {
-    color: #bfbfbf !important;
-}
-
 html[data-theme="dark"].writer-html5
 .rst-content dl.std.option .sig-name.descname,
 html[data-theme="dark"].writer-html5
 .rst-content dl.std.option .sig-name.descname .pre {
-    color: #bfbfbf !important;
-}
-
-html[data-theme="dark"].writer-html5 .rst-content
-dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
-.descname, html.writer-html5 .rst-content
-dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
-.sig-name {
     color: #bfbfbf !important;
 }
