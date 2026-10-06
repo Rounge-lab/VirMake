@@ -46,6 +46,8 @@ def process_derep_virus_specs(specs_file, derep_file, id_file):
         'vOTU_length': grp.loc[grp["virus_id"] == grp["old_id"].iloc[0], "length"].iloc[0],
         'vOTU_provirus': ((grp.loc[grp["virus_id"] == grp["old_id"].iloc[0], "provirus"].iloc[0] == "Yes") |
                           (grp.loc[grp["virus_id"] == grp["old_id"].iloc[0], "vir_id_provirus_assignment"].iloc[0])),
+        'vOTU_checkv_quality' : grp.loc[grp["virus_id"] == grp["old_id"].iloc[0], "checkv_quality"].iloc[0],
+        'vOTU_checkv_completeness' : grp.loc[grp["virus_id"] == grp["old_id"].iloc[0], "completeness"].iloc[0],
         'pangenome_median_length': grp["length"].median(),
         'pangenome_min_length': grp["length"].min(),
         'pangenome_max_length': grp["length"].max(),
