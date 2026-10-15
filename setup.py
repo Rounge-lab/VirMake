@@ -5,6 +5,8 @@ import os
 import pathlib
 import subprocess
 import argparse
+import platform
+import sys
 
 
 def strip_stdout(stdout):
@@ -27,6 +29,26 @@ def set_logger():
     logger.addHandler(f_handler)
     return logger
 
+def confirm_system() -> bool:
+    system = platform.system()
+
+    if system == "Linux":
+        return True
+
+    print(
+        f"Warning: VirMake is not supported for other systems than Linux.\n"
+        f"You appear to be running {system}."
+    )
+
+    try:
+        response = input(
+            "Do you want to attempt installation anyway? [y/N]:"
+        ).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print("\nSetup aborted.")
+        return(False)
+
+    return response in {"y", "yes"}
 
 def check_conda(logger):
     """check if conda is installed and initialized"""
@@ -148,6 +170,10 @@ def main():
 
     """Run setup"""
     logger = set_logger()
+
+    if not confirm_system():
+        print("Setup aborted. Please use Linux instead.")
+        sys.exit(1)
 
     # determine absolute path to VirMake
     virmake_path = pathlib.Path(__file__).parent.absolute()
