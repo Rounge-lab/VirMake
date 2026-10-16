@@ -12,6 +12,7 @@ config.yaml
 samples.tsv
 config
 /Test_set/
+test_data/
 /slurm_output/
 ./finished_assembly
 ./finished_taxonomy

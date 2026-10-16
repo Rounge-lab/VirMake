@@ -8,6 +8,8 @@ import argparse
 import platform
 import sys
 
+from workflow.scripts.get_test_data import download_test_data
+
 
 def strip_stdout(stdout):
     """strip stdout and return as string"""
@@ -165,6 +167,7 @@ def main():
     parser.add_argument('--reads', type=str, default="", help="Path where reads can be found.")
     parser.add_argument('--qc-reads', type=str, default="", help="Path where QC reads can be found.")
     parser.add_argument('--contigs', type=str, default="", help="Path where contigs can be found.")
+    parser.add_argument('--test-data', action="store_true", help="Download a small synthetic test dataset to 'test_data/'")
 
     args = parser.parse_args()
 
@@ -182,11 +185,17 @@ def main():
     # run all steps
     check_conda(logger)
     create_venv(logger, virmake_path)
-    create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
+    prep_script(logger, virmake_path)
     create_profiles(logger, virmake_path)
     create_dirs(logger, virmake_path, args.work_dir)
-    prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
-    prep_script(logger, virmake_path)
+    if args.test_data:
+        test_data_loc = pathlib.Path(virmake_path, "test_data", "")
+        download_test_data(logger, test_data_loc)
+        create_virmake_config(logger, virmake_path, args.work_dir, "", "")
+        prep_sample_table(logger, virmake_path, args.work_dir, "", test_data_loc, "")
+    else:
+        create_virmake_config(logger, virmake_path, args.work_dir, args.reads, args.contigs)
+        prep_sample_table(logger, virmake_path, args.work_dir, args.reads, args.qc_reads, args.contigs)
 
     # remove setup.log on success
     logger.info("Success!\n")
