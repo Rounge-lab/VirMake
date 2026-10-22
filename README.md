@@ -10,7 +10,7 @@
       alt="VirMake">
   </picture>
   <br>
-<\h1>
+</h1>
 
 <h4 align="center">A <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for viral metagenomic data analysis</h4>
 
