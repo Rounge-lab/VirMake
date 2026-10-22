@@ -1,0 +1,12 @@
+[project]
+name = "virmake"
+dynamic = ["version", "description"]
+readme = "README.rst"
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = "https://github.com/Rounge-lab/VirMake"
+Documentation = "https://virmake.readthedocs.io/"
+Repository = "https://github.com/Rounge-lab/VirMake"
+Issues = "https://github.com/Rounge-lab/VirMake/issues"
+Changelog = "https://github.com/Rounge-lab/VirMake/releases"
