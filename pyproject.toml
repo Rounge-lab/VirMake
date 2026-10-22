@@ -1,7 +1,7 @@
 [project]
 name = "virmake"
 dynamic = ["version", "description"]
-readme = "README.rst"
+readme = "README.md"
 license = { file = "LICENSE" }
 
 [project.urls]
