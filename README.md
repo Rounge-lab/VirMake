@@ -34,7 +34,7 @@
   <a href="#documentation">Documentation</a> •
   <a href="#quick-start">Quick start</a> •
   <a href="#license">License</a> •
-  <a href="#citation">Citation</a> •
+  <a href="#citation">Citation</a>
 </p>
 
 
@@ -44,7 +44,7 @@
 pipeline that offers viral metagenomic data analysis on paired-end data.  It
 offers taxonomic and functional annotation, supports offline running and has
 support for HPC cluster execution. It is made for Linux based systems and has
-been tested on x86_64-based Linux.
+been tested on x86\_64-based Linux.
 
 ## Documentation
 
