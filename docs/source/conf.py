@@ -58,3 +58,8 @@ html_css_files = [
 
 html_logo = "_static/virmake_logo_dark.svg"
 html_favicon = "_static/virmake_favicon.svg"
+
+html_context = {
+    "display_github": True,
+    "github_repo": "Rounge-lab/VirMake",
+}
