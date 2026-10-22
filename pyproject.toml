@@ -1,6 +1,6 @@
 [project]
 name = "virmake"
-dynamic = ["version", "description"]
+version = "0.0.0"
 readme = "README.md"
 license = { file = "LICENSE" }
 
