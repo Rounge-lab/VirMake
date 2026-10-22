@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath("_ext"))
 project = 'VirMake'
 copyright = '2023, CRCbiome'
 
-release = '0.1'
-version = '0.1.0'
+release = '0.0'
+version = '0.0.0'
 
 # -- General configuration
 
