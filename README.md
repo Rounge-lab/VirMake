@@ -2,11 +2,11 @@
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
-      srcset="docs/source/_static/virmake-logo-dark.svg">
+      srcset="docs/source/_static/virmake_logo_dark.svg">
     <img
       align="center"
       width="160"
-      src="docs/source/_static/virmake-logo-light.svg"
+      src="docs/source/_static/virmake_logo_light.svg"
       alt="VirMake">
   </picture>
   <br>
