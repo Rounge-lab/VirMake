@@ -1,104 +1,106 @@
-# VirMake: a Snakemake pipeline for viral metagenomic data analysis
+<h1 align="center">
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="docs/source/_static/virmake_logo_dark.svg">
+    <img
+      align="center"
+      width="160"
+      src="docs/source/_static/virmake_logo_light.svg"
+      alt="VirMake">
+  </picture>
+  <br>
+</h1>
 
-## Contents
+<h4 align="center">A <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for viral metagenomic data analysis</h4>
 
-1. [About VirMake](#about-virmake)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Customization](#customization)
+<p align="center">
+  <a href="https://github.com/Rounge-lab/VirMake/releases">
+    <img src="https://img.shields.io/github/v/release/Rounge-lab/VirMake"
+         alt="Latest release version">
+  </a>
+  <a href="https://virmake.readthedocs.io/en/latest/#">
+    <img src="https://app.readthedocs.org/projects/virmake/badge/?version=latest"
+         alt="Documentation status">
+  </a>
+  <a href="./LICENCE">
+    <img src="https://img.shields.io/badge/license-GPL--v3.0-blue.svg"
+         alt="Licence">
+  </a>
+</p>
+
+<p align="center">
+  <a href="#about-virmake">About VirMake</a> ΓÇó
+  <a href="#documentation">Documentation</a> ΓÇó
+  <a href="#quick-start">Quick start</a> ΓÇó
+  <a href="#license">License</a> ΓÇó
+  <a href="#citation">Citation</a>
+</p>
 
 
 ## About VirMake
 
-VirMake is a Snakemake based pipeline that offers viral metagenomic data analysis on paired-end data. It offers taxonomic and functional annotation, supports offline running and has support for HPC cluster execution. It is made for Linux based systems and has been tested on x86_64-based Linux.
+**VirMake** is a [Snakemake](https://snakemake.readthedocs.io/en/stable/)-based
+pipeline that offers viral metagenomic data analysis on paired-end data.  It
+offers taxonomic and functional annotation, supports offline running and has
+support for HPC cluster execution. It is made for Linux based systems and has
+been tested on x86\_64-based Linux.
 
+## Documentation
 
-## Installation
+Detailed documentation can be found on the
+[VirMake Wiki page](https://rtd-virmake-test.readthedocs.io/en/latest/install.html).
+Here you will find prerequisites, installation instructions, detailed usage
+documentation, workflow description, and detailed configuration options. Please
+refer to the Wiki page before opening issues.
 
-### Prerequisites:
+Quick start
+-----------
 
-* Git
-* Conda (either Miniconda or Anaconda)
-* System Requirements: At least 64 GB of memory and 200 GB of free disk space. Additional memory and disk will be needed depending on the data to be analysed.
+> [!NOTE]
+> **Dependencies:** `git` `conda`
 
+1. Clone the git repository
 
-### Installation steps:
+    ```bash
+    git clone https://github.com/Rounge-lab/VirMake.git
+    ```
 
-1. Clone the repository using `git clone https://github.com/Rounge-lab/VirMake.git`
-2. Run the VirMake setup script `python setup.py`.
-   This script will set up a conda environment (in `./venv/`), config files and a table specifying the location of input files.
-    * Use the `--working-dir` option to specify the output directory (default is `./results`).
-    * Use the `--reads`, `--qc-reads`, or `--contigs` options to specify the directories where input files are found.
+2. Run the **VirMake** setup script with your input files (raw reads/QC
+   reads/contigs)
 
-Reads specified with the `--reads` option or the `--qc_reads` option must be paired-end reads and found in the specified folder in files named either `{sample}_1.fastq` and `{sample}_2.fastq` (for uncompressed reads), or `{sample}_1.fastq.gz` and `{sample}_2.fastq.gz` (for gzip compressed reads), where `{sample}` is the sample name. Multiple samples may be present.
+    ```bash
+    python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
+    QC_READS] [--contigs CONTIGS]
+    ```
 
-If contigs are specified with the `--contigs` option, they must be found in the specified folder in files named `{sample}.fasta`, where `{sample}` is the sample name. Multiple samples may be present.
+3. Set up the environments and databases
 
+    ```bash
+    virmake prep [OPTIONS]
+    virmake db [OPTIONS]
+    ```
 
-## Usage
+4. Run the workflow
 
-1. Activate the `virmake` conda environment:
+    ```bash
+    virmake run [OPTIONS] <WORKFLOW>
+    ```
 
-```
-conda activate ./venv
-```
+## License
 
-Ensure all commands are run from the root directory of the repository.
+**VirMake** is provided under the GNU [General Public License
+v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) (GPLv3). It is free
+software, and you are welcome to redistribute and/or modify it under the
+conditions of the GPLv3 terms. This software is provided 'As is' and comes with
+ABSOLUTELY NO WARRANTY.
 
-2. Run a dry-run of the pipeline:
+## Citation
 
-```
-./virmake run -n
-```
+When using **VirMake**, please cite our paper:
 
-Optional Help: For additional help and command options, you can access the built-in help system:
-
-```
-./virmake -h
-```
-
-This will output the steps required for execution.
-
-
-### Environments preparation
-
-Running VirMake requires the preparation of software and databases, which may take a substantial amount of time. To prepare a run by downloading and setting up environments, use the `prep` command:
-
-```
-./virmake prep
-```
-
-To prepare a run by downloading and setting up databases, use the `db` command:
-
-```
-./virmake db
-```
-
-These commands will set up all requirements for running the virmake pipeline, including the prerequisites for any steps specified in the config file (`config/params.yaml`) under `rule_inclusion`.
-
-
-### Running the workflow
-
-To run the workflow use:
-
-```
-./virmake run
-```
-
-To run the workflow with more personalized options please use `./virmake run -h` and read the help page.
-
-Please note that the `-c` (or `--threads`) option controls both the number of jobs and the number of threads in each job when running without using Slurm. Multiple jobs are used for assembly and other steps that can be run separately for each sample. For example, running `./virmake run -c 8` will start 8 jobs using 8 threads each (for a total of 64 threads) during assembly.
-
-
-## Customisation
-
-### Workflow parameters
-
-To adjust the workflow settings edit the `params.yaml` file. The file is located in `VirMake/config/params.yaml`.
-Parameters include: Assembler choice, Memory allocation, Job execution time, Minimum contig size.
-Adjust these settings as needed to suit your specific analysis requirements.
-
-
-### HPC configuration
-
-You can adjust the HPC profile file to suit your needs. The file is located in `./config/config.yaml`
+Birkeland E, Istvan P, Avershina E, Rognes T, Rounge TB.
+*VirMake: a flexible and user-friendly pipeline for viral taxonomic and
+functional characterisation from shotgun metagenomic sequencing data*.
+bioRxiv. 2025. doi:
+[https://doi.org/10.1101/2025.02.07.637044](https://doi.org/10.1101/2025.02.07.637044)
