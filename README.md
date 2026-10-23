@@ -29,6 +29,7 @@ VirMake is a Snakemake based pipeline that offers viral metagenomic data analysi
    This script will set up a conda environment (in `./venv/`), config files and a table specifying the location of input files.
     * Use the `--working-dir` option to specify the output directory (default is `./results`).
     * Use the `--reads`, `--qc-reads`, or `--contigs` options to specify the directories where input files are found.
+    * Use the `--test-data` option, which will download a small synthetic dataset from Zenodo ([10.5281/zenodo.23388915](https://doi.org/10.5281/zenodo.23388915)). Using this option will override other input specifications.
 
 Reads specified with the `--reads` option or the `--qc_reads` option must be paired-end reads and found in the specified folder in files named either `{sample}_1.fastq` and `{sample}_2.fastq` (for uncompressed reads), or `{sample}_1.fastq.gz` and `{sample}_2.fastq.gz` (for gzip compressed reads), where `{sample}` is the sample name. Multiple samples may be present.
 
@@ -87,7 +88,7 @@ To run the workflow use:
 
 To run the workflow with more personalized options please use `./virmake run -h` and read the help page.
 
-Please note that the `-c` (or `--threads`) option controls both the number of jobs and the number of threads in each job when running without using Slurm. Multiple jobs are used for assembly and other steps that can be run separately for each sample. For example, running `./virmake run -c 8` will start 8 jobs using 8 threads each (for a total of 64 threads) during assembly.
+Please note that the `-c` (or `--threads`) option controls both the number of jobs and the number of threads in each job when running without using Slurm. Multiple jobs are used for assembly and other steps that can be run separately for each sample. For example, running `./virmake run -c 8` will start 8 jobs using 8 threads each (for a total of 64 threads) during assembly. Any other arguments will be passed on to Snakemake.
 
 
 ## Customisation
@@ -101,4 +102,4 @@ Adjust these settings as needed to suit your specific analysis requirements.
 
 ### HPC configuration
 
-You can adjust the HPC profile file to suit your needs. The file is located in `./config/config.yaml`
+You can adjust the HPC profile file to suit your needs. See `./config/config.yaml` and `./config/slurm/config.yaml`.
