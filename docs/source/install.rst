@@ -73,6 +73,12 @@ Options
 
     Show the help message and exit.
 
+.. option:: --test-data
+
+    Download a small `synthetic dataset
+    <https://doi.org/10.5281/zenodo.23388915>`_ to test **VirMake**.
+    Using this option will override other input specifications.
+
 .. option:: --work-dir
 
     :Type: ``path``
@@ -105,6 +111,7 @@ Options
     :confval:`path.input_contigs` option in the :doc:`config-params` and
     populates the ``contigs`` column in the samples table
     :confval:`path.samples`.
+
 
 Use :option:`--reads`, :option:`--qc-reads`, or :option:`--contigs` to
 specify the directories where input files are found.
