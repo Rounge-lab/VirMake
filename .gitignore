@@ -33,3 +33,4 @@ docs/build/
 .smoke/
 __pycache__/
 *.egg-info/
+.coverage

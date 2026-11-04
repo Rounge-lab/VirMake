@@ -79,12 +79,12 @@ line-ending = "lf"
 include = ["src", "tests"]
 typeCheckingMode = "basic"
 
-[tool.pixi.project]
+[tool.pixi.workspace]
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"] # win-64 only for development
 
 [tool.pixi.dependencies]
-python = ">=3.11"
+python = "3.12.*"
 mamba = ">=1.5"
 
 [tool.pixi.pypi-dependencies]
