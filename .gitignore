@@ -18,7 +18,6 @@ test_data/
 ./finished_taxonomy
 ./finished_virus_identification
 ./finished_qc
-virmake
 working_dir
 *.log
 *fasterq*/
@@ -27,3 +26,10 @@ resources/db
 resources/databases
 resources/input
 temp/
+# Python packaging pixi testing system
+.pixi/
+dist/
+docs/build/
+.smoke/
+__pycache__/
+*.egg-info/
