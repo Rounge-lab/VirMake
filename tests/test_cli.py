@@ -1,4 +1,4 @@
-"""CLI import-safety, config resolution, and asset-path tests."""
+"""CLI import-safety, run-dir resolution, and asset-path tests."""
 
 import subprocess
 import sys
@@ -9,7 +9,7 @@ import yaml
 from click.testing import CliRunner
 
 from virmake import paths
-from virmake.cli import cli, load_params, resolve_config_file
+from virmake.cli import cli, load_params, resolve_rundir
 
 
 class TestPaths:
@@ -34,7 +34,7 @@ class TestImportSafety:
         assert result.exit_code == 0
         assert "VirMake" in result.output
 
-    @pytest.mark.parametrize("command", ["db", "run", "prep", "clean"])
+    @pytest.mark.parametrize("command", ["prep", "envs", "db", "run"])
     def test_command_help_without_config(self, command, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         result = CliRunner().invoke(cli, [command, "--help"])
@@ -42,6 +42,9 @@ class TestImportSafety:
 
     @pytest.mark.parametrize("module", ["virmake.cli", "virmake.samples"])
     def test_module_import_never_pulls_in_snakemake(self, module, tmp_path):
+        # Subprocess guard: the differential-test oracle in test_samples.py
+        # legitimately imports snakemake into the pytest process, so this
+        # D12 check must run in a clean interpreter.
         code = (
             "import sys\n"
             f"import {module}\n"
@@ -57,41 +60,35 @@ class TestImportSafety:
         assert proc.returncode == 0, proc.stderr
 
 
-class TestConfigResolution:
-    def test_default_location_missing_raises(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        with pytest.raises(click.ClickException, match="config file not found"):
-            resolve_config_file(None)
+class TestResolveRundir:
+    def _minimal_rundir(self, tmp_path):
+        rundir = tmp_path / "run"
+        (rundir / "config").mkdir(parents=True)
+        (rundir / "config" / "params.yaml").write_text("path: {}\n")
+        return rundir
 
-    def test_explicit_argument_resolves(self, tmp_path):
-        config = tmp_path / "elsewhere" / "params.yaml"
-        config.parent.mkdir()
-        config.write_text(yaml.safe_dump({"path": {}}))
-        assert resolve_config_file(str(config)) == config.resolve()
+    def test_valid_rundir_resolves(self, tmp_path):
+        rundir = self._minimal_rundir(tmp_path)
+        assert resolve_rundir(rundir) == rundir.resolve()
 
-    def test_load_params_roundtrip(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        (tmp_path / "config").mkdir()
-        params = {"path": {"benchmark": str(tmp_path / "results" / "benchmark")}}
-        (tmp_path / "config" / "params.yaml").write_text(yaml.safe_dump(params))
-        assert load_params(resolve_config_file(None)) == params
+    def test_missing_rundir_raises_with_prep_hint(self, tmp_path):
+        with pytest.raises(click.ClickException, match="virmake prep"):
+            resolve_rundir(tmp_path / "nope")
+
+    def test_load_params_roundtrip(self, tmp_path):
+        rundir = self._minimal_rundir(tmp_path)
+        assert load_params(rundir) == {"path": {}}
 
     def test_load_params_rejects_non_virmake_yaml(self, tmp_path):
-        bad = tmp_path / "params.yaml"
-        bad.write_text(yaml.safe_dump({"not": "virmake"}))
+        rundir = tmp_path / "run"
+        (rundir / "config").mkdir(parents=True)
+        (rundir / "config" / "params.yaml").write_text(yaml.safe_dump({"nope": 1}))
         with pytest.raises(click.ClickException, match="missing 'path'"):
-            load_params(bad)
-
-    def test_load_params_rejects_invalid_yaml(self, tmp_path):
-        bad = tmp_path / "params.yaml"
-        bad.write_text("foo: [unclosed")
-        with pytest.raises(click.ClickException, match="could not parse"):
-            load_params(bad)
+            load_params(rundir)
 
 
 class TestRunErrorPaths:
-    def test_run_fails_cleanly_without_config(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        result = CliRunner().invoke(cli, ["run", "all"])
+    def test_run_fails_cleanly_on_unprepared_dir(self, tmp_path):
+        result = CliRunner().invoke(cli, ["run", str(tmp_path / "nope")])
         assert result.exit_code != 0
-        assert "config file not found" in result.output
+        assert "virmake prep" in result.output
