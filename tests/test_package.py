@@ -1,4 +1,5 @@
 """Version and packaged workflow assets in place"""
+
 import importlib.resources
 
 import virmake

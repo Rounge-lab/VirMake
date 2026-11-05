@@ -1,5 +1,6 @@
 """CLI import-safety, config resolution, and asset-path tests."""
 
+import subprocess
 import sys
 
 import click
@@ -39,10 +40,21 @@ class TestImportSafety:
         result = CliRunner().invoke(cli, [command, "--help"])
         assert result.exit_code == 0
 
-    def test_cli_never_imports_snakemake(self):
-        import virmake.cli  # noqa: F401
-
-        assert not any(m.startswith("snakemake") for m in sys.modules)
+    @pytest.mark.parametrize("module", ["virmake.cli", "virmake.samples"])
+    def test_module_import_never_pulls_in_snakemake(self, module, tmp_path):
+        code = (
+            "import sys\n"
+            f"import {module}\n"
+            "mods = [m for m in sys.modules if m.startswith('snakemake')]\n"
+            "assert not mods, f'snakemake modules imported: {mods}'\n"
+        )
+        proc = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+        )
+        assert proc.returncode == 0, proc.stderr
 
 
 class TestConfigResolution:
