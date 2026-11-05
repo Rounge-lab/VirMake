@@ -66,8 +66,7 @@ def get_contigs_samples(path: str | Path) -> pd.DataFrame:
     ]
     contigs_table = pd.DataFrame(rows, columns=["sample_id", "contigs"])
     contigs_table = contigs_table.drop_duplicates(subset=["sample_id"])
-    contigs_table = contigs_table.sort_values(by=["sample_id"])
-    return contigs_table
+    return contigs_table.sort_values(by=["sample_id"])
 
 
 def build_samples_table(
@@ -90,9 +89,7 @@ def build_samples_table(
         else pd.DataFrame(columns=["sample_id", "contigs"])
     )
     samples_table = pd.merge(reads_table, qc_reads_table, how="outer", on=["sample_id"])
-    return pd.merge(
-        samples_table, contigs_table, how="outer", on=["sample_id"]
-    )
+    return pd.merge(samples_table, contigs_table, how="outer", on=["sample_id"])
 
 
 def write_samples_table(

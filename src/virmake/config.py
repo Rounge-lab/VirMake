@@ -1,30 +1,28 @@
-import yaml
-import pathlib
-import click
 import os
+import pathlib
 
+import click
+import yaml
 
 # CLI command tool to choose the viral identifier
 
-def make_config(virmake_path,
-                work_dir,
-                input_reads,
-                input_contigs):
+
+def make_config(virmake_path, work_dir, input_reads, input_contigs):
     """Creates a default config structure."""
     config = {}
     db_path = virmake_path / "resources" / "databases"
 
     config["slurm_account"] = "default"
     config["keep_qc_reads"] = True
-    config["assembler"] = "metaSpades" # may be changed to megahit
-    config["identifier"] = "virsorter2" # may be changed to genomad
+    config["assembler"] = "metaSpades"  # may be changed to megahit
+    config["identifier"] = "virsorter2"  # may be changed to genomad
     config["trim_percentage"] = 0.05
     config["min_coverage"] = 75
     config["min_contig_size"] = 1000
 
     config["vibrant"] = {
         "is_virome": "no",
-        }
+    }
 
     config["virsorter2"] = {
         "id": {
@@ -75,7 +73,7 @@ def make_config(virmake_path,
         "vOTU_num_start": 1,
         "vOTU_prefix": "vOTU",
         "vOTU_suffix": "",
-        "vOTU_num_len": 5
+        "vOTU_num_len": 5,
     }
     config["quality_threshold"] = "medium"
     config["threads"] = 24
@@ -117,10 +115,11 @@ def make_config(virmake_path,
             "mapping": True,
             "instrain": False,
             "dramv": True,
-        }
+        },
     }
 
     return config
+
 
 @click.command()
 @click.argument("virmake_path")
@@ -146,10 +145,9 @@ def run_setup(virmake_path, work_dir, reads, contigs):
     """Saves the config to a file."""
     virmake_path = pathlib.Path(virmake_path)
     config_path = virmake_path / "config" / "params.yaml"
-    config = make_config(virmake_path,
-                         work_dir=work_dir,
-                         input_reads=reads,
-                         input_contigs=contigs)
+    config = make_config(
+        virmake_path, work_dir=work_dir, input_reads=reads, input_contigs=contigs
+    )
     if config_path.exists():
         print(f"Config file {config_path} already exists.")
         print("Skipping...")

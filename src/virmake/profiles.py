@@ -1,6 +1,7 @@
-import yaml
 import pathlib
 import sys
+
+import yaml
 
 
 def make_slurm_config():
@@ -17,6 +18,7 @@ def make_slurm_config():
     config["restart-times"] = 2
     config["slurm-efficiency-report"] = True
     return config
+
 
 def make_workflow_config():
     """Creates a default config structure."""
@@ -38,13 +40,12 @@ def make_workflow_config():
 def main():
     """Saves the config to a file."""
     virmake_path = pathlib.Path(sys.argv[1])
-    
+
     workflow_config_path = virmake_path / "config" / "config.yaml"
     workflow_config = make_workflow_config()
-    
+
     slurm_config_path = virmake_path / "config" / "slurm" / "config.yaml"
     slurm_config = make_slurm_config()
-
 
     if workflow_config_path.exists():
         print(f"Config file {workflow_config_path} already exists.")

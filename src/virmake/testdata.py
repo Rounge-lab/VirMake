@@ -1,8 +1,6 @@
 import json
-import logging
 from pathlib import Path
 from urllib.request import Request, urlopen
-
 
 ZENODO_RECORD_ID = "23388915"
 ZENODO_API_URL = f"https://zenodo.org/api/records/{ZENODO_RECORD_ID}"
@@ -10,8 +8,8 @@ ZENODO_API_URL = f"https://zenodo.org/api/records/{ZENODO_RECORD_ID}"
 
 def download_test_data(logger, destination):
     """Download all files in the test data set from Zenodo."""
-    
-    logger.info(f"\nDownloading synthetic viral community...\n")
+
+    logger.info("\nDownloading synthetic viral community...\n")
 
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
@@ -31,10 +29,7 @@ def download_test_data(logger, destination):
         output_path = destination / filename
         temporary_path = output_path.with_suffix(output_path.suffix + ".part")
 
-        download_url = (
-            file_info["links"].get("content")
-            or file_info["links"]["self"]
-        )
+        download_url = file_info["links"].get("content") or file_info["links"]["self"]
 
         try:
             with urlopen(download_url) as response:
@@ -54,5 +49,3 @@ def download_test_data(logger, destination):
             raise
 
     return downloaded_files
-
-

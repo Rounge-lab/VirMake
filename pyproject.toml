@@ -57,7 +57,7 @@ python_files = ["test_*.py"]
 addopts = ["-ra", "--strict-config", "--strict-markers", "--tb=short"]
 
 [tool.ruff]
-exclude = [".git", "__pypackages__"]
+exclude = [".git", "__pypackages__", "src/virmake/workflow", "docs"]
 line-length = 88
 indent-width = 4
 target-version = "py311"
