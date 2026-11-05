@@ -9,6 +9,17 @@ import click
 import yaml
 
 from virmake import paths
+from virmake.config import (
+    default_db_dir,
+    default_envs_dir,
+    make_params,
+    make_results_dirs,
+    resolve_resource_dir,
+    write_params,
+    write_profiles,
+)
+from virmake.samples import write_samples_table
+from virmake.testdata import download_test_data
 
 
 def resolve_config_file(config_file: str | None) -> pathlib.Path:
@@ -214,36 +225,130 @@ def run_workflow(ctx, workflow, dryrun, workflow_dir, wf_profile, config_file, s
 
 @cli.command(
     "prep",
-    context_settings=dict(ignore_unknown_options=True),
-    short_help="Downloads and creates all environments needed to run the workflow offline.",
+    short_help="Prepare a run directory (samples table + configuration).",
+)
+@click.argument(
+    "rundir",
+    type=click.Path(file_okay=False, path_type=pathlib.Path),
 )
 @click.option(
-    "-c",
-    "--threads",
-    default=24,
-    type=int,
-    help="number of threads to use per multi-threaded job",
+    "--reads",
+    type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
+    help="Directory with paired-end reads ({sample}_{frac}.fastq[.gz]).",
 )
 @click.option(
-    "-C",
-    "--config-file",
-    type=click.Path(exists=True, resolve_path=True),
-    help="params.yaml to use [default: ./config/params.yaml]",
+    "--qc-reads",
+    type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
+    help="Directory with QC'd reads ({sample}_{frac}.fastq[.gz]); skips QC for these samples.",
 )
-def run_prep_offline(threads, config_file):
-    """Downloads and creates environments needed to run the workflow offline."""
-    config = resolve_config_file(config_file)
-    cmd = (
-        f"snakemake --snakefile {paths.snakefile()} "
-        f"--conda-frontend mamba --configfile {config} "
-        "--nolock  --use-conda --conda-create-envs-only "
-        f"--show-failed-logs --directory {pathlib.Path.cwd()} "
-        f"-c{threads}"
+@click.option(
+    "--contigs",
+    type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
+    help="Directory with pre-assembled contigs ({sample}.fasta).",
+)
+@click.option(
+    "--test-data",
+    is_flag=True,
+    default=False,
+    help="Download the synthetic test dataset (Zenodo) into <RUNDIR>/test_data and use it as QC reads.",
+)
+@click.option(
+    "--db-dir",
+    type=click.Path(file_okay=False, path_type=pathlib.Path),
+    help="Databases directory [default: per-user data dir, with confirmation].",
+)
+@click.option(
+    "--envs-dir",
+    type=click.Path(file_okay=False, path_type=pathlib.Path),
+    help="Conda environment prefix [default: per-user data dir, with confirmation].",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Regenerate config and samples.tsv in an existing run directory "
+    "(results/ is never touched).",
+)
+@click.option(
+    "-y",
+    "--yes",
+    is_flag=True,
+    default=False,
+    help="Accept default resource locations without confirmation.",
+)
+def prep(
+    rundir,
+    reads,
+    qc_reads,
+    contigs,
+    test_data,
+    db_dir,
+    envs_dir,
+    force,
+    yes,
+):
+    """Prepare a run directory: samples.tsv, config, and results/."""
+    rundir = rundir.expanduser()
+    if test_data and (reads or qc_reads or contigs):
+        raise click.ClickException(
+            "--test-data cannot be combined with --reads/--qc-reads/--contigs."
+        )
+    if rundir.exists() and any(rundir.iterdir()) and not force:
+        raise click.ClickException(
+            f"{rundir} already exists and is not empty. Use --force to regenerate "
+            "config and the samples table (results/ is never touched)."
+        )
+
+    db_dir = resolve_resource_dir(
+        db_dir, default=default_db_dir(), description="database", assume_yes=yes
     )
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
-        raise click.ClickException(f"environment creation failed: {e}") from e
+    envs_dir = resolve_resource_dir(
+        envs_dir,
+        default=default_envs_dir(),
+        description="conda environment",
+        assume_yes=yes,
+    )
+
+    # Create roots early so permission problems surface now, not mid-run.
+    rundir.mkdir(parents=True, exist_ok=True)
+    db_dir.mkdir(parents=True, exist_ok=True)
+    envs_dir.mkdir(parents=True, exist_ok=True)
+
+    if test_data:
+        click.echo("Downloading test data from Zenodo...")
+        download_test_data(rundir / "test_data")
+        qc_reads = rundir / "test_data"
+
+    params = make_params(
+        rundir,
+        db_dir,
+        reads=str(reads) if reads else "",
+        contigs=str(contigs) if contigs else "",
+    )
+    write_params(rundir, params)
+    write_profiles(rundir, envs_dir)
+    make_results_dirs(rundir)
+
+    samples_table = write_samples_table(
+        rundir / "samples.tsv",
+        reads=str(reads) if reads else "",
+        qc_reads=str(qc_reads) if qc_reads else "",
+        contigs=str(contigs) if contigs else "",
+    )
+    if samples_table.empty:
+        click.echo(
+            "WARNING: no samples found. samples.tsv is header-only. Provide "
+            "--reads/--qc-reads/--contigs, use --test-data, or edit "
+            f"{rundir / 'samples.tsv'} by hand."
+        )
+
+    click.echo(f"Run directory ready: {rundir}")
+    click.echo(f"  databases: {db_dir}")
+    click.echo(f"  conda envs: {envs_dir}")
+    click.echo("Next steps:")
+    click.echo(f"  virmake envs {rundir}  # optional: prefetch rule environments")
+    click.echo(f"  virmake db {rundir}    # download databases")
+    click.echo(f"  virmake run {rundir}   # run the workflow")
 
 
 @cli.command(
