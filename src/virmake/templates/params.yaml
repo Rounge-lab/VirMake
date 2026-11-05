@@ -1,0 +1,81 @@
+# VirMake workflow parameters template (source of truth).
+#
+# `virmake prep` loads this template, injects the computed `path` section,
+# and writes the result to <RUNDIR>/config/params.yaml.
+
+slurm_account: default
+keep_qc_reads: true
+assembler: metaSpades # may be changed to megahit
+identifier: virsorter2 # may be changed to genomad
+trim_percentage: 0.05
+min_coverage: 75
+min_contig_size: 1000
+
+vibrant:
+  is_virome: "no"
+
+virsorter2:
+  id:
+    min_length: 3000
+    min_score: 0.5
+    viral_groups: dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae
+  for_dramv:
+    min_length: 100
+    min_score: 0.01
+    viral_groups: dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae
+
+vcontact3:
+  db_version: latest
+  exports: cytoscape
+
+path: {} # filled by `virmake prep`
+
+dereplication:
+  ani: 97
+  precluster_ani: 95
+  min_aligned_fraction: 70
+  vOTU_num_start: 1
+  vOTU_prefix: vOTU
+  vOTU_suffix: ""
+  vOTU_num_len: 5
+
+quality_threshold: medium
+threads: 24
+
+job_type:
+  small: normal
+  normal: normal
+  big: normal
+
+memory:
+  tiny: 3750
+  small: 7500
+  normal: 15000
+  big: 30000
+  huge: 60000
+  gigantic: 120000
+  enormous: 240000
+
+time:
+  tiny: 30 m
+  small: 1 h
+  normal: 6 h
+  big: 24 h
+  long: 120 h
+
+rule_inclusion:
+  all:
+    qc: true
+    assembly: true
+    metaquast: true
+    identification: true
+    taxonomy: true
+    mapping: true
+    instrain: true
+    function: true
+    stats: true
+  stats:
+    metaquast: true
+    mapping: true
+    instrain: false
+    dramv: true

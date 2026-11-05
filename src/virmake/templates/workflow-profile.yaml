@@ -1,0 +1,10 @@
+# Snakemake workflow profile template <RUNDIR>/config/config.yaml.
+
+software-deployment-method: conda
+conda-prefix: "" # filled by `virmake prep`
+show-failed-logs: true
+rerun-incomplete: true
+keep-going: true
+printshellcmds: true
+jobname: "{rule}.{jobid}"
+max-jobs-per-second: 1

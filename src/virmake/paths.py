@@ -31,3 +31,8 @@ def scripts_dir() -> Path:
 def dummy_resources_dir() -> Path:
     """Dir for dummy TSV templates referenced by rules"""
     return package_root() / "resources" / "dummy"
+
+
+def templates_dir() -> Path:
+    """Dir with config templates for ``virmake prep``"""
+    return package_root() / "templates"

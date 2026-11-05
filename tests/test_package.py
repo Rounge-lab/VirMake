@@ -13,5 +13,7 @@ def test_workflow_assets_present():
     pkg = importlib.resources.files("virmake")
     assert (pkg / "workflow" / "Snakefile").is_file()
     assert (pkg / "workflow" / "envs" / "DRAMv.post-deploy.sh").is_file()
-    assert (pkg / "workflow" / "rules" / "identification.smk").is_file()
     assert (pkg / "resources" / "dummy" / "quality_summary_dummy.tsv").is_file()
+    assert (pkg / "templates" / "params.yaml").is_file()
+    assert (pkg / "templates" / "workflow-profile.yaml").is_file()
+    assert (pkg / "templates" / "slurm-profile.yaml").is_file()

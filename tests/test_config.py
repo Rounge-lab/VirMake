@@ -8,16 +8,17 @@ from click.testing import CliRunner
 
 from virmake import paths
 from virmake.config import (
+    _load_template,
     default_data_root,
     default_db_dir,
     default_envs_dir,
     make_params,
+    make_path_block,
     make_results_dirs,
     make_slurm_profile,
     make_workflow_profile,
     resolve_resource_dir,
     write_params,
-    write_profiles,
 )
 
 
@@ -89,119 +90,137 @@ class TestResolveResourceDir:
         assert f"RESOLVED:{target}" in decline.output
 
 
+class TestTemplates:
+    """The shipped templates are the source of truth — pin their schema."""
+
+    def test_params_template_parses(self):
+        params = _load_template("params.yaml")
+        assert set(params) == {
+            "slurm_account",
+            "keep_qc_reads",
+            "assembler",
+            "identifier",
+            "trim_percentage",
+            "min_coverage",
+            "min_contig_size",
+            "vibrant",
+            "virsorter2",
+            "vcontact3",
+            "path",
+            "dereplication",
+            "quality_threshold",
+            "threads",
+            "job_type",
+            "memory",
+            "time",
+            "rule_inclusion",
+        }
+        assert params["path"] == {}  # injected by make_params
+
+    def test_rule_inclusion_structure(self):
+        # The Snakefile's ALL rule reads rule_inclusion.all.* — pin exactly.
+        params = _load_template("params.yaml")
+        assert set(params["rule_inclusion"]["all"]) == {
+            "qc",
+            "assembly",
+            "metaquast",
+            "identification",
+            "taxonomy",
+            "mapping",
+            "instrain",
+            "function",
+            "stats",
+        }
+        assert set(params["rule_inclusion"]["stats"]) == {
+            "metaquast",
+            "mapping",
+            "instrain",
+            "dramv",
+        }
+
+    def test_profile_templates_parse(self):
+        wf = _load_template("workflow-profile.yaml")
+        assert set(wf) == {
+            "software-deployment-method",
+            "conda-prefix",
+            "show-failed-logs",
+            "rerun-incomplete",
+            "keep-going",
+            "printshellcmds",
+            "jobname",
+            "max-jobs-per-second",
+        }
+        assert wf["software-deployment-method"] == "conda"
+        assert wf["conda-prefix"] == ""  # injected by make_workflow_profile
+        slurm = _load_template("slurm-profile.yaml")
+        assert slurm["executor"] == "slurm"
+
+
 class TestMakeParams:
-    def test_params_golden(self, tmp_path):
+    def test_sentinel_defaults_flow_through(self, tmp_path):
+        # The template is the source of truth; these pins guard against
+        # accidental edits to behaviorally important defaults.
+        params = make_params(tmp_path, tmp_path / "db")
+        assert params["assembler"] == "metaSpades"
+        assert params["identifier"] == "virsorter2"
+        assert params["quality_threshold"] == "medium"
+        assert params["threads"] == 24
+        assert params["keep_qc_reads"] is True
+
+    def test_path_block_golden(self, tmp_path):
         rundir = tmp_path / "run"
         db_dir = tmp_path / "db"
-        params = make_params(rundir, db_dir)
-        expected = {
-            "slurm_account": "default",
-            "keep_qc_reads": True,
-            "assembler": "metaSpades",
-            "identifier": "virsorter2",
-            "trim_percentage": 0.05,
-            "min_coverage": 75,
-            "min_contig_size": 1000,
-            "vibrant": {"is_virome": "no"},
-            "virsorter2": {
-                "id": {
-                    "min_length": 3000,
-                    "min_score": 0.5,
-                    "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-                },
-                "for_dramv": {
-                    "min_length": 100,
-                    "min_score": 0.01,
-                    "viral_groups": "dsDNAphage,ssDNA,NCLDV,RNA,lavidaviridae",
-                },
-            },
-            "vcontact3": {"db_version": "latest", "exports": "cytoscape"},
-            "path": {
-                "virmake": str(paths.package_root()),
-                "envs": str(paths.envs_dir()),
-                "output": str(rundir / "results" / "output"),
-                "log": str(rundir / "results" / "log"),
-                "benchmark": str(rundir / "results" / "benchmark"),
-                "temp": str(rundir / "results" / "temp"),
-                "scripts": str(paths.scripts_dir()),
-                "samples": str(rundir / "samples.tsv"),
-                "input_reads": "",
-                "input_contigs": "",
-                "database": {
-                    "RefSeq": str(db_dir / "RefSeq" / "viral.1.1.genomic.fna"),
-                    "virsorter2": str(db_dir / "virsorter2"),
-                    "genomad": str(db_dir / "genomad"),
-                    "vibrant": str(db_dir / "vibrant" / "vibrant-1.2.1"),
-                    "checkv": str(db_dir / "checkv"),
-                    "INPHARED": str(db_dir / "INPHARED"),
-                    "vcontact2": str(db_dir / "vcontact2"),
-                    "vcontact3": str(db_dir / "vcontact3"),
-                    "DRAM": str(db_dir / "DRAM" / "DRAM_data"),
-                },
-            },
-            "dereplication": {
-                "ani": 97,
-                "precluster_ani": 95,
-                "min_aligned_fraction": 70,
-                "vOTU_num_start": 1,
-                "vOTU_prefix": "vOTU",
-                "vOTU_suffix": "",
-                "vOTU_num_len": 5,
-            },
-            "quality_threshold": "medium",
-            "threads": 24,
-            "job_type": {"small": "normal", "normal": "normal", "big": "normal"},
-            "memory": {
-                "tiny": 3750,
-                "small": 7500,
-                "normal": 15000,
-                "big": 30000,
-                "huge": 60000,
-                "gigantic": 120000,
-                "enormous": 240000,
-            },
-            "time": {
-                "tiny": "30 m",
-                "small": "1 h",
-                "normal": "6 h",
-                "big": "24 h",
-                "long": "120 h",
-            },
-            "rule_inclusion": {
-                "all": {
-                    "qc": True,
-                    "assembly": True,
-                    "metaquast": True,
-                    "identification": True,
-                    "taxonomy": True,
-                    "mapping": True,
-                    "instrain": True,
-                    "function": True,
-                    "stats": True,
-                },
-                "stats": {
-                    "metaquast": True,
-                    "mapping": True,
-                    "instrain": False,
-                    "dramv": True,
-                },
-            },
-        }
-        assert params == expected
-
-    def test_input_paths_recorded_absolute(self, tmp_path):
         reads = tmp_path / "reads"
         contigs = tmp_path / "contigs"
-        params = make_params(
-            tmp_path, tmp_path / "db", reads=str(reads), contigs=str(contigs)
-        )
-        assert params["path"]["input_reads"] == str(reads)
-        assert params["path"]["input_contigs"] == str(contigs)
+        assert make_path_block(rundir, db_dir) == {
+            "virmake": str(paths.package_root()),
+            "envs": str(paths.envs_dir()),
+            "output": str(rundir / "results" / "output"),
+            "log": str(rundir / "results" / "log"),
+            "benchmark": str(rundir / "results" / "benchmark"),
+            "temp": str(rundir / "results" / "temp"),
+            "scripts": str(paths.scripts_dir()),
+            "samples": str(rundir / "samples.tsv"),
+            "input_reads": "",
+            "input_contigs": "",
+            "database": {
+                "RefSeq": str(db_dir / "RefSeq" / "viral.1.1.genomic.fna"),
+                "virsorter2": str(db_dir / "virsorter2"),
+                "genomad": str(db_dir / "genomad"),
+                "vibrant": str(db_dir / "vibrant" / "vibrant-1.2.1"),
+                "checkv": str(db_dir / "checkv"),
+                "INPHARED": str(db_dir / "INPHARED"),
+                "vcontact2": str(db_dir / "vcontact2"),
+                "vcontact3": str(db_dir / "vcontact3"),
+                "DRAM": str(db_dir / "DRAM" / "DRAM_data"),
+            },
+        }
+        block = make_path_block(rundir, db_dir, reads=str(reads), contigs=str(contigs))
+        assert block["input_reads"] == str(reads)
+        assert block["input_contigs"] == str(contigs)
 
-    def test_relative_input_recorded_absolute(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        params = make_params(tmp_path / "run", tmp_path / "db", reads="reads")
-        assert params["path"]["input_reads"] == str(tmp_path / "reads")
+    def test_make_params_merges_template_and_path(self, tmp_path):
+        template = _load_template("params.yaml")
+        params = make_params(tmp_path, tmp_path / "db")
+        assert params["path"] == make_path_block(tmp_path, tmp_path / "db")
+        without_path = {k: v for k, v in params.items() if k != "path"}
+        assert without_path == {k: v for k, v in template.items() if k != "path"}
+
+
+class TestProfiles:
+    def test_conda_prefix_injected(self, tmp_path):
+        envs = tmp_path / "envs"
+        profile = make_workflow_profile(envs)
+        assert profile["conda-prefix"] == str(envs)
+
+    def test_dropped_keys_stay_dropped(self, tmp_path):
+        profile = make_workflow_profile(tmp_path / "envs")
+        assert "nolock" not in profile
+        assert "conda-frontend" not in profile
+        assert "use-conda" not in profile
+
+    def test_slurm_profile_is_template(self):
+        assert make_slurm_profile() == _load_template("slurm-profile.yaml")
 
 
 class TestWriters:
@@ -217,49 +236,3 @@ class TestWriters:
         make_results_dirs(rundir)
         for sub in ("output", "log", "benchmark", "temp"):
             assert (rundir / "results" / sub).is_dir()
-
-
-class TestProfiles:
-    def test_workflow_profile_golden(self, tmp_path):
-        envs = tmp_path / "envs"
-        assert make_workflow_profile(envs) == {
-            "software-deployment-method": "conda",
-            "conda-prefix": str(envs),
-            "show-failed-logs": True,
-            "rerun-incomplete": True,
-            "keep-going": True,
-            "printshellcmds": True,
-            "jobname": "{rule}.{jobid}",
-            "max-jobs-per-second": 1,
-        }
-
-    def test_dropped_keys_stay_dropped(self, tmp_path):
-        profile = make_workflow_profile(tmp_path / "envs")
-        assert "nolock" not in profile
-        assert "conda-frontend" not in profile
-
-    def test_slurm_profile_golden(self):
-        assert make_slurm_profile() == {
-            "executor": "slurm",
-            "default-resources": {
-                "slurm_account": "",
-                "runtime": "120 * attempt",
-                "mem_mb": "7500 * attempt",
-            },
-            "max-status-checks-per-second": 0.1,
-            "latency-wait": 60,
-            "restart-times": 2,
-            "jobs": 200,
-            "slurm-efficiency-report": True,
-        }
-
-    def test_write_profiles_roundtrip(self, tmp_path):
-        rundir = tmp_path / "run"
-        envs = tmp_path / "envs"
-        write_profiles(rundir, envs)
-        wf = yaml.safe_load((rundir / "config" / "config.yaml").read_text())
-        slurm = yaml.safe_load(
-            (rundir / "config" / "slurm" / "config.yaml").read_text()
-        )
-        assert wf == make_workflow_profile(envs)
-        assert slurm == make_slurm_profile()

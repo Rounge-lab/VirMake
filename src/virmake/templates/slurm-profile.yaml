@@ -1,0 +1,12 @@
+# Snakemake SLURM executor profile template <RUNDIR>/config/slurm/config.yaml.
+# Requires snakemake-executor-plugin-slurm.
+
+executor: slurm
+default-resources:
+  slurm_account: ""
+  runtime: 120 * attempt
+  mem_mb: 7500 * attempt
+max-status-checks-per-second: 0.1
+latency-wait: 60
+restart-times: 2
+jobs: 200

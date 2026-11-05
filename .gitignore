@@ -2,8 +2,6 @@
 .vscode
 /workflow/.snakemake
 /results
-slurm*
-=2
 /benchmarks/*
 /databases/
 /logs/
