@@ -1,0 +1,73 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version: { description: "Version to release (e.g. 1.1.0)", required: true }
+permissions:
+  contents: write
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with: { cache: true }
+      - run: pixi run test
+      - run: pixi run smoke
+  release:
+    needs: checks
+    runs-on: ubuntu-latest
+    outputs:
+      sha256: ${{ steps.sha.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with: { cache: true }
+      - name: Assert version matches source and tag is new
+        run: |
+          pixi run python -c "import sys, virmake; assert virmake.__version__ == sys.argv[1], (virmake.__version__, sys.argv[1])" "${{ inputs.version }}"
+          ! git rev-parse "v${{ inputs.version }}" >/dev/null 2>&1
+      - run: pixi run build
+      - id: sha
+        run: echo "sha256=$(sha256sum dist/virmake-${{ inputs.version }}.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: GitHub release (sdist + wheel attached)
+        run: |
+          gh release create "v${{ inputs.version }}" dist/* \
+            --title "v${{ inputs.version }}" --generate-release-notes \
+            --notes "sha256 (sdist): ${{ steps.sha.outputs.sha256 }}"
+        env: { GH_TOKEN: "${{ github.token }}" }
+  bioconda:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      # ERRATUM vs plan §8: this checkout (the virmake repo) provides
+      # .github/scripts/patch_recipe.py — the plan's version referenced the
+      # script without ever checking the repo out.
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Rounge-lab/bioconda-recipes
+          ref: master
+          token: ${{ secrets.BIOCONDA_TOKEN }}
+          path: bioconda-recipes
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Open bioconda update PR (if recipe exists)
+        working-directory: bioconda-recipes
+        run: |
+          if [ ! -f recipes/virmake/meta.yaml ]; then
+            echo "Recipe does not exist yet - initial PR is manual."; exit 0
+          fi
+          python "${GITHUB_WORKSPACE}/.github/scripts/patch_recipe.py" \
+            recipes/virmake/meta.yaml --version "${{ inputs.version }}" \
+            --sha256 "${{ needs.release.outputs.sha256 }}"
+          git checkout -b "virmake_${{ inputs.version }}"
+          git config user.name "VirMake release bot"
+          git config user.email "bot@users.noreply.github.com"
+          git commit -am "virmake v${{ inputs.version }}"
+          git push origin "virmake_${{ inputs.version }}"
+          gh pr create --repo bioconda/bioconda-recipes \
+            --head "Rounge-lab:virmake_${{ inputs.version }}" \
+            --title "virmake: v${{ inputs.version }}" \
+            --body "Automated version bump for virmake v${{ inputs.version }}. sha256 (sdist): ${{ needs.release.outputs.sha256 }}"
+        env: { GH_TOKEN: "${{ secrets.BIOCONDA_TOKEN }}" }
