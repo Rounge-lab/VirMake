@@ -29,6 +29,12 @@ def download_test_data(destination: str | Path) -> list[Path]:
     for file_info in record["files"]:
         filename = Path(file_info["key"]).name
         output_path = destination / filename
+        # Skip files already downloaded.
+        # A size mismatch forces a re-download.
+        if output_path.exists() and output_path.stat().st_size == file_info.get("size"):
+            logger.info("Skipping %s (already present)", filename)
+            downloaded.append(output_path)
+            continue
         temporary_path = output_path.with_suffix(output_path.suffix + ".part")
         download_url = file_info["links"].get("content") or file_info["links"]["self"]
         try:

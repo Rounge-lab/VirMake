@@ -111,7 +111,7 @@ typecheck = "pyright"
 lint = { depends-on = ["ruff-check", "ruff-format-check"] }
 lint-fix = { depends-on = ["ruff-format", "ruff-check-fix"] }
 test = { depends-on = ["lint", "pytest"] }
-smoke = { cmd = "virmake prep .smoke --test-data --yes && virmake run .smoke all --dryrun" }
+smoke = { cmd = "virmake prep .smoke --test-data --yes --force && virmake run .smoke all --dryrun" }
 
 [tool.pixi.feature.docs.tasks]
 docs = { cmd = "sphinx-build -M html ./source ./build --fail-on-warning", cwd = "docs" }
