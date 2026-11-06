@@ -1,16 +1,22 @@
 # Configuration file for the Sphinx documentation builder.
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("_ext"))
+sys.path.insert(0, str(Path(__file__).parent / "_ext"))
+
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
 
 # -- Project information
 
 project = 'VirMake'
 copyright = '2023, CRCbiome'
 
-release = '0.0'
-version = '0.0.0'
+# Version from the installed package (single-sourced from pyproject).
+try:
+    release = _pkg_version("virmake")
+except PackageNotFoundError:
+    release = "0.0.0"
+version = ".".join(release.split(".")[:2])
 
 # -- General configuration
 
