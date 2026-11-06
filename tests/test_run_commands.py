@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from virmake.cli import cli
@@ -186,3 +187,36 @@ class TestPreflight:
         result = CliRunner().invoke(cli, ["run", str(rundir)])
         assert result.exit_code != 0
         assert "samples table" in _combined(result)
+
+
+class TestSlurmAccount:
+    def test_account_written_to_profile(self, rundir, snakemake_calls):
+        result = CliRunner().invoke(
+            cli, ["run", str(rundir), "--slurm", "--account", "ec34"]
+        )
+        assert result.exit_code == 0, _combined(result)
+        profile = yaml.safe_load(
+            (rundir / "config" / "slurm" / "config.yaml").read_text()
+        )
+        assert profile["default-resources"]["slurm_account"] == "ec34"
+        assert "SLURM account recorded" in _combined(result)
+
+    def test_empty_account_warns_but_submits(self, rundir, snakemake_calls):
+        result = CliRunner().invoke(cli, ["run", str(rundir), "--slurm"])
+        assert result.exit_code == 0, _combined(result)
+        assert "SLURM account" in _combined(result)
+        assert "--profile" in snakemake_calls[0]
+
+    def test_recorded_account_silences_warning(self, rundir, snakemake_calls):
+        path = rundir / "config" / "slurm" / "config.yaml"
+        profile = yaml.safe_load(path.read_text())
+        profile["default-resources"]["slurm_account"] = "ec34"
+        path.write_text(yaml.safe_dump(profile, sort_keys=False))
+        result = CliRunner().invoke(cli, ["run", str(rundir), "--slurm"])
+        assert result.exit_code == 0, _combined(result)
+        assert "SLURM account" not in _combined(result)
+
+    def test_account_requires_slurm(self, rundir):
+        result = CliRunner().invoke(cli, ["run", str(rundir), "--account", "ec34"])
+        assert result.exit_code != 0
+        assert "requires --slurm" in _combined(result)

@@ -493,8 +493,13 @@ def setup_dbs(rundir, threads, dryrun, clean, yes):
     show_default=True,
     help="test execution",
 )
+@click.option(
+    "--account",
+    help="SLURM account for job submission; written into config/slurm/"
+    "config.yaml so subsequent runs need only --slurm.",
+)
 @click.pass_context
-def run_workflow(ctx, rundir, workflow, cores, slurm, dryrun):
+def run_workflow(ctx, rundir, workflow, cores, slurm, dryrun, account):
     """Run the workflow on a prepared run directory."""
     rundir = resolve_rundir(rundir)
     params = load_params(rundir)
@@ -509,7 +514,28 @@ def run_workflow(ctx, rundir, workflow, cores, slurm, dryrun):
         str(cores),
     ]
     if slurm:
+        slurm_profile_path = rundir / "config" / "slurm" / "config.yaml"
+        if not slurm_profile_path.is_file():
+            raise click.ClickException(
+                f"{slurm_profile_path} is missing. Regenerate it with: "
+                f"virmake prep {rundir} --force"
+            )
+        profile = yaml.safe_load(slurm_profile_path.read_text())
+        if account:
+            profile.setdefault("default-resources", {})["slurm_account"] = account
+            with open(slurm_profile_path, "w") as fh:
+                yaml.safe_dump(profile, fh, sort_keys=False)
+            click.echo(f"SLURM account recorded: {slurm_profile_path}")
+        if not profile.get("default-resources", {}).get("slurm_account"):
+            click.echo(
+                "WARNING: no SLURM account set. Many clusters require one and "
+                "will reject submissions. Pass --account <ACCOUNT> or set "
+                "default-resources.slurm_account in config/slurm/config.yaml.",
+                err=True,
+            )
         cmd += ["--profile", str(rundir / "config" / "slurm")]
+    elif account:
+        raise click.ClickException("--account requires --slurm.")
     if dryrun:
         cmd.append("-n")
     cmd += list(ctx.args)
