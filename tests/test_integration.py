@@ -21,7 +21,8 @@ from virmake.cli import cli
 pytestmark = [
     pytest.mark.integration,
     pytest.mark.skipif(
-        sys.platform == "win32", reason="snakemake unsupported on Windows"
+        sys.platform != "linux",
+        reason="snakemake workflow execution is Linux-only",
     ),
 ]
 
