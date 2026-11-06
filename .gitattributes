@@ -1,0 +1,4 @@
+# Normalize all text files to LF — repository-side AND working-tree.
+# Fresh checkouts are byte-identical on every OS (windows CI runners
+# default to CRLF conversion via autocrlf; ubuntu does not).
+* text=auto eol=lf

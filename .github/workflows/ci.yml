@@ -28,6 +28,8 @@ jobs:
         with:
           cache: true
       - run: pixi run test
+      - name: Hygiene (eof/whitespace/line-endings/parse checks)
+        run: pixi run pre-commit
 
   smoke:
     name: smoke (${{ matrix.os }})
