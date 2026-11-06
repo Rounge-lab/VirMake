@@ -7,6 +7,7 @@ name = "virmake"
 dynamic = ["version"]
 readme = "README.md"
 license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
   "click>=8.1",
@@ -16,6 +17,13 @@ dependencies = [
   "snakemake>=8.14,<10",
   "snakemake-executor-plugin-slurm>=1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Rounge-lab/VirMake"
+Repository = "https://github.com/Rounge-lab/VirMake"
+Documentation = "https://virmake.readthedocs.io"
+Issues = "https://github.com/Rounge-lab/VirMake/issues"
+Releases = "https://github.com/Rounge-lab/VirMake/releases"
 
 [project.optional-dependencies]
 dev = [
