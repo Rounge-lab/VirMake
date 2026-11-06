@@ -6,7 +6,17 @@ on:
 permissions:
   contents: write
 jobs:
+  guard:
+    name: main-only release policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Releases may only be dispatched from main
+        if: github.ref_name != 'main'
+        run: |
+          echo "::error::Release dispatched from '${{ github.ref_name }}' - releases are main-only."
+          exit 1
   checks:
+    needs: guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
