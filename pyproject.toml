@@ -46,13 +46,6 @@ docs = [
 [project.scripts]
 virmake = "virmake.cli:cli"
 
-[project.urls]
-Homepage = "https://github.com/Rounge-lab/VirMake"
-Documentation = "https://virmake.readthedocs.io/"
-Repository = "https://github.com/Rounge-lab/VirMake"
-Issues = "https://github.com/Rounge-lab/VirMake/issues"
-Changelog = "https://github.com/Rounge-lab/VirMake/releases"
-
 [tool.hatch.version]
 path = "src/virmake/__init__.py"
 
