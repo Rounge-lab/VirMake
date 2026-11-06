@@ -2,13 +2,7 @@
 Installation
 ============
 
-.. warning::
-
-    This page is under construction and may contain incorrect and/or incomplete
-    information.
-
 .. _prerequisites:
-
 
 Prerequisites
 -------------
@@ -16,16 +10,14 @@ Prerequisites
 Dependencies
 ^^^^^^^^^^^^
 
-* `Git <https://git-scm.com/>`_
 * Conda (either `Miniconda
-  <https://continuumio-docs.readthedocs-hosted.com/miniconda/install/>`_ or
-  `Anaconda <https://www.anaconda.com/docs/getting-started/installation>`_)
+  <https://docs.anaconda.com/miniconda/>`_ or `Anaconda
+  <https://www.anaconda.com/docs/getting-started/installation>`_)
 
 System Requirements
 ^^^^^^^^^^^^^^^^^^^
 
 **VirMake** is designed for the *Linux* operating system.
-
 The following OS versions have been explicitly tested:
 
 * x86_64 Red Hat Enterprise Linux 9.8 (Plow)
@@ -35,18 +27,74 @@ Hardware
 
 * RAM: minimum 64 GB
 * Storage: minimum 200 GB of free disk space
-* Additional memory and disk space will be needed depending on the data to be
-  analysed
+* Additional memory and disk space will be needed depending on the data to
+  be analysed
 
 .. _installation:
 
 Installation
 ------------
 
+**VirMake** can be installed one of in three ways. The workflow's tool
+environments (fastp, metaSPAdes, VirSorter2, ...) are downloaded and created
+through conda automatically the first time **VirMake** is run (see
+:doc:`usage`).
+
+.. _bioconda_installation:
+
+From Bioconda
+^^^^^^^^^^^^^
+
+This is the recommended way to install **VirMake**:
+
+.. code-block:: console
+
+    conda create -n virmake -c conda-forge -c bioconda virmake
+    conda activate virmake
+    virmake --help
+
+The package installs **VirMake** together with snakemake and its Python
+dependencies.
+
+.. note::
+
+   The bioconda package becomes available with the **VirMake** v1.1.0
+   release. Until then, use one of the two methods below.
+
+.. _pip_methods:
+
+
+From a GitHub Release
+^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+   Requires ``Python>=3.12``
+
+Each release publishes a source archive on the `GitHub releases page
+<https://github.com/Rounge-lab/VirMake/releases>`_.
+
+1. Download the source archive (``virmake-<version>.tar.gz``) from the
+   latest release.
+
+2. Install it with pip:
+
+.. code-block:: console
+
+    python -m pip install virmake-<version>.tar.gz
+    virmake --help
+
+
 .. _source_installation:
 
 From Source
 ^^^^^^^^^^^
+
+Install the newest development state directly from the git repository:
+
+.. note::
+
+   Requires ``Git``
 
 1. Clone the git repository
 
@@ -54,75 +102,16 @@ From Source
 
     git clone https://github.com/Rounge-lab/VirMake.git
 
-2. Run the **VirMake** setup script
-
-.. program:: setup.py
-
-Synopsis
-""""""""
+2. Install **VirMake**:
 
 .. code-block:: console
 
-    python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
-    QC_READS] [--contigs CONTIGS]
-
-Options
-"""""""
-
-.. option:: -h, --help
-
-    Show the help message and exit.
-
-.. option:: --test-data
-
-    Download a small `synthetic dataset
-    <https://doi.org/10.5281/zenodo.23388915>`_ to test **VirMake**.
-    Using this option will override other input specifications.
-
-.. option:: --work-dir
-
-    :Type: ``path``
-    :Default: ``./results```
-
-    Use this option to specify the output directory.
-
-.. option:: --reads
-
-    :Type: ``path``
-
-    Path where reads can be found. This option automatically sets the
-    :confval:`path.input_reads` option in the :doc:`config-params` and
-    populates the ``r1`` and ``r2`` columns in the samples table
-    :confval:`path.samples`.
-
-.. option:: --qc-reads
-
-    :Type: ``path``
-
-    Path where QC reads can be found. This option automatically populates the
-    ``qc_r1`` and ``qc_r2`` columns in the samples table
-    :confval:`path.samples`.
-
-.. option:: --contigs
-
-    :Type: ``path``
-
-    Path where contigs can be found. This option automatically sets the
-    :confval:`path.input_contigs` option in the :doc:`config-params` and
-    populates the ``contigs`` column in the samples table
-    :confval:`path.samples`.
+    conda create -n virmake python=3.12
+    conda activate virmake
+    python -m pip install ./VirMake
+    virmake --help
 
 
-Use :option:`--reads`, :option:`--qc-reads`, or :option:`--contigs` to
-specify the directories where input files are found.
-
-Reads specified with the :option:`--reads` option or the
-:option:`--qc-reads` option must be paired-end reads and found in the
-specified folder in files named either
-``{sample}_1.fastq`` and ``{sample}_2.fastq`` (for uncompressed reads), or
-``{sample}_1.fastq.gz`` and ``{sample}_2.fastq.gz`` (for gzip compressed
-reads), where ``{sample}`` is the sample name. Multiple samples may be present.
-
-If contigs are specified with the :option:`--contigs` option, they must be
-found in the specified folder in files named ``{sample}.fasta``, where
-``{sample}`` is the sample name. Multiple samples may be present.
+The source installation tracks whatever branch you cloned. Contributors and
+developers who want a live checkout should follow the development installation
+in :doc:`contributing`.

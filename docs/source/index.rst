@@ -40,9 +40,15 @@ Contents
 --------
 
 .. toctree::
+   :caption: User Documentation
 
-    install
-    usage
-    workflow
-    config-params
-    config-hpc
+   install
+   usage
+   workflow
+   config-params
+   config-hpc
+
+.. toctree::
+   :caption: For Contributors
+
+   contributing
