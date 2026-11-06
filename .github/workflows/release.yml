@@ -33,7 +33,7 @@ jobs:
       - name: GitHub release (sdist + wheel attached)
         run: |
           gh release create "v${{ inputs.version }}" dist/* \
-            --title "v${{ inputs.version }}" --generate-release-notes \
+            --title "v${{ inputs.version }}" --generate-notes \
             --notes "sha256 (sdist): ${{ steps.sha.outputs.sha256 }}"
         env: { GH_TOKEN: "${{ github.token }}" }
   bioconda:
