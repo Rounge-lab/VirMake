@@ -33,7 +33,7 @@ def rundir(tmp_path_factory):
     reads.mkdir()
     for sample in ("A", "B"):
         for frac in ("1", "2"):
-            (reads / f"{sample}_{frac}.fastq").write_text("")
+            (reads / f"{sample}_{frac}.fastq.gz").write_text("")
     run = base / "run"
     result = CliRunner().invoke(
         cli,
@@ -71,8 +71,10 @@ def _snakemake_dryrun(rundir: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 def _job_rules(proc: subprocess.CompletedProcess) -> set[str]:
-    """Rule names from the dryrun's Job stats table."""
-    return set(re.findall(r"^(\S+)\s+\d+\s+\d+", proc.stdout, re.MULTILINE))
+    """Rule names from the dryrun's Job stats table (minus its total row)."""
+    rules = set(re.findall(r"^(\S+)\s+\d+\s+\d+", proc.stdout, re.MULTILINE))
+    rules.discard("total")
+    return rules
 
 
 class TestCliDryruns:

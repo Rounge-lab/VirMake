@@ -200,6 +200,49 @@ class TestPrepInputs:
         assert result.exit_code == 0
         assert "header-only" in result.output
 
+    def test_plain_fastq_reads_warn(self, tmp_path, patched_defaults):
+        plain = tmp_path / "plain"
+        plain.mkdir()
+        (plain / "A_1.fastq").write_text("")
+        (plain / "A_2.fastq").write_text("")
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(tmp_path / "run"),
+                "--reads",
+                str(plain),
+                "--db-dir",
+                str(tmp_path / "db"),
+                "--envs-dir",
+                str(tmp_path / "envs"),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "not gzipped" in result.output
+
+    def test_gzipped_reads_do_not_warn(self, tmp_path, patched_defaults, reads_dir):
+        # fixture writes plain .fastq; gz variant here
+        gz = tmp_path / "gz"
+        gz.mkdir()
+        (gz / "A_1.fastq.gz").write_text("")
+        (gz / "A_2.fastq.gz").write_text("")
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(tmp_path / "run"),
+                "--reads",
+                str(gz),
+                "--db-dir",
+                str(tmp_path / "db"),
+                "--envs-dir",
+                str(tmp_path / "envs"),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "not gzipped" not in result.output
+
 
 class TestPrepTestData:
     @pytest.fixture
