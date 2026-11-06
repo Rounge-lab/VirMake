@@ -40,19 +40,23 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      # ERRATUM vs plan §8: this checkout (the virmake repo) provides
-      # .github/scripts/patch_recipe.py — the plan's version referenced the
-      # script without ever checking the repo out.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4        # virmake repo: provides patch_recipe.py
       - uses: actions/checkout@v4
         with:
           repository: Rounge-lab/bioconda-recipes
           ref: master
-          token: ${{ secrets.BIOCONDA_TOKEN }}
-          path: bioconda-recipes
+          path: bioconda-recipes         # public fork: clone needs no token
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: Open bioconda update PR (if recipe exists)
+      - name: Configure push access (deploy key)
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.BIOCONDA_DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+          cd bioconda-recipes
+          git remote set-url origin git@github.com:Rounge-lab/bioconda-recipes.git
+      - name: Patch recipe and push branch (if recipe exists)
         working-directory: bioconda-recipes
         run: |
           if [ ! -f recipes/virmake/meta.yaml ]; then
@@ -61,13 +65,21 @@ jobs:
           python "${GITHUB_WORKSPACE}/.github/scripts/patch_recipe.py" \
             recipes/virmake/meta.yaml --version "${{ inputs.version }}" \
             --sha256 "${{ needs.release.outputs.sha256 }}"
-          git checkout -b "virmake_${{ inputs.version }}"
+          BRANCH="virmake_${{ inputs.version }}"
+          git checkout -b "$BRANCH"
           git config user.name "VirMake release bot"
           git config user.email "bot@users.noreply.github.com"
           git commit -am "virmake v${{ inputs.version }}"
-          git push origin "virmake_${{ inputs.version }}"
-          gh pr create --repo bioconda/bioconda-recipes \
-            --head "Rounge-lab:virmake_${{ inputs.version }}" \
-            --title "virmake: v${{ inputs.version }}" \
-            --body "Automated version bump for virmake v${{ inputs.version }}. sha256 (sdist): ${{ needs.release.outputs.sha256 }}"
-        env: { GH_TOKEN: "${{ secrets.BIOCONDA_TOKEN }}" }
+          git push origin "$BRANCH"
+          echo "Branch pushed. Open the bioconda PR here (one click):"
+          python - "$BRANCH" <<'EOF'
+          import sys
+          from urllib.parse import quote
+          branch = sys.argv[1]
+          version = branch.split("_", 1)[1]
+          print(f"https://github.com/bioconda/bioconda-recipes/compare/master..."
+                f"Rounge-lab:bioconda-recipes:{branch}?quick_pull=1"
+                f"&title={quote(f'virmake: v{version}')}"
+                f"&body={quote(f'Automated version bump for virmake v{version}. '
+                              f'sha256 (sdist): verified in the VirMake release notes.')}")
+          EOF
