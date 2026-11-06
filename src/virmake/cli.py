@@ -34,8 +34,6 @@ from virmake.config import (
 from virmake.samples import write_samples_table
 from virmake.testdata import download_test_data
 
-_REQUIRED_DB_FLAGS = ("virsorter2", "genomad", "checkv")
-
 
 def resolve_rundir(rundir: str | pathlib.Path) -> pathlib.Path:
     """Validate that ``rundir`` was prepared by ``virmake prep``."""
@@ -150,18 +148,19 @@ def _preflight(rundir: pathlib.Path, params: dict, prefix: pathlib.Path) -> None
             f"WARNING: {samples} appears to contain no samples (header only).",
             err=True,
         )
-    missing = [
-        name
-        for name in _REQUIRED_DB_FLAGS
-        if not (pathlib.Path(params["path"]["database"][name]) / "flag").is_file()
-    ]
-    if missing:
-        click.echo(
-            f"WARNING: databases not set up: {', '.join(missing)}.\n"
-            f"         Run `virmake db {rundir}` first; required steps will fail "
-            "if they stay missing.",
-            err=True,
-        )
+    if params.get("rule_inclusion", {}).get("all", {}).get("identification", False):
+        db_paths = params["path"]["database"]
+        candidates = [db_paths[params["identifier"]], db_paths["checkv"]]
+        missing = [
+            str(p) for p in candidates if not (pathlib.Path(p) / "flag").is_file()
+        ]
+        if missing:
+            click.echo(
+                f"WARNING: databases not set up: {', '.join(missing)}.\n"
+                f"         Run `virmake db {rundir}` first; required steps will fail "
+                "if they stay missing.",
+                err=True,
+            )
     if not prefix.is_dir() or not any(prefix.iterdir()):
         click.echo(
             f"WARNING: conda env prefix {prefix} is empty.\n"

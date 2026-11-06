@@ -55,6 +55,7 @@ packages = ["src/virmake"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = ["-ra", "--strict-config", "--strict-markers", "--tb=short"]
+markers = ["integration: real-snakemake dryrun tests (Linux/macOS)"]
 
 [tool.ruff]
 exclude = [".git", "__pypackages__", "src/virmake/workflow", "docs"]

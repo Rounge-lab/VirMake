@@ -161,10 +161,10 @@ class TestPreflight:
         result = CliRunner().invoke(cli, ["run", str(rundir)])
         assert "virmake envs" in _combined(result)
 
-    @pytest.mark.skipif(sys.platform == "darwin", reason="darwin warning is expected")
+    # @pytest.mark.skipif(sys.platform == "darwin", reason="darwin warning is expected")
     def test_no_warnings_when_ready(self, rundir, tmp_path, snakemake_calls):
         db_dir, envs_dir = tmp_path / "db", tmp_path / "envs"
-        for name in ("virsorter2", "genomad", "checkv"):
+        for name in ("virsorter2", "checkv"):  # identifier + quality step
             d = db_dir / name
             d.mkdir(parents=True, exist_ok=True)
             (d / "flag").write_text("")
