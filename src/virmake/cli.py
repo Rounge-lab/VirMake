@@ -261,15 +261,20 @@ def prep(
             "config and the samples table (results/ is never touched)."
         )
 
+    # Resolve all full paths
+    rundir = rundir.resolve()
+    reads = reads.expanduser().resolve() if reads else reads
+    qc_reads = qc_reads.expanduser().resolve() if qc_reads else qc_reads
+    contigs = contigs.expanduser().resolve() if contigs else contigs
     db_dir = resolve_resource_dir(
         db_dir, default=default_db_dir(), description="database", assume_yes=yes
-    )
+    ).resolve()
     envs_dir = resolve_resource_dir(
         envs_dir,
         default=default_envs_dir(),
         description="conda environment",
         assume_yes=yes,
-    )
+    ).resolve()
 
     # Create roots early so permission problems surface now, not mid-run.
     rundir.mkdir(parents=True, exist_ok=True)

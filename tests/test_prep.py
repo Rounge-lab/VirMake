@@ -278,3 +278,43 @@ class TestPrepTestData:
         )
         assert result.exit_code != 0
         assert "cannot be combined" in result.output
+
+    def test_test_data_paths_absolute(
+        self, tmp_path, patched_defaults, monkeypatch, fake_download
+    ):
+        monkeypatch.chdir(tmp_path)
+        result = CliRunner().invoke(cli, ["prep", "run", "--test-data", "--yes"])
+        assert result.exit_code == 0, result.output
+        table = pd.read_csv(tmp_path / "run" / "samples.tsv", sep="\t")
+        assert table["qc_r1"].iloc[0] == str(
+            tmp_path / "run" / "test_data" / "synthetic_1.fastq.gz"
+        )
+
+
+class TestPrepAbsolutePathContract:
+    """Regression (smoke finding): all recorded paths are absolute.
+
+    Snakemake resolves samples.tsv paths against the run directory
+    (--directory), so a relative qc_r1 of ".smoke/test_data/x.fastq.gz"
+    is sought at <RUNDIR>/.smoke/test_data/... and misses.
+    """
+
+    def test_relative_cli_args_recorded_absolute(
+        self, tmp_path, patched_defaults, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        reads = tmp_path / "reads"
+        reads.mkdir()
+        for frac in ("1", "2"):
+            (reads / f"A_{frac}.fastq.gz").write_text("")
+        result = CliRunner().invoke(
+            cli,
+            ["prep", "run", "--reads", "reads", "--db-dir", "db", "--envs-dir", "envs"],
+        )
+        assert result.exit_code == 0, result.output
+        table = pd.read_csv(tmp_path / "run" / "samples.tsv", sep="\t")
+        assert table["r1"].iloc[0] == str(reads / "A_1.fastq.gz")
+        params = yaml.safe_load(
+            (tmp_path / "run" / "config" / "params.yaml").read_text()
+        )
+        assert params["path"]["input_reads"] == str(reads)
