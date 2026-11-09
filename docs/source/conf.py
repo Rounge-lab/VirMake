@@ -26,7 +26,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
-    'sphinx_rtd_dark_mode',
+    # 'sphinx_rtd_dark_mode',
     'sphinx_copybutton',
     'sphinx_toolbox.confval',
     'yaml_config',
@@ -58,10 +58,6 @@ html_theme_options = {
 
 html_static_path = ["_static"]
 
-html_css_files = [
-    "virmake.css",
-]
-
 html_logo = "_static/virmake_logo_dark.svg"
 html_favicon = "_static/virmake_favicon.svg"
 
@@ -69,3 +65,11 @@ html_context = {
     "display_github": True,
     "github_repo": "Rounge-lab/VirMake",
 }
+
+html_css_files = [
+    "crcbiome-rtd.css",
+]
+
+html_js_files = [
+    "dark-mode-toggle.js",
+]

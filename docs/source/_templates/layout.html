@@ -1,0 +1,21 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+
+  <script>
+    (function () {
+      const storageKey = "crc-theme";
+      const savedTheme = localStorage.getItem(storageKey);
+
+      const theme =
+        savedTheme === "light" || savedTheme === "dark"
+          ? savedTheme
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+
+      document.documentElement.setAttribute("data-theme", theme);
+    }());
+  </script>
+{% endblock %}
