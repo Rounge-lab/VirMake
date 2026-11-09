@@ -266,15 +266,10 @@ Options
 Further options
 ^^^^^^^^^^^^^^^
 
-Any further options are passed through to the underlying Snakemake invocation.
-For example, to rerun jobs that were interrupted:
-
-.. code-block:: console
-
-    virmake run myrun all --cores 8 --rerun-incomplete
-
-For a full overview of options, please refer to the official `Snakemake
-documentation <https://snakemake.readthedocs.io/en/stable/executing/cli.html>`_.
+Any further options are passed through to the underlying Snakemake invocation;
+for a full overview, refer to the official `Snakemake documentation
+<https://snakemake.readthedocs.io/en/stable/executing/cli.html>`_.
+Common recovery scenarios are shown in :doc:`config-hpc`.
 
 Checks at the start of a run
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
