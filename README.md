@@ -23,7 +23,7 @@
     <img src="https://app.readthedocs.org/projects/virmake/badge/?version=latest"
          alt="Documentation status">
   </a>
-  <a href="./LICENCE">
+  <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-GPL--v3.0-blue.svg"
          alt="Licence">
   </a>
