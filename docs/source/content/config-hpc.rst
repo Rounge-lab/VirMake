@@ -27,16 +27,9 @@ The workflow profile
 runs. As generated it looks like this (``conda-prefix`` holds the
 environment directory chosen during :program:`virmake prep`):
 
-.. code-block:: yaml
-
-    software-deployment-method: conda
-    conda-prefix: /cluster/shared/virmake/envs
-    show-failed-logs: true
-    rerun-incomplete: true
-    keep-going: true
-    printshellcmds: true
-    jobname: '{rule}.{jobid}'
-    max-jobs-per-second: 1
+.. literalinclude:: ../../../src/virmake/templates/workflow-profile.yaml
+   :language: yaml
+   :caption: Workflow profile (``config/config.yaml``) template
 
 .. list-table::
    :header-rows: 1
@@ -79,17 +72,9 @@ The Slurm profile
 ``config/slurm/config.yaml`` is used whenever the workflow runs with
 ``--slurm``. As generated it looks like this:
 
-.. code-block:: yaml
-
-    executor: slurm
-    default-resources:
-      slurm_account: ''
-      runtime: 120 * attempt
-      mem_mb: 7500 * attempt
-    max-status-checks-per-second: 0.1
-    latency-wait: 60
-    restart-times: 2
-    jobs: 200
+.. literalinclude:: ../../../src/virmake/templates/slurm-profile.yaml
+   :language: yaml
+   :caption: Slurm profile (``config/slurm/config.yaml``) template
 
 .. list-table::
    :header-rows: 1
