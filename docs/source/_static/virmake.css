@@ -43,3 +43,9 @@ html[data-theme="dark"].writer-html5
 .rst-content dl.std.option .sig-name.descname .pre {
     color: #bfbfbf !important;
 }
+
+/* TODO: html.writer-html5 .rst-content
+ * dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+ * .descname, html.writer-html5 .rst-content
+ * dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+ * .sig-name */
