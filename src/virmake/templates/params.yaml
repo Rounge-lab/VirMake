@@ -3,7 +3,6 @@
 # `virmake prep` loads this template, injects the computed `path` section,
 # and writes the result to <RUNDIR>/config/params.yaml.
 
-slurm_account: default
 keep_qc_reads: true
 assembler: metaSpades # may be changed to megahit
 identifier: virsorter2 # may be changed to genomad
