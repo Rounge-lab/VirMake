@@ -42,13 +42,13 @@ Contents
 .. toctree::
    :caption: User Documentation
 
-   install
-   usage
-   workflow
-   config-params
-   config-hpc
+   content/install
+   content/usage
+   content/workflow
+   content/config-params
+   content/config-hpc
 
 .. toctree::
    :caption: For Contributors
 
-   contributing
+   content/contributing
