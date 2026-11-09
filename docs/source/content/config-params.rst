@@ -22,7 +22,7 @@ Common settings
    * - Setting
      - Description
    * - ``assembler``
-     - Assembler used in the assembly step: ``MetaSPAdes`` or ``Megahit``
+     - Assembler used in the assembly step: ``metaSPAdes`` or ``Megahit``
    * - ``identifier``
      - Tool used to identify viral sequences from contigs: ``virsorter2`` or
        ``genomad``.
