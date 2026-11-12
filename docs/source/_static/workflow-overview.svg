@@ -1,9 +1,8 @@
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 980 1400"
-  width="100%"
+  viewBox="0 12 492 740"
   role="img"
-  aria-labelledby="VirMake workflow overview"
+  aria-labelledby="workflow-title workflow-description"
 >
   <title id="workflow-title">VirMake workflow overview</title>
   <desc id="workflow-description">Diagram of the VirMake pipeline: quality control, assembly, viral
@@ -16,30 +15,30 @@
       or html[data-theme="dark"] will be inherited and take precedence.
     */
     svg {
-      --crc-background: #f6f7fa;
-      --crc-border: #dee2e6;
-      --crc-muted: #6c757d;
-      --crc-primary: #67a0b1;
-      --crc-surface: #ffffff;
-      --crc-tertiary: #6b519d;
-      --crc-text: #212529;
+      display: block;
+      width: 80%;
+      height: auto;
+      margin: 0 auto;
 
-      color: var(--crc-text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      color: var(--crc-text, #212529);
+      font-family: var(
+        --crc-font-family,
+        system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        sans-serif
+      );
     }
 
     .viewbox-boundary {
       fill: none;
-      stroke: var(--crc-primary);
+      stroke: var(--crc-primary, #67a0b1);
       stroke-width: 1;
-      stroke-dasharray: 5 4;
+      stroke-dasharray: 6 2;
       pointer-events: none;
     }
 
     .connector {
       fill: none;
-      stroke: var(--crc-primary);
+      stroke: var(--crc-primary, #67a0b1);
       stroke-width: 2;
       marker-end: url(#arrowhead);
     }
@@ -58,60 +57,55 @@
       pointer-events: none;
     }
 
-    /*
-      Input nodes:
-      --crc-tertiary outline and standard rounded corners.
-    */
-    .node--input rect {
-      stroke: var(--crc-tertiary);
+    .node text,
+    .node .legend-text {
+      fill: var(--crc-text, #212529);
     }
 
-    /*
-      Optional nodes:
-      Same tertiary colour, distinguished by dashed outline.
-    */
+    .node .legend-text {
+      text-anchor: start;
+    }
+
+    .node--input rect,
     .node--optional rect {
-      stroke: var(--crc-tertiary);
-      stroke-dasharray: 7 5;
+      stroke: var(--crc-tertiary, #6b519d);
     }
 
-    /*
-      Tool nodes:
-      --crc-muted outline.
-    */
+    .node--optional rect {
+      stroke-dasharray: 6 2;
+    }
+
     .node--tool rect {
-      stroke: var(--crc-muted);
+      stroke: var(--crc-muted, #6c757d);
     }
 
-    /*
-      Generated data:
-      --crc-primary outline and a smaller corner radius.
-    */
     .node--generated rect {
-      stroke: var(--crc-primary);
+      stroke: var(--crc-primary, #67a0b1);
     }
 
     .node--generated .node-input-frame {
-      fill: none;
-      stroke: var(--crc-tertiary);
-      stroke-width: 2;
+      stroke: var(--crc-tertiary, #6b519d);
     }
 
-    /*
-      Cluster Title
-    */
     .node--cluster rect {
-      stroke: none;
-      fill: var(--crc-border);
+      fill: var(--crc-border, #dee2e6);
     }
 
-    .cluster-boundary {
+    .cluster-boundary-dashed,
+    .cluster-boundary-solid {
       fill: none;
-      stroke: var(--crc-border);
+      stroke: var(--crc-border, #dee2e6);
       stroke-width: 1.5;
-      stroke-dasharray: 5 4;
-      pointer-events: none;
     }
+
+    .cluster-boundary-dashed {
+      stroke-dasharray: 6 2;
+    }
+
+    .cluster-legend {
+      fill: var(--crc-background, #f5f7fa);
+    }
+
 
   </style>
 
@@ -132,25 +126,210 @@
            L 0 10
            Q 3 5 0 0
            Z"
-        fill="var(--crc-primary)"
+        fill="var(--crc-primary, #67a0b1)"
       />
     </marker>
   </defs>
 
-  <!-- Connectors: placed before nodes so they render underneath. -->
 
-  <!-- Nodes -->
-  <g class="node node--cluster">
-    <rect x="10" y="120" width="100" height="30" rx="14" ry="14"/>
-    <text x="60" y="136">PLACEHOLDER</text>
+  <!-- Start -->
+  <path class="connector" d="M 164 86 V 106" /> <!-- start -->
+
+  <g class="node node--input">
+    <rect x="114" y="20" width="100" height="60" rx="14" ry="14"/>
+    <text x="164" y="50">
+        <tspan x="164" dy="-12">(QC) Reads</tspan>
+        <tspan x="164" dy="15">R1</tspan>
+        <tspan x="162" dy="15">R2</tspan>
+    </text>
   </g>
 
-  <!-- Visual debugging boundary for viewBox="0 0 980 430" -->
-  <rect
-    class="viewbox-boundary"
-    x="0.5"
-    y="0.5"
-    width="979"
-    height="1398"
-  />
+  <!-- Legend -->
+  <rect class="cluster-legend"
+    x="332" y="20" width="156" height="168" rx="6" ry="6"/>
+
+  <g class="node node--input">
+    <rect x="340" y="28" width="30" height="30" rx="10" ry="10"/>
+    <text class="legend-text" x="380" y="44">Input</text>
+  </g>
+
+  <g class="node node--optional">
+    <rect x="340" y="68" width="30" height="30" rx="10" ry="10"/>
+    <text class="legend-text" x="380" y="84">Optional</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="340" y="108" width="30" height="30" rx="10" ry="10"/>
+    <text class="legend-text" x="380" y="124">Tool</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="340" y="148" width="30" height="30" rx="10" ry="10"/>
+    <text class="legend-text" x="380" y="164">Generated data</text>
+  </g>
+
+  <!-- Assembly -->
+  <path class="connector" d="M 136 175 H 194" /> <!-- metaquast -> qc -->
+  <path class="connector" d="M 136 225 H 188" /> <!-- metaspades -> contigs -->
+
+  <rect class="cluster-boundary-dashed"
+    x="4" y="114" width="320" height="170" rx="6" ry="6"/>
+  <g class="node node--cluster">
+    <rect x="10" y="120" width="100" height="30" rx="14" ry="14"/>
+    <text x="60" y="136">ASSEMBLY</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="30" y="160" width="100" height="30" rx="14" ry="14"/>
+    <text x="80" y="176">MetaQUAST</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="200" y="160" width="100" height="30" rx="2" ry="2"/>
+    <text x="250" y="176">QC (Reports)</text>
+  </g>
+
+
+  <g class="node node--tool">
+    <rect x="30" y="210" width="100" height="30" rx="14" ry="14"/>
+    <text x="80" y="226">metaSPAdes</text>
+  </g>
+
+  <g class="node node--optional">
+    <rect x="30" y="245" width="100" height="30" rx="14" ry="14"/>
+    <text x="80" y="261">MEGAHIT</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="194" y="204" width="112" height="42" rx="2" ry="2"
+        class="node-input-frame"/>
+    <rect x="200" y="210" width="100" height="30" rx="2" ry="2"/>
+    <text x="250" y="226">Contigs</text>
+  </g>
+
+  <!-- Viral Identification / Dereplication -->
+  <rect class="cluster-boundary-solid"
+    x="4" y="292" width="320" height="456" rx="6" ry="6"/>
+  <g class="node node--cluster">
+    <rect x="10" y="298" width="150" height="30" rx="14" ry="14"/>
+    <text x="85" y="314">VIRAL IDENTIFICATION</text>
+  </g>
+
+  <path class="connector" d="M 250 250 V 335 H 145 V 354 " /> <!-- contigs -> virsorter -->
+  <path class="connector" d="M 145 396 V 414 " /> <!-- virsorter -> pred virus -->
+  <path class="connector" d="M 145 456 V 474 " /> <!-- pred virus -> checkv -->
+  <path class="connector" d="M 145 516 V 534 " /> <!-- checkv -> qc virus -->
+  <path class="connector" d="M 145 576 V 614 " /> <!-- qc virus -> gallah -->
+  <path class="connector" d="M 145 656 V 674 " /> <!-- gallah -> vOTUs -->
+
+  <g class="node node--tool">
+    <rect x="95" y="360" width="100" height="30" rx="14" ry="14"/>
+    <text x="145" y="376">VirSorter2</text>
+  </g>
+
+  <g class="node node--optional">
+    <rect x="199" y="360" width="100" height="30" rx="14" ry="14"/>
+    <text x="249" y="376">geNomad</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="95" y="420" width="100" height="30" rx="2" ry="2"/>
+    <text x="145" y="436">Predicted viruses</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="95" y="480" width="100" height="30" rx="14" ry="14"/>
+    <text x="145" y="496">CheckV</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="95" y="540" width="100" height="30" rx="2" ry="2"/>
+    <text x="145" y="556">QC viruses</text>
+  </g>
+
+  <g class="node node--cluster">
+    <rect x="10" y="580" width="120" height="30" rx="14" ry="14"/>
+    <text x="70" y="596">DEREPLICATION</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="95" y="620" width="100" height="30" rx="14" ry="14"/>
+    <text x="145" y="636">Galah</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="95" y="680" width="100" height="60" rx="2" ry="2"/>
+    <text x="145" y="696">
+        <tspan x="145" dy="-1">Representative</tspan>
+        <tspan x="145" dy="15">viral genomes</tspan>
+        <tspan x="145" dy="15">"vOTUs"</tspan>
+    </text>
+  </g>
+
+  <!-- Mapping -->
+  <rect class="cluster-boundary-dashed"
+    x="332" y="325" width="156" height="177" rx="6" ry="6"/>
+  <g class="node node--cluster">
+    <rect x="338" y="329" width="100" height="30" rx="14" ry="14"/>
+    <text x="388" y="345">MAPPING</text>
+  </g>
+
+  <path class="connector" d="M 408 442 V 460" /> <!-- bowtie -> vrial abund -->
+
+  <g class="node node--optional">
+    <rect x="358" y="371" width="100" height="30" rx="14" ry="14"/>
+    <text x="408" y="387">inStrain</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="358" y="406" width="100" height="30" rx="14" ry="14"/>
+    <text x="408" y="422">Bowtie2</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="358" y="466" width="100" height="30" rx="2" ry="2"/>
+    <text x="408" y="482">Viral abundance</text>
+  </g>
+
+  <!-- Taxonomy -->
+  <rect class="cluster-boundary-dashed"
+    x="332" y="510" width="156" height="150" rx="6" ry="6"/>
+  <g class="node node--cluster">
+    <rect x="338" y="516" width="100" height="30" rx="14" ry="14"/>
+    <text x="388" y="532">TAXONOMY</text>
+  </g>
+
+  <path class="connector" d="M 408 592 V 612" /> <!-- vcontact -> tax annot -->
+
+  <g class="node node--tool">
+    <rect x="358" y="556" width="100" height="30" rx="14" ry="14"/>
+    <text x="408" y="572">vConTACT3</text>
+  </g>
+
+  <g class="node node--generated">
+    <rect x="358" y="618" width="100" height="35" rx="2" ry="2"/>
+    <text x="408" y="629">
+        <tspan x="408" dy="-1">Taxonomic</tspan>
+        <tspan x="408" dy="15">annotation</tspan>
+    </text>
+  </g>
+
+  <!-- Function -->
+  <rect class="cluster-boundary-dashed"
+    x="332" y="668" width="156" height="80" rx="6" ry="6"/>
+  <g class="node node--cluster">
+    <rect x="338" y="672" width="100" height="30" rx="14" ry="14"/>
+    <text x="388" y="688">FUNCTION</text>
+  </g>
+
+  <g class="node node--tool">
+    <rect x="358" y="712" width="100" height="30" rx="14" ry="14"/>
+    <text x="408" y="728">DRAMv</text>
+  </g>
+
+  <!-- Final connectors -->
+  <path class="connector" d="M 199 728 H 352" /> <!-- vOTUs -> dram -->
+  <path class="connector" d="M 199 728 H 328 V 572 H 352" /> <!-- vOTUs -> vcontact -->
+  <path class="connector" d="M 199 728 H 328 V 430 H 352" /> <!-- vOTUs -> bowtie -->
+  <path class="connector" d="M 220 50 H 328 V 414 H 352" /> <!-- qc reads -> bowtie -->
 </svg>
