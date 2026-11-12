@@ -97,9 +97,7 @@ are never made by hand.
 
 1. Make sure ``dev`` is green in CI.
 
-2. Bump the ``version`` in ``pyproject.toml`` — the single place the
-   version is defined. (Run ``pixi install`` afterwards so the local
-   editable install picks up the change.)
+2. Bump ``__version__`` in ``src/virmake/__init__.py``.
 
 3. Merge ``dev`` into ``main`` via pull request and wait for the required
    checks.
