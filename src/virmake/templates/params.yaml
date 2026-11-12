@@ -76,5 +76,5 @@ rule_inclusion:
   stats:
     metaquast: true
     mapping: true
-    instrain: false
+    # instrain: false
     dramv: true

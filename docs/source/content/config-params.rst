@@ -22,31 +22,44 @@ Common settings
    * - Setting
      - Description
    * - ``assembler``
-     - Assembler used in the assembly step: ``metaSPAdes`` or ``Megahit``
+     - Assembler used in the assembly step. Currently only ``metaSpades``
+       is preferred (see :doc:`workflow`).
    * - ``identifier``
-     - Tool used to identify viral sequences from contigs: ``virsorter2`` or
-       ``genomad``.
-   * - ``rule_inclusion``
-     - Which optional steps run in each workflow target (``all`` and ``stats``),
-       such as ``instrain``, ``metaquast`` and ``function``.
+     - Tool used to identify viral sequences from contigs:
+       ``virsorter2`` or ``genomad``.
+   * - ``keep_qc_reads``
+     - Keep the quality-controlled reads produced during trimming (used
+       downstream for mapping).
    * - ``min_coverage``
-     - Coverage threshold above which a viral genome counts as present in a
-       sample (default 75).
+     - Coverage threshold above which a viral genome counts as present
+       in a sample (default 75).
+   * - ``min_contig_size``
+     - Minimum contig length kept for downstream steps (default 1000).
    * - ``quality_threshold``
-     - Minimum CheckV quality category for a viral sequence to be kept (default
-       ``medium``).
-   * - ``virsorter2.id.*``
-     - Identification cutoffs (minimum length, minimum score, viral groups).
+     - Minimum CheckV quality category for a viral sequence to be kept
+       (default ``medium``).
+   * - ``threads``
+     - Default number of threads for multi-threaded steps.
+   * - ``rule_inclusion``
+     - Which optional steps run in each workflow target (``all`` and
+       ``stats``), such as ``instrain``, ``metaquast`` and ``function``.
+   * - ``vibrant.is_virome``
+     - Whether VIBRANT runs in virome mode.
+   * - ``virsorter2.id.*`` / ``virsorter2.for_dramv.*``
+     - VirSorter2 cutoffs for identification, and the more permissive
+       cutoffs used when preparing sequences for DRAM-v.
+   * - ``vcontact3.db_version``
+     - vConTACT3 database version to use.
    * - ``dereplication.*``
      - vOTU clustering thresholds (ANI, precluster ANI, minimal aligned
        fraction) and vOTU naming (``vOTU_prefix``, ``vOTU_suffix``,
-       ``vOTU_num_len``).
-   * - ``vcontact3.*``
-     - vConTACT3 database version and export formats.
+       ``vOTU_num_len``, ``vOTU_num_start``).
 
 Job resources
 -------------
 
-The workflow requests memory and runtime per job size through the ``memory``,
-``time`` and ``job_type`` settings; these are read by the workflow itself,
-independently of the cluster profile (see :doc:`config-hpc`).
+The ``memory`` and ``time`` tables define resource requests for jobs of
+different sizes (``tiny`` through ``enormous``), which the workflow applies
+to its heavier steps — for example, the final ``all`` step requests
+``small``/``tiny``. The Slurm profile provides the default and
+retry-scaled requests for everything else (see :doc:`config-hpc`).

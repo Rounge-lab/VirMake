@@ -133,7 +133,7 @@ class TestTemplates:
         assert set(params["rule_inclusion"]["stats"]) == {
             "metaquast",
             "mapping",
-            "instrain",
+            # "instrain",
             "dramv",
         }
 
