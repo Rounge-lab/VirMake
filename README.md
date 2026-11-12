@@ -19,8 +19,12 @@
     <img src="https://img.shields.io/github/v/release/Rounge-lab/VirMake"
          alt="Latest release version">
   </a>
-  <a href="https://virmake.readthedocs.io/en/latest/#">
-    <img src="https://app.readthedocs.org/projects/virmake/badge/?version=latest"
+  <a href="https://github.com/Rounge-lab/VirMake/actions/workflows/checks.yml">
+    <img src="https://github.com/Rounge-lab/VirMake/actions/workflows/checks.yml/badge.svg"
+         alt="CI status">
+  </a>
+  <a href="https://virmake.readthedocs.io/en/latest/">
+    <img src="https://readthedocs.org/projects/virmake/badge/?version=latest"
          alt="Documentation status">
   </a>
   <a href="./LICENSE">
@@ -43,54 +47,61 @@
 pipeline that offers viral metagenomic data analysis on paired-end data.  It
 offers taxonomic and functional annotation, supports offline running and has
 support for HPC cluster execution. It is made for Linux based systems and has
-been tested on x86\_64-based Linux.
+been tested on x86\_64-based Linux; workflow execution is not supported on
+Windows or macOS.
 
 ## Documentation
 
-Detailed documentation can be found on the
-[VirMake Wiki page](https://rtd-virmake-test.readthedocs.io/en/latest/install.html).
+Detailed documentation is hosted at
+[virmake.readthedocs.io](https://virmake.readthedocs.io/en/latest/).
 Here you will find prerequisites, installation instructions, detailed usage
-documentation, workflow description, and detailed configuration options. Please
-refer to the Wiki page before opening issues.
+documentation, workflow description, and detailed configuration options.
+Please refer to the documentation before opening issues.
 
-Quick start
------------
+## Quick start
 
 > [!NOTE]
-> **Dependencies:** `git` `conda`
+> **Dependencies:** conda (either
+> [Miniconda](https://docs.anaconda.com/miniconda/) or
+> [Anaconda](https://www.anaconda.com/docs/getting-started/installation))
 
-1. Clone the git repository
+1. Install **VirMake**:
 
     ```bash
-    git clone https://github.com/Rounge-lab/VirMake.git
+    conda create -n virmake -c conda-forge -c bioconda virmake
+    conda activate virmake
     ```
 
-2. Run the **VirMake** setup script with your input files (raw reads/QC
-   reads/contigs)
+    > The bioconda package becomes available with the v1.1.0 release.
+    > Until then, install from the latest [GitHub release](https://github.com/Rounge-lab/VirMake/releases)
+    > (see [virmake.readthedocs.io/install](https://virmake.readthedocs.io/en/latest/install.html)).
+
+2. Try the bundled synthetic dataset:
 
     ```bash
-    python setup.py [-h] [--work-dir WORK_DIR] [--reads READS] [--qc-reads
-    QC_READS] [--contigs CONTIGS]
+    virmake prep testrun --test-data
+    virmake run testrun all --cores 8
     ```
 
-3. Set up the environments and databases
+3. Run your own data (paired-end reads, recognised by file name. Please note
+   the naming conventions in the documentation):
 
     ```bash
-    virmake prep [OPTIONS]
-    virmake db [OPTIONS]
+    virmake prep myrun --reads myreads
+    virmake run myrun all --cores 8
     ```
 
-4. Run the workflow
+4. On a Slurm cluster:
 
     ```bash
-    virmake run [OPTIONS] <WORKFLOW>
+    virmake run myrun all --slurm --account myproject
     ```
 
 ## License
 
 **VirMake** is provided under the GNU [General Public License
 v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) (GPLv3). It is free
-software, and you are welcome to redistribute and/or modify it under the
+software, and you are welcome to redistribute it and/or modify it under the
 conditions of the GPLv3 terms. This software is provided 'As is' and comes with
 ABSOLUTELY NO WARRANTY.
 
@@ -102,4 +113,4 @@ Birkeland E, Istvan P, Avershina E, Rognes T, Rounge TB.
 *VirMake: a flexible and user-friendly pipeline for viral taxonomic and
 functional characterisation from shotgun metagenomic sequencing data*.
 bioRxiv. 2025. doi:
-[https://doi.org/10.1101/2025.02.07.637044](https://doi.org/10.1101/2025.02.07.637044)
+[https://doi.org/10.1101/2025.02.07.637044](https://doi.org/10.1101/2025.02.07.637044).
