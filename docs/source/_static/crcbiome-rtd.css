@@ -10,16 +10,13 @@
     --crc-secondary: #75c1c0;
     --crc-success: #49a751;
     --crc-surface: #ffffff;
-    --crc-text: #212529;
+    --crc-tertiary: #6b519d;
     --crc-text-light: #fbfbfb;
+    --crc-text: #212529;
     --crc-warning: #efab2c;
 }
 
 /* Dark theme -------------------------------------------------------------- */
-/*
- * Important: no space between html[data-theme="dark"] and the declarations.
- * `:root` is html, so `html[data-theme="dark"] :root` cannot match anything.
- */
 
 html[data-theme="dark"] {
     --crc-accent: #67a0b1;
@@ -31,8 +28,9 @@ html[data-theme="dark"] {
     --crc-secondary: #67a0b1;
     --crc-success: #63c76b;
     --crc-surface: #0d1117;
-    --crc-text: #e6edf3;
+    --crc-tertiary: #6b519d;
     --crc-text-light: #fbfbfb;
+    --crc-text: #e6edf3;
     --crc-warning: #f2bd55;
 }
 

@@ -7,21 +7,19 @@ Workflow
 Overview
 --------
 
-.. figure:: /_static/workflow-overview.svg
-    :alt: Workflow diagram
-    :width: 80%
-    :align: center
+.. only:: html
 
-    Overview of the **VirMake** workflow.
+   .. raw:: html
+      :file: ../_static/workflow-overview.svg
 
-.. TODO:
-   .. figure:: /_static/workflow-tubemap.svg
-       :alt: Workflow tube map
-       :width: 100%
-       :align: center
-   
-       The workflow as a tube map, generated from the rule graph of a run on
-       the bundled test data (SnakeVision).
+.. only:: not html
+
+   .. figure:: /_static/workflow-overview.svg
+      :alt: Overview of the VirMake workflow
+      :width: 80%
+      :align: center
+
+      Overview of the **VirMake** workflow.
 
 Pre-processing & QC
 -------------------
