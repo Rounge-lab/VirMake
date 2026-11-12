@@ -8,8 +8,14 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from virmake import paths
+from virmake import __version__, paths
 from virmake.cli import cli, load_params, resolve_rundir
+
+
+def test_version():
+    result = CliRunner().invoke(cli, ["--version"])
+    assert result.exit_code == 0
+    assert __version__ in result.output
 
 
 class TestPaths:

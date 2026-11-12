@@ -96,7 +96,6 @@ class TestTemplates:
     def test_params_template_parses(self):
         params = _load_template("params.yaml")
         assert set(params) == {
-            "slurm_account",
             "keep_qc_reads",
             "assembler",
             "identifier",
@@ -134,7 +133,7 @@ class TestTemplates:
         assert set(params["rule_inclusion"]["stats"]) == {
             "metaquast",
             "mapping",
-            "instrain",
+            # "instrain",
             "dramv",
         }
 
