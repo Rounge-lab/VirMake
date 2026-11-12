@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/github/v/release/Rounge-lab/VirMake"
          alt="Latest release version">
   </a>
-  <a href="https://github.com/Rounge-lab/VirMake/actions/workflows/checks.yml">
+  <a href="https://github.com/Rounge-lab/VirMake/actions/workflows/ci.yml">
     <img src="https://github.com/Rounge-lab/VirMake/actions/workflows/checks.yml/badge.svg"
          alt="CI status">
   </a>
