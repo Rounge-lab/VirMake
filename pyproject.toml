@@ -88,6 +88,7 @@ platforms = ["linux-64", "osx-64", "win-64"] # win-64 and osx-64 only for develo
 
 [tool.pixi.dependencies]
 python = "3.12.*"
+conda = "*"
 mamba = ">=1.5"
 
 [tool.pixi.pypi-dependencies]
