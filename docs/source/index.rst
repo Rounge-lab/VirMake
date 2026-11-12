@@ -41,6 +41,7 @@ Contents
 
 .. toctree::
    :caption: User Documentation
+   :maxdepth: 2
 
    content/install
    content/usage
@@ -50,5 +51,6 @@ Contents
 
 .. toctree::
    :caption: For Contributors
+   :maxdepth: 2
 
    content/contributing
