@@ -20,7 +20,7 @@
          alt="Latest release version">
   </a>
   <a href="https://github.com/Rounge-lab/VirMake/actions/workflows/ci.yml">
-    <img src="https://github.com/Rounge-lab/VirMake/actions/workflows/checks.yml/badge.svg"
+    <img src="https://github.com/Rounge-lab/VirMake/actions/workflows/ci.yml/badge.svg"
          alt="CI status">
   </a>
   <a href="https://virmake.readthedocs.io/en/latest/">
