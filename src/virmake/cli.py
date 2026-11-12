@@ -34,6 +34,8 @@ from virmake.config import (
 from virmake.samples import write_samples_table
 from virmake.testdata import download_test_data
 
+from . import __version__
+
 
 def resolve_rundir(rundir: str | pathlib.Path) -> pathlib.Path:
     """Validate that ``rundir`` was prepared by ``virmake prep``."""
@@ -180,6 +182,7 @@ def _preflight(rundir: pathlib.Path, params: dict, prefix: pathlib.Path) -> None
 
 
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.version_option(version=__version__, prog_name="virmake")
 def cli():
     """VirMake is a workflow for the analysis of viral metagenomes."""
 

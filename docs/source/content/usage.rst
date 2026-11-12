@@ -89,6 +89,10 @@ Options
 
     Show the help message and exit.
 
+.. option:: --version
+
+    Show the **VirMake** version and exit.
+
 Commands
 ^^^^^^^^
 
