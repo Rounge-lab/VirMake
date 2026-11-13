@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+  schedule:
+    - cron: "0 3 * * *"   # full-workflow only (job-level `if` gates it)
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - run: pixi run test
+      - name: Hygiene (eof/whitespace/line-endings/parse checks)
+        run: pixi run pre-commit
+
+  smoke:
+    name: smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - name: Restore test data (key = Zenodo record constant)
+        uses: actions/cache@v4
+        with:
+          path: .smoke/test_data
+          key: virmake-testdata-${{ hashFiles('src/virmake/testdata.py') }}
+      - run: pixi run smoke
+
+  full-workflow:
+    # real env builds + real run; disabled until the first manual green.
+    # Enable by replacing `if: false` with:
+    #   if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - name: Cache conda prefix
+        uses: actions/cache@v4
+        with:
+          path: .full/envs
+          key: virmake-conda-envs-${{ hashFiles('src/virmake/workflow/envs/*.yaml') }}
+      - run: pixi run virmake prep .full --test-data --yes --force --db-dir .full/dbs --envs-dir .full/envs
+      - run: pixi run virmake envs .full --threads 4
+      - run: pixi run virmake db .full --threads 4
+      - run: pixi run virmake run .full all --cores 4

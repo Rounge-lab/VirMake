@@ -1,12 +1,121 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
 [project]
 name = "virmake"
-version = "0.0.0"
+dynamic = ["version"]
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+  "click>=8.1",
+  "pandas>=2",
+  "pyyaml>=6",
+  "platformdirs>=4",
+  "snakemake>=8.14,<10",
+  "snakemake-executor-plugin-slurm>=1",
+]
 
 [project.urls]
 Homepage = "https://github.com/Rounge-lab/VirMake"
-Documentation = "https://virmake.readthedocs.io/"
 Repository = "https://github.com/Rounge-lab/VirMake"
+Documentation = "https://virmake.readthedocs.io"
 Issues = "https://github.com/Rounge-lab/VirMake/issues"
-Changelog = "https://github.com/Rounge-lab/VirMake/releases"
+Releases = "https://github.com/Rounge-lab/VirMake/releases"
+
+[project.optional-dependencies]
+dev = [
+  "build",
+  "pre-commit>=4",
+  "pyright>=1.1.390",
+  "pytest>=8",
+  "pytest-cov",
+  "ruff>=0.8",
+  "types-pyyaml",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-rtd-dark-mode",
+    "sphinx-copybutton",
+    "sphinx_toolbox",
+    "pyyaml",
+]
+
+[project.scripts]
+virmake = "virmake.cli:cli"
+
+[tool.hatch.version]
+path = "src/virmake/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/virmake"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = ["-ra", "--strict-config", "--strict-markers", "--tb=short"]
+markers = ["integration: real-snakemake dryrun tests (Linux/macOS)"]
+
+[tool.ruff]
+exclude = [".git", "__pypackages__", "src/virmake/workflow", "docs"]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "C90", "W", "Q", "RET", "UP"]
+ignore = ["E501"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "lf"
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "basic"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "win-64"] # win-64 and osx-64 only for development
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+conda = "*"
+mamba = ">=1.5"
+
+[tool.pixi.pypi-dependencies]
+virmake = { path = ".", editable = true, extras = ["dev"] }
+
+[tool.pixi.feature.docs.pypi-dependencies]
+virmake = { path = ".", editable = true, extras = ["docs"] }
+
+[tool.pixi.environments]
+default = { features = [], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "docs" }
+
+[tool.pixi.tasks]
+build = "python -m build"
+pytest = "pytest --cov=virmake --cov-report=term-missing"
+ruff-check = "ruff check ."
+ruff-check-fix = "ruff check . --fix"
+ruff-format = "ruff format ."
+ruff-format-check = "ruff format --check ."
+pre-commit = "pre-commit run --all-files"
+pre-commit-install = "pre-commit install --install-hooks"
+typecheck = "pyright"
+lint = { depends-on = ["ruff-check", "ruff-format-check"] }
+lint-fix = { depends-on = ["ruff-format", "ruff-check-fix"] }
+test = { depends-on = ["lint", "pytest"] }
+smoke = { cmd = "virmake prep .smoke --test-data --yes --force && virmake run .smoke all --dryrun" }
+
+[tool.pixi.feature.docs.tasks]
+docs = { cmd = "sphinx-build -M html ./source ./build --fail-on-warning", cwd = "docs" }
+docs-clean = { cmd = "sphinx-build -M clean ./source ./build", cwd = "docs" }

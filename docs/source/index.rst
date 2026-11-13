@@ -40,9 +40,17 @@ Contents
 --------
 
 .. toctree::
+   :caption: User Documentation
+   :maxdepth: 2
 
-    install
-    usage
-    workflow
-    config-params
-    config-hpc
+   content/install
+   content/usage
+   content/workflow
+   content/config-params
+   content/config-hpc
+
+.. toctree::
+   :caption: For Contributors
+   :maxdepth: 2
+
+   content/contributing
