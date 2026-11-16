@@ -27,6 +27,10 @@
     <img src="https://readthedocs.org/projects/virmake/badge/?version=latest"
          alt="Documentation status">
   </a>
+  <a href="https://anaconda.org/channels/bioconda/packages/virmake/overview">
+    <img src="https://img.shields.io/badge/Anaconda.org-1.1.0-blue.svg?logo=anaconda&logoColor=white"
+         alt="Bioconda version">
+  </a>
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-GPL--v3.0-blue.svg"
          alt="Licence">
@@ -71,10 +75,6 @@ Please refer to the documentation before opening issues.
     conda create -n virmake -c conda-forge -c bioconda virmake
     conda activate virmake
     ```
-
-    > The bioconda package becomes available with the v1.1.0 release.
-    > Until then, install from the latest [GitHub release](https://github.com/Rounge-lab/VirMake/releases)
-    > (see [virmake.readthedocs.io/install](https://virmake.readthedocs.io/en/latest/install.html)).
 
 2. Try the bundled synthetic dataset:
 

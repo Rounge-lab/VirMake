@@ -45,7 +45,7 @@ through conda automatically the first time **VirMake** is run (see
 From Bioconda
 ^^^^^^^^^^^^^
 
-This is the recommended way to install **VirMake**:
+This is the **recommended** way to install **VirMake**:
 
 .. code-block:: console
 
@@ -53,13 +53,11 @@ This is the recommended way to install **VirMake**:
     conda activate virmake
     virmake --help
 
-The package installs **VirMake** together with snakemake and its Python
+The package installs **VirMake** together with Snakemake and its Python
 dependencies.
 
-.. note::
-
-   The bioconda package becomes available with the **VirMake** v1.1.0
-   release. Until then, use one of the two methods below.
+Alternative installation methods
+--------------------------------
 
 .. _pip_methods:
 
