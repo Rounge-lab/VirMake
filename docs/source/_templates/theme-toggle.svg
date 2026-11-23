@@ -1,0 +1,236 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  class="crc-theme-icon"
+  viewBox="0 0 24 24"
+  width="24"
+  height="24"
+  fill="currentColor"
+  data-theme="light"
+  aria-hidden="true"
+  focusable="false"
+>
+  <style>
+    .theme-icon-layer {
+      opacity: 0;
+      transform-box: view-box;
+      transform-origin: 12px 12px;
+      transition:
+        opacity 180ms ease,
+        transform 350ms ease;
+    }
+
+    .theme-icon-moon {
+      transform: rotate(-25deg) scale(.85);
+    }
+
+    .theme-icon-sun {
+      transform: rotate(25deg) scale(.85);
+    }
+
+    svg[data-theme="dark"] .theme-icon-moon,
+    svg[data-theme="light"] .theme-icon-sun {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    .theme-icon-crescent,
+    .theme-icon-star,
+    .theme-icon-disc,
+    .theme-icon-ray {
+      transition: transform 220ms ease;
+    }
+
+    .theme-icon-crescent {
+      transform: matrix(1, 0, 0, 1, 0, 0);
+    }
+
+    .theme-icon-star-a {
+      transform: translate(16px, 6px) scale(.75);
+    }
+
+    .theme-icon-star-b {
+      transform: translate(19px, 12px) scale(.5);
+    }
+
+    .theme-icon-disc {
+      transform-origin: 12px 12px;
+      transform: scale(1);
+    }
+
+    .theme-icon-ray {
+      transform-box: view-box;
+      transform-origin: 12px 18px;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Keyboard focus gets the same treatment as hover. */
+    .crc-theme-toggle:focus-visible
+      transform: matrix(.9358, 0, 0, .9375, 1.1922, .3125);
+    }
+
+    .crc-theme-toggle:focus-visible .theme-icon-star-a {
+      transform: translate(16.1088px, 6.0968px) scale(.5272);
+    }
+
+    .crc-theme-toggle:focus-visible .theme-icon-star-b {
+      transform: translate(19.1092px, 12.0968px) scale(.2772);
+    }
+
+    .crc-theme-toggle:focus-visible .theme-icon-disc {
+      transform: scale(.8);
+    }
+
+    .crc-theme-toggle:focus-visible .theme-icon-ray {
+      transform: translateY(-1px) scale(.8);
+    }
+
+    @media (hover: hover) {
+      svg:hover .theme-icon-crescent,
+      .crc-theme-toggle:hover .theme-icon-crescent {
+        transform: matrix(.85, 0, 0, .85, 1.65, 1.95);
+      }
+
+      svg:hover .theme-icon-star-a,
+      .crc-theme-toggle:hover .theme-icon-star-a {
+        transform: translate(16.1088px, 6.0968px) scale(.5272);
+      }
+
+      svg:hover .theme-icon-star-b,
+      .crc-theme-toggle:hover .theme-icon-star-b {
+        transform: translate(19.1092px, 12.0968px) scale(.2772);
+      }
+
+      svg:hover .theme-icon-disc,
+      .crc-theme-toggle:hover .theme-icon-disc {
+        transform: scale(.8);
+      }
+
+      svg:hover .theme-icon-ray,
+      .crc-theme-toggle:hover .theme-icon-ray {
+        transform: scale(.8);
+      }
+    }
+
+    .crc-theme-toggle .crc-theme-icon {
+        display: block;
+        width: 1.5rem;
+        height: 1.5rem;
+        flex-shrink: 0;
+        overflow: visible;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .theme-icon-layer,
+      .theme-icon-crescent,
+      .theme-icon-star,
+      .theme-icon-disc,
+      .theme-icon-ray {
+        transition: none;
+      }
+    }
+  </style>
+
+  <defs>
+    <!-- star, centered on the origin for easy scaling. -->
+    <path
+      id="theme-icon-star"
+      transform="translate(-16 -8)"
+      d="m12 8
+         c0-.73264 2.0242-.93969 2.5423-1.4577
+         .51805-.51805 .7251-2.5423 1.4577-2.5423
+         .73264 0 .93969 2.0242 1.4577 2.5423
+         .51805 .51805 2.5423 .7251 2.5423 1.4577
+         0 .73264-2.0242 .93969-2.5423 1.4577
+         -.51805 .51805-.7251 2.5423-1.4577 2.5423
+         -.73264 0-.93969-2.0242-1.4577-2.5423
+         -.51805-.51805-2.5423-.7251-2.5423-1.4577z"
+    />
+
+    <!-- One downward ray; the other seven are rotated copies. -->
+    <g id="theme-icon-ray">
+      <path
+        d="m11 18.232v1.7676
+           c0 .554 .446 1 1 1s1-.446 1-1
+           v-1.7676
+           c0-.27614-.19447-.38093-.45968-.30661
+           -.17513 .049078-.35689 .074249-.54032 .07419
+           -.18344 .000059-.3652-.02511-.54033-.07419
+           -.2652-.074321-.45967 .03047-.45967 .30661z"
+      />
+    </g>
+  </defs>
+
+  <g class="theme-icon-layer theme-icon-moon">
+    <path
+      class="theme-icon-crescent"
+      d="m11 5
+         a8 8 0 0 0-8 8
+         8 8 0 0 0 8 8
+         8 8 0 0 0 7.5781-5.4395
+         6.5 6.5 0 0 1-4.0781 1.4395
+         6.5 6.5 0 0 1-6.5-6.5
+         6.5 6.5 0 0 1 3.0352-5.5
+         8 8 0 0 0-.035156 0z"
+    />
+
+    <g class="theme-icon-star theme-icon-star-a">
+      <use href="#theme-icon-star" />
+    </g>
+
+    <g class="theme-icon-star theme-icon-star-b">
+      <use href="#theme-icon-star" />
+    </g>
+  </g>
+
+  <g class="theme-icon-layer theme-icon-sun">
+    <circle class="theme-icon-disc" cx="12" cy="12" r="4.5" />
+
+    <g>
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(45 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(90 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(135 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(180 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(225 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(270 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+
+    <g transform="rotate(315 12 12)">
+      <g class="theme-icon-ray">
+        <use href="#theme-icon-ray" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -4,7 +4,13 @@
     const storageKey = "crc-theme";
 
     function preferredTheme() {
-        const savedTheme = localStorage.getItem(storageKey);
+        let savedTheme = null;
+
+        try {
+            savedTheme = localStorage.getItem(storageKey);
+        } catch (error) {
+            // Storage may be unavailable.
+        }
 
         if (savedTheme === "light" || savedTheme === "dark") {
             return savedTheme;
@@ -20,29 +26,39 @@
 
         const button = document.getElementById("crc-theme-toggle");
 
-        if (button) {
-            const isDark = theme === "dark";
+        if (!button) {
+            return;
+        }
 
-            button.setAttribute(
-                "aria-label",
-                isDark ? "Switch to light theme" : "Switch to dark theme"
-            );
+        const isDark = theme === "dark";
+        const icon = button.querySelector("svg");
 
-            button.setAttribute(
-                "title",
-                isDark ? "Switch to light theme" : "Switch to dark theme"
-            );
+        // A stable accessible name pairs with aria-pressed:
+        // pressed means dark mode is enabled.
+        button.setAttribute("aria-label", "Dark mode");
+        button.setAttribute("aria-pressed", String(isDark));
 
-            button.textContent = isDark ? "☀" : "☾";
+        button.setAttribute(
+            "title",
+            isDark ? "Switch to light theme" : "Switch to dark theme"
+        );
+
+        if (icon) {
+            icon.setAttribute("data-theme", theme);
         }
     }
 
-    function addToggleButton() {
-        const button = document.createElement("button");
+    function initializeToggle() {
+        const button = document.getElementById("crc-theme-toggle");
 
-        button.id = "crc-theme-toggle";
-        button.type = "button";
-        button.className = "crc-theme-toggle";
+        if (!button) {
+            return;
+        }
+
+        applyTheme(
+            document.documentElement.getAttribute("data-theme")
+                || preferredTheme()
+        );
 
         button.addEventListener("click", function () {
             const currentTheme =
@@ -50,16 +66,19 @@
 
             const nextTheme = currentTheme === "dark" ? "light" : "dark";
 
-            localStorage.setItem(storageKey, nextTheme);
+            try {
+                localStorage.setItem(storageKey, nextTheme);
+            } catch (error) {
+                // The toggle still works without persistent storage.
+            }
+
             applyTheme(nextTheme);
         });
-
-        document.body.appendChild(button);
-        applyTheme(document.documentElement.getAttribute("data-theme"));
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        applyTheme(preferredTheme());
-        addToggleButton();
-    });
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeToggle);
+    } else {
+        initializeToggle();
+    }
 }());
