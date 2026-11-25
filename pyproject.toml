@@ -37,8 +37,6 @@ dev = [
 ]
 docs = [
     "sphinx",
-    "sphinx-rtd-theme",
-    "sphinx-rtd-dark-mode",
     "sphinx-copybutton",
     "sphinx_toolbox",
     "pyyaml",
@@ -96,6 +94,10 @@ virmake = { path = ".", editable = true, extras = ["dev"] }
 
 [tool.pixi.feature.docs.pypi-dependencies]
 virmake = { path = ".", editable = true, extras = ["docs"] }
+
+[tool.pixi.feature.docs.pypi-dependencies.crcbiome-sphinx-theme]
+git = "https://github.com/Rounge-lab/crcbiome-sphinx-theme.git"
+tag = "v0.1.0"
 
 [tool.pixi.environments]
 default = { features = [], solve-group = "default" }
