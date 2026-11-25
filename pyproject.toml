@@ -36,6 +36,7 @@ dev = [
   "types-pyyaml",
 ]
 docs = [
+    "crcbiome-sphinx-theme @ git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git@v0.1.0",
     "sphinx",
     "sphinx-copybutton",
     "sphinx_toolbox",
@@ -50,6 +51,9 @@ path = "src/virmake/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/virmake"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -94,10 +98,6 @@ virmake = { path = ".", editable = true, extras = ["dev"] }
 
 [tool.pixi.feature.docs.pypi-dependencies]
 virmake = { path = ".", editable = true, extras = ["docs"] }
-
-[tool.pixi.feature.docs.pypi-dependencies.crcbiome-sphinx-theme]
-git = "https://github.com/Rounge-lab/crcbiome-sphinx-theme.git"
-tag = "v0.1.0"
 
 [tool.pixi.environments]
 default = { features = [], solve-group = "default" }

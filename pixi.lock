@@ -676,7 +676,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.2-pyh5ded981_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?tag=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
+      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?rev=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
       - pypi: https://files.pythonhosted.org/packages/00/05/76184fe08339723d643ab47887a8e4de8f2921ca4e008617ab7490af7857/filelock-4.2.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/01/f9/575c8d760eae1fc99651b7cc5efd96ad5379ca4d6b53750b0fb4fe983f34/imagesize-2.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
@@ -885,7 +885,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/yaml-cpp-0.8.0-h2fb4741_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-hbc1a06c_7.conda
       - pypi: ./
-      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?tag=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
+      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?rev=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
       - pypi: https://files.pythonhosted.org/packages/00/05/76184fe08339723d643ab47887a8e4de8f2921ca4e008617ab7490af7857/filelock-4.2.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/01/f9/575c8d760eae1fc99651b7cc5efd96ad5379ca4d6b53750b0fb4fe983f34/imagesize-2.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
@@ -1092,7 +1092,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/yaml-cpp-0.8.0-h5112557_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.7-h534d264_7.conda
       - pypi: ./
-      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?tag=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
+      - pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?rev=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
       - pypi: https://files.pythonhosted.org/packages/00/05/76184fe08339723d643ab47887a8e4de8f2921ca4e008617ab7490af7857/filelock-4.2.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/01/f9/575c8d760eae1fc99651b7cc5efd96ad5379ca4d6b53750b0fb4fe983f34/imagesize-2.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
@@ -4847,12 +4847,13 @@ packages:
   - pytest>=8 ; extra == 'dev'
   - ruff>=0.8 ; extra == 'dev'
   - types-pyyaml ; extra == 'dev'
+  - crcbiome-sphinx-theme @ git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git@v0.1.0 ; extra == 'docs'
   - pyyaml ; extra == 'docs'
   - sphinx ; extra == 'docs'
   - sphinx-copybutton ; extra == 'docs'
   - sphinx-toolbox ; extra == 'docs'
   requires_python: '>=3.11'
-- pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?tag=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
+- pypi: git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git?rev=v0.1.0#1dab20318eeef18aad61d753bc3d82bd5153b77b
   name: crcbiome-sphinx-theme
   version: 0.1.0
   requires_dist:
