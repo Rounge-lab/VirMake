@@ -198,13 +198,15 @@ def cli():
 @click.option(
     "--reads",
     type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
-    help="Directory with paired-end *gzipped* reads "
-    "({sample}_{frac}.fastq.gz; the QC step requires .fastq.gz).",
+    help="Directory with paired-end raw reads "
+    "({sample}_1/_2 or {sample}_R1/_R2, ending in .fastq[.gz]).",
 )
 @click.option(
     "--qc-reads",
     type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
-    help="Directory with QC'd reads ({sample}_{frac}.fastq[.gz]); skips QC for these samples.",
+    help="Directory with preprocessed paired-end reads "
+    "({sample}_1/_2 or {sample}_R1/_R2, ending in .fastq[.gz]); "
+    "bypasses trimming.",
 )
 @click.option(
     "--contigs",
@@ -308,21 +310,6 @@ def prep(
         )
     except ValueError as e:
         raise click.ClickException(str(e)) from e
-    if reads and not samples_table.empty:
-        non_gz = [
-            p
-            for col in ("r1", "r2")
-            for p in samples_table[col].dropna()
-            if not p.endswith(".fastq.gz")
-        ]
-        if non_gz:
-            click.echo(
-                f"WARNING: {len(non_gz)} raw read file(s) are not gzipped "
-                "(.fastq.gz). The QC step (fastp) requires gzipped raw "
-                "reads; the workflow will fail on missing inputs. Gzip "
-                "the files and re-run prep.",
-                err=True,
-            )
     if samples_table.empty:
         click.echo(
             "WARNING: no samples found. samples.tsv is header-only. Provide "

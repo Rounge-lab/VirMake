@@ -104,3 +104,57 @@ class TestUntilEquivalence:
             f"only-target: {sorted(_job_rules(direct))}\n"
             f"only-until:  {sorted(_job_rules(until))}"
         )
+
+
+class TestDeclaredTrimmingInputs:
+    @pytest.mark.parametrize(
+        ("filenames", "directory_name"),
+        [
+            (("A_1.fastq", "A_2.fastq"), "plain"),
+            (("A_R1.fastq.gz", "A_R2.fastq.gz"), "r-suffix"),
+            (("A_1.fastq", "A_2.fastq.gz"), "mixed"),
+            (("A_R1.fastq.gz", "A_R2.fastq"), "reads with spaces"),
+        ],
+    )
+    def test_fastp_uses_declared_paths(self, tmp_path, filenames, directory_name):
+        reads = tmp_path / directory_name
+        reads.mkdir()
+        for filename in filenames:
+            (reads / filename).write_text("")
+
+        run = tmp_path / "run"
+        prepared = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(run),
+                "--reads",
+                str(reads),
+                "--db-dir",
+                str(tmp_path / "db"),
+                "--envs-dir",
+                str(tmp_path / "envs"),
+            ],
+        )
+        assert prepared.exit_code == 0, prepared.output
+
+        outputs = [
+            str(run / "results/output/fastp_pe/A_1.fastq.gz"),
+            str(run / "results/output/fastp_pe/A_2.fastq.gz"),
+            str(run / "results/output/fastp_pe/A.json"),
+        ]
+        proc = _snakemake_dryrun(run, *outputs, "-n", "--printshellcmds")
+        combined = proc.stdout + proc.stderr
+        assert proc.returncode == 0, combined
+        assert "rule fastp_pe:" in combined
+
+        for filename in filenames:
+            assert str(reads / filename) in combined
+
+        assert "--disable_html" in combined
+        assert "-h " not in combined
+        assert "A.html" not in combined
+
+        if " " in directory_name:
+            for filename in filenames:
+                assert f"'{reads / filename}'" in combined

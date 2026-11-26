@@ -4837,6 +4837,7 @@ packages:
   - click>=8.1
   - pandas>=2
   - platformdirs>=4
+  - pydantic>=2,<3
   - pyyaml>=6
   - snakemake-executor-plugin-slurm>=1
   - snakemake>=8.14,<10

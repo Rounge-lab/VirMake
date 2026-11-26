@@ -1,10 +1,13 @@
 """Sample-table construction. Construction through stdlib removed coupling between cli
 and snakemake"""
 
+import csv
 import re
 from pathlib import Path
 
 import pandas as pd
+
+from virmake.sample_sheet import SAMPLE_COLUMNS, Sample
 
 _READS_RE = re.compile(r"(?P<sample>[^/]+)_(?P<frac>R?[12])\.fastq(?P<gz>\.gz)?$")
 _CONTIGS_RE = re.compile(r"(?P<sample>[^/]+)\.fasta$")
@@ -119,3 +122,72 @@ def write_samples_table(
     samples_table = build_samples_table(reads, qc_reads, contigs)
     samples_table.to_csv(samples_path, sep="\t", index=False)
     return samples_table
+
+
+def discover_samples(
+    reads: str = "",
+    qc_reads: str = "",
+    contigs: str = "",
+) -> tuple[Sample, ...]:
+    """Build immutable declarations from paired-read and contig discovery.
+
+    Raw and supplied-QC reads cannot both declare the same sample.
+    Supplied contigs are independent and may accompany either read stage.
+    """
+    declarations: dict[str, dict] = {}
+
+    for directory, stage in ((reads, "raw"), (qc_reads, "qc")):
+        if not directory:
+            continue
+        for row in get_reads_samples(directory).to_dict(orient="records"):
+            sample_id = row["sample_id"]
+            if sample_id in declarations:
+                raise ValueError(
+                    f"sample {sample_id!r} is declared in both raw and QC reads"
+                )
+            declarations[sample_id] = {
+                "sample_id": sample_id,
+                "read_type": "short",
+                "read_layout": "paired",
+                "read_stage": stage,
+                "r1": Path(row["r1"]),
+                "r2": Path(row["r2"]),
+            }
+
+    if contigs:
+        for row in get_contigs_samples(contigs).to_dict(orient="records"):
+            sample_id = row["sample_id"]
+            declaration = declarations.setdefault(sample_id, {"sample_id": sample_id})
+            declaration["contigs"] = Path(row["contigs"]).resolve()
+
+    return tuple(
+        Sample.model_validate(declarations[sample_id])
+        for sample_id in sorted(declarations)
+    )
+
+
+def write_discovered_sample_sheet(
+    samples_path: str | Path,
+    reads: str = "",
+    qc_reads: str = "",
+    contigs: str = "",
+) -> tuple[Sample, ...]:
+    """Write new-schema input declarations, returning validated records.
+
+    Complete discovery and declaration validation before opening the sheet.
+    This is a preparation API, not a workflow-generated-path updater.
+    """
+    samples = discover_samples(reads, qc_reads, contigs)
+
+    with Path(samples_path).open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=SAMPLE_COLUMNS,
+            delimiter="\t",
+            lineterminator="\n",
+        )
+        writer.writeheader()
+        for sample in samples:
+            writer.writerow(sample.model_dump(mode="json"))
+
+    return samples

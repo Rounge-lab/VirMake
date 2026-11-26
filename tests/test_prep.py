@@ -200,7 +200,7 @@ class TestPrepInputs:
         assert result.exit_code == 0
         assert "header-only" in result.output
 
-    def test_plain_fastq_reads_warn(self, tmp_path, patched_defaults):
+    def test_plain_fastq_reads_do_not_warn(self, tmp_path, patched_defaults):
         plain = tmp_path / "plain"
         plain.mkdir()
         (plain / "A_1.fastq").write_text("")
@@ -218,8 +218,9 @@ class TestPrepInputs:
                 str(tmp_path / "envs"),
             ],
         )
-        assert result.exit_code == 0
-        assert "not gzipped" in result.output
+        assert result.exit_code == 0, result.output
+        assert "not gzipped" not in result.output
+        assert "requires gzipped" not in result.output
 
     def test_gzipped_reads_do_not_warn(self, tmp_path, patched_defaults, reads_dir):
         # fixture writes plain .fastq; gz variant here

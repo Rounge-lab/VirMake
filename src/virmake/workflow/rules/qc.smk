@@ -49,12 +49,16 @@ rule fastp_pe:
     performs quality control/pre-processing of the raw reads
     """
     input:
-        R1=config["path"]["input_reads"] + "/{sample}_1.fastq.gz",
-        R2=config["path"]["input_reads"] + "/{sample}_2.fastq.gz",
+        # fastp accepts both gzipped and uncompressed inputs.
+        R1=lambda w: sample_table.loc[
+            sample_table["sample_id"] == w.sample, "r1"
+        ].iloc[0],
+        R2=lambda w: sample_table.loc[
+            sample_table["sample_id"] == w.sample, "r2"
+        ].iloc[0],
     output:
         R1=temp(config["path"]["output"] + "/fastp_pe/{sample}_1.fastq.gz"),
         R2=temp(config["path"]["output"] + "/fastp_pe/{sample}_2.fastq.gz"),
-        html=config["path"]["output"] + "/fastp_pe/{sample}.html",
         json=config["path"]["output"] + "/fastp_pe/{sample}.json",
     log:
         config["path"]["log"] + "/fastp_pe/{sample}.log",
@@ -68,8 +72,16 @@ rule fastp_pe:
     threads: 4
     shell:
         """
-        fastp -i {input.R1} -I {input.R2} -o {output.R1} -O {output.R2}\
-        -h {output.html} -j {output.json} -w {threads} &> {log}
+        fastp \
+            -i {input.R1:q} \
+            -I {input.R2:q} \
+            -o {output.R1:q} \
+            -O {output.R2:q} \
+            -h {output.html:q} \
+            -j {output.json:q} \
+            --disable_html \
+            -w {threads} \
+            > {log:q} 2>&1
         """
 
 rule keep_qc_reads:

@@ -7,10 +7,13 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from virmake.sample_sheet import SAMPLE_COLUMNS, load_sample_sheet
 from virmake.samples import (
     build_samples_table,
+    discover_samples,
     get_contigs_samples,
     get_reads_samples,
+    write_discovered_sample_sheet,
     write_samples_table,
 )
 
@@ -480,3 +483,94 @@ class TestWriteSamplesTable:
             write_samples_table(out, reads=str(reads))
 
         assert out.read_bytes() == original
+
+
+class TestDiscoveredSampleSheet:
+    def test_read_stages_and_independent_contigs(self, tmp_path):
+        reads = _make_tree(tmp_path, ["A_R1.fastq", "A_R2.fastq.gz"])
+        qc = _make_tree(tmp_path, ["B_1.fastq.gz", "B_2.fastq"], subdir="qc")
+        contigs = _make_tree(
+            tmp_path, ["A.fasta", "B.fasta", "C.fasta"], subdir="contigs"
+        )
+
+        samples = discover_samples(str(reads), str(qc), str(contigs))
+        raw, supplied_qc, contigs_only = samples
+
+        assert [sample.sample_id for sample in samples] == ["A", "B", "C"]
+        assert raw.read_stage == "raw"
+        assert raw.requires_trimming
+        assert raw.is_paired
+        assert raw.has_supplied_contigs
+        assert supplied_qc.read_stage == "qc"
+        assert not supplied_qc.requires_trimming
+        assert supplied_qc.has_supplied_contigs
+        assert not contigs_only.has_reads
+        assert contigs_only.has_supplied_contigs
+        assert contigs_only.read_type is None
+        assert contigs_only.read_layout is None
+        assert contigs_only.read_stage is None
+
+    def test_overlapping_raw_and_qc_rejected(self, tmp_path):
+        reads = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq"])
+        qc = _make_tree(tmp_path, ["A_R1.fastq.gz", "A_R2.fastq.gz"], subdir="qc")
+
+        with pytest.raises(ValueError, match="both raw and QC reads"):
+            discover_samples(str(reads), str(qc))
+
+    def test_relative_discovery_paths_are_absolute(self, tmp_path, monkeypatch):
+        _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq"])
+        _make_tree(tmp_path, ["A.fasta"], subdir="contigs")
+        monkeypatch.chdir(tmp_path)
+
+        (sample,) = discover_samples(reads="reads", contigs="contigs")
+
+        assert sample.r1 is not None and sample.r1.is_absolute()
+        assert sample.r2 is not None and sample.r2.is_absolute()
+        assert sample.contigs is not None and sample.contigs.is_absolute()
+
+    def test_invalid_discovered_id_rejected(self, tmp_path):
+        contigs = _make_tree(tmp_path, ["bad name.fasta"], subdir="contigs")
+
+        with pytest.raises(ValueError, match="sample_id must match"):
+            discover_samples(contigs=str(contigs))
+
+    def test_writer_roundtrips_through_shared_loader(self, tmp_path):
+        reads = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq.gz"])
+        contigs = _make_tree(tmp_path, ["A.fasta", "B.fasta"], subdir="contigs")
+        sheet = tmp_path / "new-samples.tsv"
+
+        samples = write_discovered_sample_sheet(
+            sheet, reads=str(reads), contigs=str(contigs)
+        )
+
+        assert load_sample_sheet(sheet) == samples
+        assert sheet.read_text().splitlines()[0].split("\t") == list(SAMPLE_COLUMNS)
+
+    def test_empty_writer_produces_new_schema_header(self, tmp_path):
+        sheet = tmp_path / "new-samples.tsv"
+
+        assert write_discovered_sample_sheet(sheet) == ()
+        assert load_sample_sheet(sheet) == ()
+        assert sheet.read_text() == "\t".join(SAMPLE_COLUMNS) + "\n"
+
+    @pytest.mark.parametrize("failure", ["overlap", "missing_mate", "invalid_id"])
+    def test_validation_failure_preserves_existing_sheet(self, tmp_path, failure):
+        sheet = tmp_path / "new-samples.tsv"
+        original = b"existing declarations\n"
+        sheet.write_bytes(original)
+
+        if failure == "overlap":
+            reads = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq"])
+            qc = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq"], subdir="qc")
+            kwargs = {"reads": str(reads), "qc_reads": str(qc)}
+        elif failure == "missing_mate":
+            reads = _make_tree(tmp_path, ["A_1.fastq"])
+            kwargs = {"reads": str(reads)}
+        else:
+            contigs = _make_tree(tmp_path, ["bad name.fasta"], subdir="contigs")
+            kwargs = {"contigs": str(contigs)}
+
+        with pytest.raises(ValueError):
+            write_discovered_sample_sheet(sheet, **kwargs)
+
+        assert sheet.read_bytes() == original
