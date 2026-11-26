@@ -299,12 +299,15 @@ def prep(
     write_profiles(rundir, envs_dir)
     make_results_dirs(rundir)
 
-    samples_table = write_samples_table(
-        rundir / "samples.tsv",
-        reads=str(reads) if reads else "",
-        qc_reads=str(qc_reads) if qc_reads else "",
-        contigs=str(contigs) if contigs else "",
-    )
+    try:
+        samples_table = write_samples_table(
+            rundir / "samples.tsv",
+            reads=str(reads) if reads else "",
+            qc_reads=str(qc_reads) if qc_reads else "",
+            contigs=str(contigs) if contigs else "",
+        )
+    except ValueError as e:
+        raise click.ClickException(str(e)) from e
     if reads and not samples_table.empty:
         non_gz = [
             p

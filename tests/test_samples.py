@@ -1,4 +1,4 @@
-"""Compare against previous snakemake implementation"""
+"""Read discovery contract and legacy comparisons for unchanged behavior."""
 
 import sys
 from pathlib import Path
@@ -134,7 +134,6 @@ READS_TREES = [
     ["A.B_1.fastq", "A.B_2.fastq"],
     ["A_x1_1.fastq", "A_x1_2.fastq"],
     ["A_1.fastq", "A_2.fastq", "A_3.fastq"],
-    ["A_1.fastq"],
     ["A_1.fastq", "A_2.fastq", "C_1.txt", "C.fasta", "notes.md"],
     [],
 ]
@@ -173,16 +172,6 @@ class TestReadsDifferential:
         theirs = _legacy_get_reads_samples(d.as_posix(), qc=qc)
         assert_frame_equal(_normalize(ours), _normalize(theirs), check_dtype=False)
 
-    @requires_snakemake
-    @reads_oracle_windows_skip
-    def test_mixed_gz_plain_raises_identically(self, tmp_path):
-        d = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq.gz"])
-        with pytest.raises(ValueError) as ours_exc:
-            get_reads_samples(str(d))
-        with pytest.raises(ValueError) as theirs_exc:
-            _legacy_get_reads_samples(d.as_posix())
-        assert str(ours_exc.value) == str(theirs_exc.value)
-
 
 class TestContigsDifferential:
     @requires_snakemake
@@ -220,31 +209,56 @@ class TestReadsPins:
         d = _make_tree(tmp_path, ["A_B_1.fastq", "A_B_2.fastq"])
         assert get_reads_samples(str(d))["sample_id"].tolist() == ["A_B"]
 
-    def test_unpaired_reads_dropped(self, tmp_path):
-        d = _make_tree(tmp_path, ["A_1.fastq"])
-        assert get_reads_samples(str(d)).empty
+    @pytest.mark.parametrize(
+        ("filename", "missing_mate"),
+        [
+            ("A_1.fastq", "2"),
+            ("A_2.fastq", "1"),
+            ("A_R1.fastq.gz", "2"),
+            ("A_R2.fastq.gz", "1"),
+        ],
+    )
+    def test_missing_mate_rejected(self, tmp_path, filename, missing_mate):
+        d = _make_tree(tmp_path, [filename])
+        with pytest.raises(ValueError, match=f"Missing mate {missing_mate}"):
+            get_reads_samples(d)
 
     def test_other_fracs_not_paired(self, tmp_path):
         d = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq", "A_3.fastq"])
         assert len(get_reads_samples(str(d))) == 1
 
-    def test_other_fracs_participate_in_gz_check(self, tmp_path):
-        d = _make_tree(tmp_path, ["A_1.fastq.gz", "A_2.fastq.gz", "A_3.fastq"])
-        with pytest.raises(ValueError, match="compressed and uncompressed"):
-            get_reads_samples(str(d))
+    def test_unrecognized_suffix_does_not_affect_pair(self, tmp_path):
+        d = _make_tree(
+            tmp_path,
+            ["A_1.fastq.gz", "A_2.fastq.gz", "A_3.fastq"],
+        )
+        assert get_reads_samples(d)["sample_id"].tolist() == ["A"]
 
-    def test_mixed_gz_plain_raises(self, tmp_path):
-        d = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq.gz"])
-        with pytest.raises(ValueError, match="compressed and uncompressed"):
-            get_reads_samples(str(d))
+    @pytest.mark.parametrize(
+        "files",
+        [
+            ["A_1.fastq", "A_2.fastq.gz"],
+            ["A_1.fastq.gz", "A_2.fastq"],
+            ["A_R1.fastq", "A_R2.fastq.gz"],
+            ["A_R1.fastq.gz", "A_R2.fastq"],
+        ],
+    )
+    def test_mixed_compression_supported(self, tmp_path, files):
+        d = _make_tree(tmp_path, files)
+        t = get_reads_samples(d)
+
+        assert t["sample_id"].tolist() == ["A"]
+        assert Path(t.iloc[0].r1) == (d / files[0]).resolve()
+        assert Path(t.iloc[0].r2) == (d / files[1]).resolve()
 
     def test_hidden_files_skipped(self, tmp_path):
         d = _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq", ".hidden_1.fastq"])
         assert get_reads_samples(str(d))["sample_id"].tolist() == ["A"]
 
-    def test_directories_never_matched(self, tmp_path):
+    def test_directory_cannot_supply_missing_mate(self, tmp_path):
         d = _make_tree(tmp_path, ["B_1.fastq/", "B_2.fastq"])
-        assert get_reads_samples(str(d)).empty
+        with pytest.raises(ValueError, match="Missing mate 1"):
+            get_reads_samples(d)
 
     def test_sorted_by_sample_id(self, tmp_path):
         d = _make_tree(
@@ -275,6 +289,64 @@ class TestReadsPins:
         t = get_reads_samples(str(tmp_path / "nope"))
         assert t.empty
         assert list(t.columns) == ["sample_id", "r1", "r2"]
+
+    @pytest.mark.parametrize("extension", [".fastq", ".fastq.gz"])
+    def test_r_suffix_pairs(self, tmp_path, extension):
+        d = _make_tree(
+            tmp_path,
+            [f"A_B_R1{extension}", f"A_B_R2{extension}"],
+        )
+        t = get_reads_samples(d)
+
+        assert t["sample_id"].tolist() == ["A_B"]
+        assert Path(t.iloc[0].r1).name == f"A_B_R1{extension}"
+        assert Path(t.iloc[0].r2).name == f"A_B_R2{extension}"
+
+    @pytest.mark.parametrize(
+        "files",
+        [
+            ["A_1.fastq", "A_1.fastq.gz", "A_2.fastq"],
+            ["A_1.fastq", "A_2.fastq", "A_2.fastq.gz"],
+            ["A_1.fastq", "A_R1.fastq", "A_2.fastq"],
+            ["A_R1.fastq", "A_R2.fastq", "A_R2.fastq.gz"],
+        ],
+    )
+    def test_duplicate_mates_rejected(self, tmp_path, files):
+        d = _make_tree(tmp_path, files)
+        with pytest.raises(ValueError, match="Duplicate mate"):
+            get_reads_samples(d)
+
+    @pytest.mark.parametrize(
+        "files",
+        [
+            ["A_1.fastq", "A_R2.fastq"],
+            ["A_R1.fastq", "A_2.fastq"],
+        ],
+    )
+    def test_mixed_suffix_conventions_rejected(self, tmp_path, files):
+        d = _make_tree(tmp_path, files)
+        with pytest.raises(ValueError, match="Ambiguous paired-read naming"):
+            get_reads_samples(d)
+
+    def test_different_samples_can_use_different_conventions(self, tmp_path):
+        d = _make_tree(
+            tmp_path,
+            ["A_1.fastq", "A_2.fastq", "B_R1.fastq.gz", "B_R2.fastq.gz"],
+        )
+        assert get_reads_samples(d)["sample_id"].tolist() == ["A", "B"]
+
+    def test_single_end_names_are_not_discovered(self, tmp_path):
+        d = _make_tree(tmp_path, ["A.fastq", "B.fastq.gz"])
+        assert get_reads_samples(d).empty
+
+    def test_relative_directory_produces_absolute_paths(self, tmp_path, monkeypatch):
+        _make_tree(tmp_path, ["A_1.fastq", "A_2.fastq"])
+        monkeypatch.chdir(tmp_path)
+
+        t = get_reads_samples("reads")
+
+        for column in ("r1", "r2"):
+            assert Path(t.iloc[0][column]).is_absolute()
 
 
 class TestContigsPins:
@@ -397,3 +469,14 @@ class TestWriteSamplesTable:
             "qc_r2",
             "contigs",
         ]
+
+    def test_invalid_discovery_does_not_overwrite_sheet(self, tmp_path):
+        reads = _make_tree(tmp_path, ["A_1.fastq"])
+        out = tmp_path / "samples.tsv"
+        original = b"existing sample sheet\n"
+        out.write_bytes(original)
+
+        with pytest.raises(ValueError, match="Missing mate 2"):
+            write_samples_table(out, reads=str(reads))
+
+        assert out.read_bytes() == original

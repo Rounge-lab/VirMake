@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_READS_RE = re.compile(r"(?P<sample>[^/]+)_(?P<frac>[^/]+)\.fastq(?P<gz>\.gz)?$")
+_READS_RE = re.compile(r"(?P<sample>[^/]+)_(?P<frac>R?[12])\.fastq(?P<gz>\.gz)?$")
 _CONTIGS_RE = re.compile(r"(?P<sample>[^/]+)\.fasta$")
 
 
@@ -30,30 +30,50 @@ def _match_dir(path: str | Path, pattern: re.Pattern) -> list[tuple[Path, dict]]
 
 
 def get_reads_samples(path: str | Path, qc: bool = False) -> pd.DataFrame:
-    rows = [
-        {
-            "sample_id": groups["sample"],
-            "p": str(entry),
-            "frac": groups["frac"],
-            "gz": groups["gz"] is not None,
-        }
-        for entry, groups in _match_dir(path, _READS_RE)
-    ]
-    plain = {r["sample_id"] for r in rows if not r["gz"]}
-    zipped = {r["sample_id"] for r in rows if r["gz"]}
-    if plain & zipped:
-        raise ValueError(
-            "Error: compressed and uncompressed read files from the same sample."
+    """Discover paired reads; reject incomplete or ambiguous pairs."""
+    samples: dict[str, dict[str, Path]] = {}
+    conventions: dict[str, set[str]] = {}
+
+    for entry, groups in sorted(_match_dir(path, _READS_RE)):
+        sample_id = groups["sample"]
+        suffix = groups["frac"]
+        mate = suffix[-1]
+        convention = "R" if suffix.startswith("R") else "numeric"
+
+        mates = samples.setdefault(sample_id, {})
+        conventions.setdefault(sample_id, set()).add(convention)
+
+        if mate in mates:
+            raise ValueError(
+                f"Duplicate mate {mate} for sample {sample_id!r}: "
+                f"{mates[mate]} and {entry}"
+            )
+        mates[mate] = entry.resolve()
+
+    rows = []
+    for sample_id, mates in sorted(samples.items()):
+        if len(conventions[sample_id]) != 1:
+            raise ValueError(
+                f"Ambiguous paired-read naming for sample {sample_id!r}: "
+                "do not mix _1/_2 with _R1/_R2."
+            )
+
+        missing = {"1", "2"} - mates.keys()
+        if missing:
+            raise ValueError(
+                f"Missing mate {', '.join(sorted(missing))} "
+                f"for sample {sample_id!r} in {path}."
+            )
+
+        rows.append(
+            {
+                "sample_id": sample_id,
+                "r1": str(mates["1"]),
+                "r2": str(mates["2"]),
+            }
         )
-    tmp_df = pd.DataFrame(rows, columns=["sample_id", "p", "frac"])
-    r1 = tmp_df.loc[tmp_df["frac"] == "1", ["sample_id", "p"]].rename(
-        columns={"p": "r1"}
-    )
-    r2 = tmp_df.loc[tmp_df["frac"] == "2", ["sample_id", "p"]].rename(
-        columns={"p": "r2"}
-    )
-    reads_table = pd.merge(r1, r2, how="inner", on=["sample_id"])
-    reads_table = reads_table.sort_values(by=["sample_id"])
+
+    reads_table = pd.DataFrame(rows, columns=["sample_id", "r1", "r2"])
     if qc:
         reads_table = reads_table.rename(columns={"r1": "qc_r1", "r2": "qc_r2"})
     return reads_table
