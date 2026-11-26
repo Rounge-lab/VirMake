@@ -109,8 +109,7 @@ ABSOLUTELY NO WARRANTY.
 
 When using **VirMake**, please cite our paper:
 
-Birkeland E, Istvan P, Avershina E, Rognes T, Rounge TB.
-*VirMake: a flexible and user-friendly pipeline for viral taxonomic and
-functional characterisation from shotgun metagenomic sequencing data*.
-bioRxiv. 2025. doi:
-[https://doi.org/10.1101/2025.02.07.637044](https://doi.org/10.1101/2025.02.07.637044).
+Birkeland, E.E., Istvan, P., Avershina, E. et al. *VirMake: a flexible and
+user-friendly pipeline for viral taxonomic and functional characterization from
+shotgun metagenomic sequencing data.* **Microbiome** (2026).
+[https://doi.org/10.1186/s40168-026-02582-8](https://doi.org/10.1186/s40168-026-02582-8)
