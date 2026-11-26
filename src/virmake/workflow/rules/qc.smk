@@ -77,7 +77,6 @@ rule fastp_pe:
             -I {input.R2:q} \
             -o {output.R1:q} \
             -O {output.R2:q} \
-            -h {output.html:q} \
             -j {output.json:q} \
             --disable_html \
             -w {threads} \
