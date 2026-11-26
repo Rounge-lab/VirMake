@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 
 from virmake import __version__
-from scripts.qc_spec import build_qc_spec
+from scripts.qc_spec import build_qc_spec, qc_artifact_paths
 from scripts.workflow_utils import load_samples, resolved_qc_reads
 
 samples, SAMPLE = load_samples(config["path"]["samples"])
@@ -49,8 +49,8 @@ def qc_spec():
 
 def qc_artifacts(wildcards):
     return [
-        str(OUTPUT / artifact["file"])
-        for artifact in qc_spec()["artifacts"]
+        str(OUTPUT / path)
+        for path in qc_artifact_paths(tuple(samples.values()))
     ]
 
 
