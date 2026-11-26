@@ -40,7 +40,7 @@ templates_path = ['_templates']
 
 # -- Options for HTML output
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'crcbiome'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
@@ -65,9 +65,7 @@ html_context = {
 }
 
 html_css_files = [
-    "crcbiome-rtd.css",
 ]
 
 html_js_files = [
-    "dark-mode-toggle.js",
 ]

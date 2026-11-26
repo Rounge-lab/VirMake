@@ -36,9 +36,8 @@ dev = [
   "types-pyyaml",
 ]
 docs = [
+    "crcbiome-sphinx-theme @ git+https://github.com/Rounge-lab/crcbiome-sphinx-theme.git@v0.1.0",
     "sphinx",
-    "sphinx-rtd-theme",
-    "sphinx-rtd-dark-mode",
     "sphinx-copybutton",
     "sphinx_toolbox",
     "pyyaml",
@@ -52,6 +51,9 @@ path = "src/virmake/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/virmake"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
