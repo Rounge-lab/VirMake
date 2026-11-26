@@ -92,7 +92,6 @@ def build_qc_spec(
         "producer": {
             "name": "virmake",
             "version": producer_version,
-            "module_id": "virmake.qc",
         },
         "artifacts": artifacts,
     }

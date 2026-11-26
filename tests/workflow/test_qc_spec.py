@@ -30,7 +30,6 @@ def test_raw_reads_declare_fastp_and_each_fastqc_mate(paired):
     assert spec["producer"] == {
         "name": "virmake",
         "version": "1.2.3",
-        "module_id": "virmake.qc",
     }
 
     expected_templates = [
