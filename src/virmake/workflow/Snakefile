@@ -72,7 +72,7 @@ use rule * from stats
 
 rule ALL:
     input:
-        config["path"]["temp"] + "/finished_QC" if config["rule_inclusion"]["all"]["qc"] else [],
+        config["path"]["output"] + "/qc_manifest.json" if config["rule_inclusion"]["all"]["qc"] else [],
         config["path"]["temp"] + "/finished_ASSEMBLY" if config["rule_inclusion"]["all"]["assembly"] else [],
         config["path"]["temp"] + "/finished_IDENTIFICATION" if config["rule_inclusion"]["all"]["identification"] else [],
         config["path"]["temp"] + "/finished_MAPPING" if config["rule_inclusion"]["all"]["mapping"] else [],

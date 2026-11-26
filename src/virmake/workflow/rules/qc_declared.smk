@@ -76,16 +76,6 @@ def fastqc_staged_read(wildcards):
 rule QC:
     input:
         str(OUTPUT / "qc_manifest.json"),
-    output:
-        config["path"]["temp"] + "/finished_QC",
-    threads: 1
-    resources:
-        mem_mb=config["memory"]["small"],
-        runtime=config["time"]["tiny"],
-    shell:
-        """
-        touch {output:q}
-        """
 
 
 rule fastp_se:
