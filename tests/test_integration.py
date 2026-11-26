@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from virmake import paths
@@ -158,3 +159,50 @@ class TestDeclaredTrimmingInputs:
         if " " in directory_name:
             for filename in filenames:
                 assert f"'{reads / filename}'" in combined
+
+
+class TestSuppliedAssemblyRouting:
+    @pytest.mark.parametrize("with_reads", [False, True])
+    def test_supplied_contigs_bypass_assembly(self, tmp_path, with_reads):
+        contigs = tmp_path / "supplied contigs"
+        contigs.mkdir()
+        supplied = contigs / "A.fasta"
+        original = b">A\nACGT\n"
+        supplied.write_bytes(original)
+
+        run = tmp_path / "run"
+        args = [
+            "prep",
+            str(run),
+            "--contigs",
+            str(contigs),
+            "--db-dir",
+            str(tmp_path / "db"),
+            "--envs-dir",
+            str(tmp_path / "envs"),
+        ]
+        if with_reads:
+            reads = tmp_path / "reads"
+            reads.mkdir()
+            for mate in ("1", "2"):
+                (reads / f"A_{mate}.fastq").write_text("")
+            args += ["--reads", str(reads)]
+
+        prepared = CliRunner().invoke(cli, args)
+        assert prepared.exit_code == 0, prepared.output
+
+        # Isolate assembly completion from optional metaQUAST/database work.
+        params_path = run / "config/params.yaml"
+        params = yaml.safe_load(params_path.read_text())
+        params["rule_inclusion"]["all"]["metaquast"] = False
+        params_path.write_text(yaml.safe_dump(params, sort_keys=False))
+
+        proc = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
+        combined = proc.stdout + proc.stderr
+        assert proc.returncode == 0, combined
+        assert "rule ASSEMBLY:" in combined
+        assert str(supplied) in combined
+        assert "rule metaSpades:" not in combined
+        assert "rule run_megahit:" not in combined
+        assert "rule fastp_pe:" not in combined
+        assert supplied.read_bytes() == original

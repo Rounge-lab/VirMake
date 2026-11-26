@@ -319,3 +319,117 @@ class TestPrepAbsolutePathContract:
             (tmp_path / "run" / "config" / "params.yaml").read_text()
         )
         assert params["path"]["input_reads"] == str(reads)
+
+
+class TestPrepDeclarationValidation:
+    def test_raw_and_qc_overlap_rejected(self, tmp_path, patched_defaults):
+        reads = tmp_path / "reads"
+        qc = tmp_path / "qc"
+        reads.mkdir()
+        qc.mkdir()
+        for name in ("A_1.fastq", "A_2.fastq"):
+            (reads / name).write_text("")
+        for name in ("A_R1.fastq.gz", "A_R2.fastq.gz"):
+            (qc / name).write_text("")
+
+        run = tmp_path / "run"
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(run),
+                "--reads",
+                str(reads),
+                "--qc-reads",
+                str(qc),
+                "--yes",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "both raw and QC reads" in result.output
+        assert not (run / "samples.tsv").exists()
+        assert not (run / "config/params.yaml").exists()
+
+    def test_invalid_discovered_id_rejected(self, tmp_path, patched_defaults):
+        contigs = tmp_path / "contigs"
+        contigs.mkdir()
+        (contigs / "bad name.fasta").write_text("")
+
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(tmp_path / "run"),
+                "--contigs",
+                str(contigs),
+                "--yes",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "sample_id must match" in result.output
+
+    def test_failed_force_preserves_existing_declarations_and_config(
+        self, tmp_path, patched_defaults
+    ):
+        run = tmp_path / "run"
+        prepared = CliRunner().invoke(cli, ["prep", str(run), "--yes"])
+        assert prepared.exit_code == 0, prepared.output
+
+        files = [
+            run / "samples.tsv",
+            run / "config/params.yaml",
+            run / "config/config.yaml",
+            run / "config/slurm/config.yaml",
+        ]
+        originals = {path: path.read_bytes() for path in files}
+
+        reads = tmp_path / "reads"
+        reads.mkdir()
+        (reads / "A_1.fastq").write_text("")
+
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(run),
+                "--reads",
+                str(reads),
+                "--force",
+                "--yes",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "Missing mate 2" in result.output
+        for path, original in originals.items():
+            assert path.read_bytes() == original
+
+    def test_disjoint_raw_and_qc_samples_allowed(self, tmp_path, patched_defaults):
+        reads = tmp_path / "reads"
+        qc = tmp_path / "qc"
+        reads.mkdir()
+        qc.mkdir()
+        for name in ("A_1.fastq", "A_2.fastq"):
+            (reads / name).write_text("")
+        for name in ("B_R1.fastq.gz", "B_R2.fastq.gz"):
+            (qc / name).write_text("")
+
+        run = tmp_path / "run"
+        result = CliRunner().invoke(
+            cli,
+            [
+                "prep",
+                str(run),
+                "--reads",
+                str(reads),
+                "--qc-reads",
+                str(qc),
+                "--yes",
+            ],
+        )
+
+        assert result.exit_code == 0, result.output
+        table = pd.read_csv(run / "samples.tsv", sep="\t")
+        assert set(table["sample_id"]) == {"A", "B"}

@@ -7,13 +7,14 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from virmake.sample_sheet import SAMPLE_COLUMNS, load_sample_sheet
+from virmake.sample_sheet import SAMPLE_COLUMNS, Sample, load_sample_sheet
 from virmake.samples import (
     build_samples_table,
     discover_samples,
     get_contigs_samples,
     get_reads_samples,
     write_discovered_sample_sheet,
+    write_sample_sheet,
     write_samples_table,
 )
 
@@ -574,3 +575,60 @@ class TestDiscoveredSampleSheet:
             write_discovered_sample_sheet(sheet, **kwargs)
 
         assert sheet.read_bytes() == original
+
+
+class TestValidatedSampleSheetWriter:
+    def test_serializes_records_without_discovery(self, tmp_path, monkeypatch):
+        reads = tmp_path / "explicit single read.fastq"
+        reads.write_bytes(b"supplied input\n")
+        sample = Sample(
+            sample_id="A",
+            read_type="short",
+            read_layout="single",
+            read_stage="qc",
+            r1=reads.resolve(),
+        )
+
+        def unexpected_discovery(*args, **kwargs):
+            raise AssertionError("serialization must not rediscover inputs")
+
+        monkeypatch.setattr("virmake.samples.get_reads_samples", unexpected_discovery)
+        monkeypatch.setattr("virmake.samples.get_contigs_samples", unexpected_discovery)
+
+        sheet = tmp_path / "samples.tsv"
+        write_sample_sheet(sheet, (sample,))
+
+        assert load_sample_sheet(sheet) == (sample,)
+        assert reads.read_bytes() == b"supplied input\n"
+
+    def test_preserves_record_order(self, tmp_path):
+        contigs = tmp_path / "assembly.fasta"
+        contigs.write_text("")
+        samples = (
+            Sample(sample_id="B", contigs=contigs.resolve()),
+            Sample(sample_id="A", contigs=contigs.resolve()),
+        )
+        sheet = tmp_path / "samples.tsv"
+
+        write_sample_sheet(sheet, samples)
+
+        assert load_sample_sheet(sheet) == samples
+
+    def test_duplicate_ids_do_not_overwrite_sheet(self, tmp_path):
+        sample = Sample(sample_id="A", contigs=Path("assembly.fasta"))
+        sheet = tmp_path / "samples.tsv"
+        original = b"existing declarations\n"
+        sheet.write_bytes(original)
+
+        with pytest.raises(ValueError, match="duplicate sample_id"):
+            write_sample_sheet(sheet, (sample, sample))
+
+        assert sheet.read_bytes() == original
+
+    def test_empty_records_write_header_only(self, tmp_path):
+        sheet = tmp_path / "samples.tsv"
+
+        write_sample_sheet(sheet, ())
+
+        assert sheet.read_text() == "\t".join(SAMPLE_COLUMNS) + "\n"
+        assert load_sample_sheet(sheet) == ()

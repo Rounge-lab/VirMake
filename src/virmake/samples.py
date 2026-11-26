@@ -166,18 +166,20 @@ def discover_samples(
     )
 
 
-def write_discovered_sample_sheet(
+def write_sample_sheet(
     samples_path: str | Path,
-    reads: str = "",
-    qc_reads: str = "",
-    contigs: str = "",
-) -> tuple[Sample, ...]:
-    """Write new-schema input declarations, returning validated records.
+    samples: tuple[Sample, ...],
+) -> None:
+    """Serialize validated declarations without rediscovering inputs.
 
-    Complete discovery and declaration validation before opening the sheet.
-    This is a preparation API, not a workflow-generated-path updater.
+    Check uniqueness before opening the destination. Records contain supplied
+    inputs only; generated paths never belong in this sheet.
     """
-    samples = discover_samples(reads, qc_reads, contigs)
+    seen: set[str] = set()
+    for sample in samples:
+        if sample.sample_id in seen:
+            raise ValueError(f"duplicate sample_id: {sample.sample_id!r}")
+        seen.add(sample.sample_id)
 
     with Path(samples_path).open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
@@ -190,4 +192,14 @@ def write_discovered_sample_sheet(
         for sample in samples:
             writer.writerow(sample.model_dump(mode="json"))
 
+
+def write_discovered_sample_sheet(
+    samples_path: str | Path,
+    reads: str = "",
+    qc_reads: str = "",
+    contigs: str = "",
+) -> tuple[Sample, ...]:
+    """Discover and validate once, then serialize seven-column declarations."""
+    samples = discover_samples(reads, qc_reads, contigs)
+    write_sample_sheet(samples_path, samples)
     return samples

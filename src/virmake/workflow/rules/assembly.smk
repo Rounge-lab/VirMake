@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from scripts.workflow_utils import get_samples, get_qc_reads_loc, get_assembly_loc
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
@@ -13,7 +15,15 @@ def _ladder(values, attempt):
 
 rule ASSEMBLY:
     input:
-        expand(config["path"]["output"] + "/metaSpades/{sample}/contigs.fasta",sample=SAMPLE),
+        [
+            get_assembly_loc(
+                SimpleNamespace(sample=sample),
+                sample_table,
+                config["assembler"],
+                config["path"]["output"],
+            )
+            for sample in SAMPLE
+        ],
         config["path"]["output"] + "/metaQUAST/combined_reference/transposed_report.tsv" if config["rule_inclusion"]["all"]["metaquast"] else [],
     output:
         config["path"]["temp"] + "/finished_ASSEMBLY",
@@ -90,7 +100,7 @@ rule get_contigs_for_metaquast:
     output:
         contigs=temp(config["path"]["output"]+"/assembly/tmp/{sample}.fasta")
     shell:
-        "cp {input.contigs} {output.contigs}"
+        "cp {input.contigs:q} {output.contigs:q}"
 
 rule metaQUAST:
     """
