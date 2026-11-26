@@ -31,7 +31,7 @@ from virmake.config import (
     write_params,
     write_profiles,
 )
-from virmake.samples import discover_samples, write_samples_table
+from virmake.samples import discover_samples, write_sample_sheet
 from virmake.testdata import download_test_data
 
 from . import __version__
@@ -291,10 +291,9 @@ def prep(
         download_test_data(rundir / "test_data")
         qc_reads = rundir / "test_data"
 
-    # Validate declarations before replacing configuration or samples.tsv.
-    # Keep legacy serialization until workflow consumers migrate together.
+    # Validate before replacing configuration or samples.tsv.
     try:
-        discover_samples(
+        samples = discover_samples(
             reads=str(reads) if reads else "",
             qc_reads=str(qc_reads) if qc_reads else "",
             contigs=str(contigs) if contigs else "",
@@ -312,16 +311,9 @@ def prep(
     write_profiles(rundir, envs_dir)
     make_results_dirs(rundir)
 
-    try:
-        samples_table = write_samples_table(
-            rundir / "samples.tsv",
-            reads=str(reads) if reads else "",
-            qc_reads=str(qc_reads) if qc_reads else "",
-            contigs=str(contigs) if contigs else "",
-        )
-    except ValueError as e:
-        raise click.ClickException(str(e)) from e
-    if samples_table.empty:
+    write_sample_sheet(rundir / "samples.tsv", samples)
+
+    if not samples:
         click.echo(
             "WARNING: no samples found. samples.tsv is header-only. Provide "
             "--reads/--qc-reads/--contigs, use --test-data, or edit "

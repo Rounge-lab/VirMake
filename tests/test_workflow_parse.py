@@ -6,8 +6,7 @@ from pathlib import Path
 import pytest
 
 from virmake.config import make_params, make_results_dirs, write_params
-
-SAMPLES_HEADER = ["sample_id", "r1", "r2", "qc_r1", "qc_r2", "contigs"]
+from virmake.samples import write_sample_sheet
 
 
 def _package_root() -> Path:
@@ -32,10 +31,13 @@ def snakemake_available():
 
 @pytest.fixture
 def run_dir(tmp_path):
-    """Minimal run directory via the real config writers (B1)."""
-    write_params(tmp_path, make_params(rundir=tmp_path, db_dir=tmp_path / "databases"))
+    """Minimal run directory using the real config and sample-sheet writers."""
+    write_params(
+        tmp_path,
+        make_params(rundir=tmp_path, db_dir=tmp_path / "databases"),
+    )
     make_results_dirs(tmp_path)
-    (tmp_path / "samples.tsv").write_text("\t".join(SAMPLES_HEADER) + "\n")
+    write_sample_sheet(tmp_path / "samples.tsv", ())
     return tmp_path
 
 

@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from scripts.workflow_utils import get_samples, get_qc_reads_loc, get_assembly_loc
+from scripts.workflow_utils import get_samples, get_qc_reads_loc, get_assembly_loc, paired_assembly_reads
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
 
@@ -44,8 +44,12 @@ rule metaSpades:
     Assembles all sequences with metaSpades
     """
     input:
-        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1", keep_qc_reads=config["keep_qc_reads"]),
-        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2", keep_qc_reads=config["keep_qc_reads"]),
+        R1=lambda w: paired_assembly_reads(
+            w.sample, sample_table, config["path"]["output"]
+        )[0],
+        R2=lambda w: paired_assembly_reads(
+            w.sample, sample_table, config["path"]["output"]
+        )[1],
     output:
         dir=directory(
             config["path"]["output"] + "/metaSpades/{sample}/",
@@ -69,14 +73,17 @@ rule metaSpades:
         # SPAdes -m is in GIGABYTES; snakemake resources.mem_mb is in megabytes
         mem_gb=$(( {resources.mem_mb} / 1024 ))
         if [ "$mem_gb" -lt 1 ]; then mem_gb=1; fi
-        metaspades.py -1 {input.R1} -2 {input.R2} -o {output.dir} \
-        --tmp-dir {params.temp_dir} -t {threads} -m $mem_gb &> {log}
+        metaspades.py -1 {input.R1:q} -2 {input.R2:q} -o {output.dir:q} \
+            --tmp-dir {params.temp_dir:q} -t {threads} -m "$mem_gb" \
+            > {log:q} 2>&1
         """
 
 
 rule run_megahit:
     input:
-        reads=lambda w: [ get_qc_reads_loc(w, sample_table, config["path"]["output"],r=rd, keep_qc_reads=config["keep_qc_reads"]) for rd in ["1", "2"]],
+        reads=lambda w: paired_assembly_reads(
+            w.sample, sample_table, config["path"]["output"]
+        ),
     output:
         contigs=config["path"]["output"] + "/megahit/{sample}/contigs.fasta",
     benchmark:

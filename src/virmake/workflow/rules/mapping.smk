@@ -1,7 +1,28 @@
-from scripts.workflow_utils import get_samples, get_qc_reads_loc
+import shlex
+
+from scripts.workflow_utils import (
+    get_samples,
+    read_sample_ids,
+    resolved_qc_reads,
+)
 from scripts.get_sample_stats import process_abundance_data
 
-sample_table, SAMPLE = get_samples(config["path"]["samples"])
+sample_table, ALL_SAMPLE = get_samples(config["path"]["samples"])
+SAMPLE = read_sample_ids(sample_table)
+
+
+def mapping_arguments(wildcards, input):
+    reads = list(input.reads)
+    if len(reads) == 1:
+        return "-U " + shlex.quote(reads[0])
+    if len(reads) == 2:
+        return (
+            "-1 " + shlex.quote(reads[0])
+            + " -2 " + shlex.quote(reads[1])
+        )
+    raise ValueError(
+        f"sample {wildcards.sample!r}: mapping requires one or two mates"
+    )
 
 # MAPPING
 rule MAPPING:
@@ -54,11 +75,14 @@ rule read_mapping:
     performs read mapping between original sample and vOTUs
     """
     input:
-        R1=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="1", keep_qc_reads=config["keep_qc_reads"]),
-        R2=lambda w: get_qc_reads_loc(w, sample_table, config["path"]["output"],r="2", keep_qc_reads=config["keep_qc_reads"]),
+        reads=lambda w: resolved_qc_reads(
+            w.sample, sample_table, config["path"]["output"]
+        ),
         index_dir=rules.build_index.output.index_dir,
     output:
         temp(config["path"]["output"] + "/mapping/BAM/{sample}.map.bam"),
+    params:
+        reads=mapping_arguments,
     conda:
         config["path"]["envs"] + "/bowtie2.yaml"
     log:
@@ -72,9 +96,12 @@ rule read_mapping:
         runtime=config["time"]["tiny"],
     shell:
         """
-        bowtie2 -p {threads} -x {input.index_dir}/mapping_index \
-        -1 {input.R1} -2 {input.R2} 2> {log.bowtie2} | \
-        samtools view --threads 4 -b -o {output} - &> {log.samtools}
+        bowtie2 -p {threads} \
+            -x {input.index_dir:q}/mapping_index \
+            {params.reads} \
+            2> {log.bowtie2:q} |
+        samtools view --threads 4 -b -o {output:q} - \
+            > {log.samtools:q} 2>&1
         """
 
 rule flagstat:

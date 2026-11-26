@@ -1,7 +1,7 @@
-from scripts.workflow_utils import get_samples
+from scripts.workflow_utils import get_samples, read_sample_ids
 
 sample_table, SAMPLE = get_samples(config["path"]["samples"])
-FRAC = ["1", "2"]
+MAPPING_SAMPLE = read_sample_ids(sample_table)
 
 rule STATS:
     input:
@@ -42,10 +42,18 @@ rule get_sample_stats:
     Gathers info on samples.
     """
     input:
-        virus_id_tables=expand(config["path"]["output"]+"/virus_identification/{sample}/gathered_quality_tables.tsv", sample=SAMPLE),
+        virus_id_tables=expand(
+            config["path"]["output"]
+            + "/virus_identification/{sample}/gathered_quality_tables.tsv",
+            sample=SAMPLE,
+        ),
         mq_report=config["path"]["output"]+ "/metaQUAST/combined_reference/transposed_report.tsv" if config["rule_inclusion"]["stats"]["metaquast"] else [],
         rel_abund=config["path"]["output"] + "/mapping/rel_abundance_table.tsv" if config["rule_inclusion"]["stats"]["mapping"] else [],
-        flagstat=expand(config["path"]["output"]+"/mapping/flagstat/{sample}_flagstat.txt", sample=SAMPLE) if config["rule_inclusion"]["stats"]["mapping"] else [],
+        flagstat=expand(
+            config["path"]["output"]
+            + "/mapping/flagstat/{sample}_flagstat.txt",
+            sample=MAPPING_SAMPLE,
+        ) if config["rule_inclusion"]["stats"]["mapping"] else [],
     output:
         sample_stats=config["path"]["output"] + "/statistics/sample_stats.tsv"
     script:

@@ -1,4 +1,3 @@
-import pandas as pd
 from pathlib import Path
 
 from virmake.routing import assembly_input, qc_reads
@@ -65,37 +64,47 @@ def paired_assembly_reads(
 
 
 def get_samples(path):
-    sample_table = pd.read_csv(path, delimiter='\t')
-    samples = sample_table["sample_id"].to_list()
-    return sample_table, samples
+    """Load declarations using the existing workflow-facing function name."""
+    return load_samples(path)
 
-def get_qc_reads_loc(wildcards,
-                     sample_table,
-                     standard_output,
-                     r,
-                     keep_qc_reads):
-    qc_r1_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'qc_r1'].iloc[0]
-    qc_r2_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'qc_r2'].iloc[0]
-    if pd.isna(qc_r1_loc) or pd.isna(qc_r2_loc) or qc_r1_loc == "" or qc_r2_loc == "":
-        if keep_qc_reads:
-            return standard_output+"/fastp_pe/qc_reads/"+wildcards.sample+f"_{r}.fastq.gz"
-        else:
-            return standard_output+"/fastp_pe/"+wildcards.sample+f"_{r}.fastq.gz"
-    else:
-        if r == "1":
-            return qc_r1_loc
-        elif r == "2":
-            return qc_r2_loc
 
-def get_assembly_loc(wildcards,
-                     sample_table,
-                     assembler,
-                     standard_output):
-    assembly_loc = sample_table.loc[sample_table["sample_id"] == wildcards.sample, 'contigs'].iloc[0]
-    if pd.isna(assembly_loc) or assembly_loc == "":
-        return standard_output + "/" + assembler + "/"+wildcards.sample+"/contigs.fasta"
-    else:
-        return assembly_loc
+def get_qc_reads_loc(
+    wildcards,
+    sample_table,
+    standard_output,
+    r,
+    keep_qc_reads,
+):
+    """Resolve one declared mate.
+
+    Retention is controlled by producer output annotations, not path selection.
+    """
+    paths = resolved_qc_reads(
+        wildcards.sample,
+        sample_table,
+        standard_output,
+    )
+    mate = int(r)
+    if mate < 1 or mate > len(paths):
+        raise ValueError(
+            f"sample {wildcards.sample!r} has no mate {r}"
+        )
+    return paths[mate - 1]
+
+
+def get_assembly_loc(
+    wildcards,
+    sample_table,
+    assembler,
+    standard_output,
+):
+    """Retain the string-returning assembly interface for existing consumers."""
+    return resolved_assembly(
+        wildcards.sample,
+        sample_table,
+        assembler,
+        standard_output,
+    )
 
 # GLOBAL FUNCTIONS #
 def get_min_quality(threshold):

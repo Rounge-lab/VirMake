@@ -57,6 +57,7 @@ class TestPrepTree:
         # resource roots created eagerly
         assert (patched_defaults / "databases").is_dir()
         assert (patched_defaults / "envs").is_dir()
+        assert params["path"]["output"] == str(rundir / "results" / "output")
 
     def test_hints_printed(self, tmp_path, patched_defaults):
         result = CliRunner().invoke(cli, ["prep", str(tmp_path / "run"), "--yes"])
@@ -166,7 +167,9 @@ class TestPrepInputs:
         assert table["sample_id"].tolist() == ["A"]
         assert Path(table["r1"].iloc[0]).name == "A_1.fastq"
         assert Path(table["r2"].iloc[0]).name == "A_2.fastq"
-        assert table["qc_r1"].isna().all()  # no qc reads given
+        assert table["read_stage"].tolist() == ["raw"]
+        assert table["read_type"].tolist() == ["short"]
+        assert table["read_layout"].tolist() == ["paired"]
         assert Path(table["contigs"].iloc[0]).name == "A.fasta"
 
     def test_missing_reads_dir_rejected(self, tmp_path, patched_defaults):
@@ -268,7 +271,10 @@ class TestPrepTestData:
         # qc reads recorded; header check via pandas
         table = pd.read_csv(rundir / "samples.tsv", sep="\t")
         assert table["sample_id"].tolist() == ["synthetic"]
-        assert table["qc_r1"].iloc[0].endswith("synthetic_1.fastq.gz")
+        assert table["r1"].iloc[0].endswith("synthetic_1.fastq.gz")
+        assert table["read_stage"].tolist() == ["qc"]
+        assert table["read_type"].tolist() == ["short"]
+        assert table["read_layout"].tolist() == ["paired"]
 
     def test_test_data_conflicts_with_reads(
         self, tmp_path, patched_defaults, reads_dir, fake_download
@@ -287,7 +293,7 @@ class TestPrepTestData:
         result = CliRunner().invoke(cli, ["prep", "run", "--test-data", "--yes"])
         assert result.exit_code == 0, result.output
         table = pd.read_csv(tmp_path / "run" / "samples.tsv", sep="\t")
-        assert table["qc_r1"].iloc[0] == str(
+        assert table["r1"].iloc[0] == str(
             tmp_path / "run" / "test_data" / "synthetic_1.fastq.gz"
         )
 
@@ -296,7 +302,7 @@ class TestPrepAbsolutePathContract:
     """Regression (smoke finding): all recorded paths are absolute.
 
     Snakemake resolves samples.tsv paths against the run directory
-    (--directory), so a relative qc_r1 of ".smoke/test_data/x.fastq.gz"
+    (--directory), so a relative r1 of ".smoke/test_data/x.fastq.gz"
     is sought at <RUNDIR>/.smoke/test_data/... and misses.
     """
 
@@ -433,3 +439,7 @@ class TestPrepDeclarationValidation:
         assert result.exit_code == 0, result.output
         table = pd.read_csv(run / "samples.tsv", sep="\t")
         assert set(table["sample_id"]) == {"A", "B"}
+        assert table.set_index("sample_id")["read_stage"].to_dict() == {
+            "A": "raw",
+            "B": "qc",
+        }
