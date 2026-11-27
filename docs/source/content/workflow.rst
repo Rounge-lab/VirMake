@@ -24,33 +24,97 @@ Overview
 Pre-processing & QC
 -------------------
 
-1) Trimming
-^^^^^^^^^^^
+QC uses the read declarations in ``samples.tsv`` rather than inferring
+processing state from output files or input-directory settings.
 
-If raw paired-end reads were provided during preparation using :option:`virmake
-prep --reads`, `FASTP <https://github.com/OpenGene/fastp>`_ is used for trimming
-with default options:
+* Raw short reads are processed with fastp, then assessed with FastQC.
+* Supplied-QC short reads skip fastp and are assessed directly with FastQC.
+* Contigs-only samples have no QC artifacts.
 
-* ``--qualified_quality_phred`` >= Q15
-* ``--unqualified_percent_limit`` 40
-* ``--length_limit`` 0
-* ``--disable_adapter_trimming`` False
+QC supports single-end and paired-end short-read declarations. This does
+not imply that every downstream analysis tool supports both layouts.
 
-The input directory is recorded in ``path.input_reads`` by :program:`virmake
-prep`.
+To run this stage on its own:
 
-Trimmed reads are stored in ``results/output/fastp_pe/`` as
-``{sample}_1.fastq.gz`` and ``{sample}_2.fastq.gz``. QC reports are stored in
-``{sample}.html`` and ``{sample}.json``.
+.. code-block:: console
 
-2) Quality summary
-^^^^^^^^^^^^^^^^^^
+    virmake run myrun qc --dryrun
+    virmake run myrun qc --cores 4
 
-After quality trimming, or alternatively if quality-controlled reads were
-provided using :option:`virmake prep --qc-reads`, `FastQC
-<https://github.com/s-andrews/FastQC>`_ performs a quality assessment,
-summarised with `MultiQC <https://github.com/MultiQC/MultiQC>`_. The quality
-report is stored at ``results/output/multiqc/multiqc.html``.
+Raw-read preprocessing
+^^^^^^^^^^^^^^^^^^^^^^
+
+`fastp <https://github.com/OpenGene/fastp>`_ processes raw reads using
+the defaults of the installed tool version, apart from the workflow's
+input, output, reporting and thread settings.
+
+Single-end samples use one input file. Paired-end samples use both mates
+in one fastp invocation.
+
+Generated reads are written to:
+
+.. code-block:: text
+
+    results/output/reads/reads_qc/{sample}_1.fastq.gz
+    results/output/reads/reads_qc/{sample}_2.fastq.gz # paired-end only
+
+The fastp JSON report is retained at:
+
+.. code-block:: text
+
+    results/output/qc/fastp/{sample}.json
+
+.. note::
+
+   ``keep_qc_reads`` controls retention of generated processed reads.
+   When disabled, those reads are temporary and may be removed after
+   their consumers finish. Their filenames do not change.
+
+   Reads supplied through ``--qc-reads`` remain at their declared input
+   locations and are not removed by this setting.
+
+FastQC assessment
+^^^^^^^^^^^^^^^^^
+
+`FastQC <https://github.com/s-andrews/FastQC>`_ assesses each declared
+short-read file separately: processed reads for raw samples, or the
+original supplied files for samples declared as ``qc``.
+
+Persistent FastQC data files are stored at:
+
+.. code-block:: text
+
+    results/output/qc/fastqc/{sample}_1_fastqc_data.txt
+    results/output/qc/fastqc/{sample}_2_fastqc_data.txt # paired-end only
+
+Artifact verification and completion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After producing the reports, VirMake verifies them with ``workflow-coda``.
+
+``results/output/qc_spec.yaml`` declares the expected artifact families:
+
+* One fastp report per raw short-read sample.
+* One FastQC data file per short-read sample's first mate.
+* One FastQC data file per paired short-read sample's second mate.
+
+Successful verification writes:
+
+.. code-block:: text
+
+    results/output/qc_manifest.json
+
+The manifest records artifact identities, paths, completion status,
+checksums and verification records. Invalid artifacts fail the job rather than
+being accepted as successful QC outputs.
+
+.. important::
+
+   Artifact verification checks that reports satisfy their declared
+   format and verification requirements. It does not mean that every
+   FastQC module passed or that the reads are suitable for every
+   biological analysis. Review the quality metrics before interpreting
+   downstream results.
 
 Assembly
 --------
@@ -136,10 +200,10 @@ minimum contig size is set by ``min_contig_size``. The output is stored in
    Required database construction is resource-intensive. Disable functional
    annotation by setting ``rule_inclusion.all.function`` to ``false``.
 
-Report Generation
------------------
+Summary Statistics
+------------------
 
-Sample-wise and vOTU-wise summary reports are generated in
+Sample-wise and vOTU-wise summary tables are generated in
 ``results/output/statistics/sample_stats.tsv`` and
 ``results/output/statistics/vOTU_stats.tsv``.
 
