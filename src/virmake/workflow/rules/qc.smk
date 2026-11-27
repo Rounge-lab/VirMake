@@ -99,11 +99,11 @@ rule fastp_se:
     shell:
         """
         fastp \
-            -i {input.R1:q} \
-            -o {output.R1:q} \
-            -j {output.json:q} \
-            --disable_html \
-            -w {threads} \
+            --in1 {input.R1:q} \
+            --out1 {output.R1:q} \
+            --json {output.json:q} \
+            --html /dev/null \
+            --thread {threads} \
             > {log:q} 2>&1
         """
 
@@ -131,13 +131,13 @@ rule fastp_pe:
     shell:
         """
         fastp \
-            -i {input.R1:q} \
-            -I {input.R2:q} \
-            -o {output.R1:q} \
-            -O {output.R2:q} \
-            -j {output.json:q} \
-            --disable_html \
-            -w {threads} \
+            --in1 {input.R1:q} \
+            --in2 {input.R2:q} \
+            --out1 {output.R1:q} \
+            --out2 {output.R2:q} \
+            --json {output.json:q} \
+            --html /dev/null \
+            --thread {threads} \
             > {log:q} 2>&1
         """
 

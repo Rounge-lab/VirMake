@@ -178,8 +178,8 @@ class TestDeclaredTrimmingInputs:
         for filename in filenames:
             assert str(reads / filename) in combined
 
-        assert "--disable_html" in combined
-        assert "-h " not in combined
+        assert "--disable_html" not in combined
+        assert "--html /dev/null" in combined
         assert "A.html" not in combined
 
         if " " in directory_name:
