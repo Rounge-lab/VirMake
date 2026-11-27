@@ -226,8 +226,23 @@ class TestSuppliedAssemblyRouting:
         proc = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
         combined = proc.stdout + proc.stderr
         assert proc.returncode == 0, combined
+
         rules = _job_rules(proc)
         assert "ASSEMBLY" in rules
-        assert str(supplied) in combined
         assert rules.isdisjoint({"metaSpades", "run_megahit", "fastp_se", "fastp_pe"})
+        assert supplied.read_bytes() == original
+
+        # Prove that ASSEMBLY requires the supplied file, rather than silently
+        # falling back to an assembler or ignoring the declaration.
+        supplied.unlink()
+        try:
+            missing = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
+            missing_output = missing.stdout + missing.stderr
+
+            assert missing.returncode != 0, missing_output
+            assert "MissingInputException" in missing_output, missing_output
+            assert str(supplied) in missing_output, missing_output
+        finally:
+            supplied.write_bytes(original)
+
         assert supplied.read_bytes() == original

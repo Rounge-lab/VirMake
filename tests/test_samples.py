@@ -80,7 +80,7 @@ def _legacy_get_reads_samples(path, qc=False):
         how="inner",
         on=["sample_id"],
     )
-    reads_table.sort_values(by=["sample_id"], inplace=True)
+    reads_table.sort_values(by=["sample_id"])
 
     if qc:
         reads_table = reads_table.rename(columns={"r1": "qc_r1", "r2": "qc_r2"})
