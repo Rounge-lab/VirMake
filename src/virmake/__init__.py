@@ -2,4 +2,4 @@
 paired-end data. It offers taxonomic and functional annotation, supports offline running
 and has support for HPC cluster execution."""
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"

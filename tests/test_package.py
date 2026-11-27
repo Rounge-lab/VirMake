@@ -6,7 +6,7 @@ import virmake
 
 
 def test_version():
-    assert virmake.__version__ == "1.1.0"
+    assert virmake.__version__ == "1.1.1"
 
 
 def test_workflow_assets_present():
