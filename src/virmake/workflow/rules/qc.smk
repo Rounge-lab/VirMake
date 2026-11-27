@@ -249,6 +249,8 @@ rule verify_qc:
         artifacts=qc_artifacts,
     output:
         manifest=str(OUTPUT / "qc_manifest.json"),
+    params:
+      producer_version=__version__,
     log:
         config["path"]["log"] + "/qc_verification.log",
     conda:
@@ -262,7 +264,7 @@ rule verify_qc:
         workflow-coda verify {output.manifest:q} \
             --spec {input.spec:q} \
             --producer-name virmake \
-            --producer-version {__version__:q} \
+            --producer-version {params.producer_version:q} \
             --on-failure fail \
             > {log:q} 2>&1
         """
