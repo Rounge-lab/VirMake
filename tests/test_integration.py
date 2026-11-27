@@ -217,30 +217,40 @@ class TestSuppliedAssemblyRouting:
         prepared = CliRunner().invoke(cli, args)
         assert prepared.exit_code == 0, prepared.output
 
-        # Isolate assembly completion from optional metaQUAST/database work.
+        # Isolate assembly completion from optional MetaQUAST/database work.
         params_path = run / "config/params.yaml"
         params = yaml.safe_load(params_path.read_text())
         params["rule_inclusion"]["all"]["metaquast"] = False
-        params_path.write_text(yaml.safe_dump(params, sort_keys=False))
+        params_path.write_text(
+            yaml.safe_dump(params, sort_keys=False),
+            encoding="utf-8",
+        )
 
         proc = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
         combined = proc.stdout + proc.stderr
         assert proc.returncode == 0, combined
 
+        # Supplied contigs bypass assembly and trimming producers,
+        # including when the sample also has raw reads.
         rules = _job_rules(proc)
         assert "ASSEMBLY" in rules
-        assert rules.isdisjoint({"metaSpades", "run_megahit", "fastp_se", "fastp_pe"})
+        assert rules.isdisjoint(
+            {"metaSpades", "run_megahit", "fastp_se", "fastp_pe"}
+        ), combined
         assert supplied.read_bytes() == original
 
-        # Prove that ASSEMBLY requires the supplied file, rather than silently
-        # falling back to an assembler or ignoring the declaration.
+        # Declaration loading must reject missing supplied contigs
+        # rather than silently falling back to generated assembly.
+        # This checks input validation, not DAG dependency membership.
         supplied.unlink()
         try:
             missing = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
             missing_output = missing.stdout + missing.stderr
 
             assert missing.returncode != 0, missing_output
-            assert "MissingInputException" in missing_output, missing_output
+            assert "supplied input is not an existing file:" in missing_output, (
+                missing_output
+            )
             assert str(supplied) in missing_output, missing_output
         finally:
             supplied.write_bytes(original)
