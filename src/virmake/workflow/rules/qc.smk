@@ -5,6 +5,7 @@ from pathlib import Path
 
 import yaml
 
+from virmake import __version__
 from scripts.qc_spec import build_qc_spec, qc_artifact_paths
 from scripts.workflow_utils import load_samples, resolved_qc_reads
 
