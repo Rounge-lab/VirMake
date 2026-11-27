@@ -6,5 +6,5 @@ dependencies:
   - pip
   - git
   - pip:
-      - "workflow-coda @ git+https://github.com/Rounge-lab/workflow-coda.git@v0.3.0"
-      - "git+https://github.com/Rounge-lab/coda-bio-plugin.git@fd7df40"
+      - "workflow-coda @ git+https://github.com/Rounge-lab/workflow-coda.git@v0.4.0"
+      - "git+https://github.com/Rounge-lab/coda-bio-plugin.git@548f680"
