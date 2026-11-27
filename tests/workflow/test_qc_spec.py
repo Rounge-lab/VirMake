@@ -176,3 +176,18 @@ def test_blank_producer_version_is_rejected():
 def test_concrete_paths_reject_invalid_qc_selection():
     with pytest.raises(ValueError, match="at least one read-bearing sample"):
         qc_artifact_paths(())
+
+
+@pytest.mark.parametrize("stage", ["raw", "qc"])
+@pytest.mark.parametrize("paired", [False, True])
+def test_all_qc_families_have_module_attribution(stage, paired):
+    spec = build_qc_spec(
+        (_reads(stage=stage, paired=paired),),
+        "1.2.3",
+    )
+
+    assert spec["producer"] == {
+        "name": "virmake",
+        "version": "1.2.3",
+    }
+    assert all(artifact["module_id"] == "qc" for artifact in spec["artifacts"])

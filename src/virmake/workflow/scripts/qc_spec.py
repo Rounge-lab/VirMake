@@ -62,6 +62,7 @@ def build_qc_spec(
                 "id": "fastp-{sample}",
                 "type": "virmake.qc.fastp-{sample}",
                 "format": "bio.fastp",
+                "module_id": "qc",
                 "schema_version": "1.0",
             }
         )
@@ -84,6 +85,7 @@ def build_qc_spec(
                 "id": f"fastqc-{{sample}}-r{mate}",
                 "type": f"virmake.qc.fastqc-{{sample}}-r{mate}",
                 "format": "bio.fastqc",
+                "module_id": "qc",
                 "schema_version": "1.0",
             }
         )

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import yaml
 
-from virmake import __version__
 from scripts.qc_spec import build_qc_spec, qc_artifact_paths
 from scripts.workflow_utils import load_samples, resolved_qc_reads
 
@@ -250,7 +249,7 @@ rule verify_qc:
     output:
         manifest=str(OUTPUT / "qc_manifest.json"),
     params:
-      producer_version=__version__,
+        run_id=config["run_id"],
     log:
         config["path"]["log"] + "/qc_verification.log",
     conda:
@@ -263,8 +262,7 @@ rule verify_qc:
         """
         workflow-coda verify {output.manifest:q} \
             --spec {input.spec:q} \
-            --producer-name virmake \
-            --producer-version {params.producer_version:q} \
+            --run-id {params.run_id:q} \
             --on-failure fail \
             > {log:q} 2>&1
         """

@@ -2,6 +2,7 @@ import importlib.resources
 import subprocess
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
@@ -32,10 +33,13 @@ def snakemake_available():
 @pytest.fixture
 def run_dir(tmp_path):
     """Minimal run directory using the real config and sample-sheet writers."""
-    write_params(
-        tmp_path,
-        make_params(rundir=tmp_path, db_dir=tmp_path / "databases"),
+    params = make_params(
+        rundir=tmp_path,
+        db_dir=tmp_path / "databases",
     )
+    params["run_id"] = str(uuid4())
+
+    write_params(tmp_path, params)
     make_results_dirs(tmp_path)
     write_sample_sheet(tmp_path / "samples.tsv", ())
     return tmp_path

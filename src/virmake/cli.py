@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
+from uuid import uuid4
 
 import click
 import yaml
@@ -301,16 +302,32 @@ def prep(
     except ValueError as e:
         raise click.ClickException(str(e)) from e
 
+    # A forced preparation regenerates configuration for the same run.
+    params_path = rundir / "config" / "params.yaml"
+    run_id = None
+
+    if params_path.is_file():
+        existing_params = load_params(rundir)
+        run_id = existing_params.get("run_id")
+        if run_id is not None and (not isinstance(run_id, str) or not run_id.strip()):
+            raise click.ClickException(
+                f"{params_path}: run_id must be a non-empty string."
+            )
+
+    if run_id is None:
+        run_id = str(uuid4())
+
     params = make_params(
         rundir,
         db_dir,
         reads=str(reads) if reads else "",
         contigs=str(contigs) if contigs else "",
     )
+    params["run_id"] = run_id
+
     write_params(rundir, params)
     write_profiles(rundir, envs_dir)
     make_results_dirs(rundir)
-
     write_sample_sheet(rundir / "samples.tsv", samples)
 
     if not samples:
@@ -321,6 +338,7 @@ def prep(
         )
 
     click.echo(f"Run directory ready: {rundir}")
+    click.echo(f"  run ID: {run_id}")
     click.echo(f"  databases: {db_dir}")
     click.echo(f"  conda envs: {envs_dir}")
     click.echo("Next steps:")
