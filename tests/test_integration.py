@@ -73,9 +73,35 @@ def _snakemake_dryrun(rundir: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 def _job_rules(proc: subprocess.CompletedProcess) -> set[str]:
-    """Rule names from the dryrun's Job stats table (minus its total row)."""
-    rules = set(re.findall(r"^(\S+)\s+\d+\s+\d+", proc.stdout, re.MULTILINE))
-    rules.discard("total")
+    """Rule names from Snakemake's dry-run Job stats table."""
+    combined = proc.stdout + "\n" + proc.stderr
+    lines = combined.splitlines()
+
+    position = next(
+        (index for index, line in enumerate(lines) if line.strip() == "Job stats:"),
+        None,
+    )
+    if position is None:
+        raise AssertionError(f"No Job stats table in dry-run output:\n{combined}")
+
+    rules = set()
+    started = False
+
+    for line in lines[position + 1 :]:
+        match = re.fullmatch(
+            r"\s*([A-Za-z_][A-Za-z0-9_]*)\s+\d+(?:\s+\d+)*\s*",
+            line,
+        )
+        if match:
+            started = True
+            name = match.group(1)
+            if name == "total":
+                break
+            rules.add(name)
+        elif started:
+            break
+
+    assert rules, f"Empty Job stats table in dry-run output:\n{combined}"
     return rules
 
 
@@ -98,8 +124,8 @@ class TestUntilEquivalence:
     def test_explicit_target_matches_legacy_until(self, rundir, target):
         direct = _snakemake_dryrun(rundir, target, "-n")
         until = _snakemake_dryrun(rundir, "--until", target, "-n")
-        assert direct.returncode == 0, direct.stderr
-        assert until.returncode == 0, until.stderr
+        assert direct.returncode == 0, direct.stdout + direct.stderr
+        assert until.returncode == 0, until.stdout + until.stderr
         assert _job_rules(direct) == _job_rules(until), (
             f"--until {target} and target {target} DAGs differ:\n"
             f"only-target: {sorted(_job_rules(direct))}\n"
@@ -140,14 +166,14 @@ class TestDeclaredTrimmingInputs:
         assert prepared.exit_code == 0, prepared.output
 
         outputs = [
-            str(run / "results/output/fastp_pe/A_1.fastq.gz"),
-            str(run / "results/output/fastp_pe/A_2.fastq.gz"),
-            str(run / "results/output/fastp_pe/A.json"),
+            str(run / "results/output/reads/reads_qc/A_1.fastq.gz"),
+            str(run / "results/output/reads/reads_qc/A_2.fastq.gz"),
+            str(run / "results/output/qc/fastp/A.json"),
         ]
         proc = _snakemake_dryrun(run, *outputs, "-n", "--printshellcmds")
         combined = proc.stdout + proc.stderr
         assert proc.returncode == 0, combined
-        assert "rule fastp_pe:" in combined
+        assert _job_rules(proc) == {"fastp_pe"}
 
         for filename in filenames:
             assert str(reads / filename) in combined
@@ -200,9 +226,8 @@ class TestSuppliedAssemblyRouting:
         proc = _snakemake_dryrun(run, "ASSEMBLY", "-n", "--printshellcmds")
         combined = proc.stdout + proc.stderr
         assert proc.returncode == 0, combined
-        assert "rule ASSEMBLY:" in combined
+        rules = _job_rules(proc)
+        assert "ASSEMBLY" in rules
         assert str(supplied) in combined
-        assert "rule metaSpades:" not in combined
-        assert "rule run_megahit:" not in combined
-        assert "rule fastp_pe:" not in combined
+        assert rules.isdisjoint({"metaSpades", "run_megahit", "fastp_se", "fastp_pe"})
         assert supplied.read_bytes() == original
